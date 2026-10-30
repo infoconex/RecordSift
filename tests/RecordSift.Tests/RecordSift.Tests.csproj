@@ -42,6 +42,7 @@
     <Compile Include="ImportSummaryTests.cs" />
     <Compile Include="ImportDiagnosticTests.cs" />
     <Compile Include="ImportSchemaTests.cs" />
+    <Compile Include="PositionalBindingTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
