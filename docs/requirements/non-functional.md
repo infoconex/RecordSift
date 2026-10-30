@@ -4,16 +4,16 @@
 
 | Requirement | Quality attribute | Intent | GitHub issue / acceptance |
 | --- | --- | --- | --- |
-| NFR-001 | Straightforward developer API | Release 0.1 quality gate | [#41](https://github.com/infoconex/RecordSift/issues/41) (`NFR-001-SC01`) |
-| NFR-002 | No required external services | Release 0.1 quality gate | [#42](https://github.com/infoconex/RecordSift/issues/42) (`NFR-002-SC01`) |
-| NFR-003 | No Microsoft Excel installation requirement | Release 0.1 quality gate | [#43](https://github.com/infoconex/RecordSift/issues/43) (`NFR-003-SC01`) |
-| NFR-004 | Deterministic validation | Release 0.1 quality gate | [#44](https://github.com/infoconex/RecordSift/issues/44) (`NFR-004-SC01`) |
-| NFR-005 | Configurable culture-sensitive parsing | Release 0.1 quality gate | [#45](https://github.com/infoconex/RecordSift/issues/45) (`NFR-005-SC01`) |
-| NFR-006 | Actionable malformed-input failures | Release 0.1 quality gate | [#46](https://github.com/infoconex/RecordSift/issues/46) (`NFR-006-SC01`) |
-| NFR-007 | Resource limits | Release 0.1 quality gate | [#47](https://github.com/infoconex/RecordSift/issues/47) (`NFR-007-SC01`) |
-| NFR-008 | No execution of macros or input code | Release 0.1 quality gate | [#48](https://github.com/infoconex/RecordSift/issues/48) (`NFR-008-SC01`) |
-| NFR-009 | Avoid unnecessary OS-specific components | Release 0.1 quality gate | [#49](https://github.com/infoconex/RecordSift/issues/49) (`NFR-009-SC01`) |
-| NFR-010 | Observable public API compatibility | Release 0.1 quality gate | [#50](https://github.com/infoconex/RecordSift/issues/50) (`NFR-010-SC01`) |
+| NFR-001 | Straightforward developer API | Release 0.1 quality gate | [#41](https://github.com/infoconex/RecordSift/issues/41) (`NFR-001-SC01`) · [All scenarios](../scenarios/non-functional/NFR-001.md) |
+| NFR-002 | No required external services | Release 0.1 quality gate | [#42](https://github.com/infoconex/RecordSift/issues/42) (`NFR-002-SC01`) · [All scenarios](../scenarios/non-functional/NFR-002.md) |
+| NFR-003 | No Microsoft Excel installation requirement | Release 0.1 quality gate | [#43](https://github.com/infoconex/RecordSift/issues/43) (`NFR-003-SC01`) · [All scenarios](../scenarios/non-functional/NFR-003.md) |
+| NFR-004 | Deterministic validation | Release 0.1 quality gate | [#44](https://github.com/infoconex/RecordSift/issues/44) (`NFR-004-SC01`) · [All scenarios](../scenarios/non-functional/NFR-004.md) |
+| NFR-005 | Configurable culture-sensitive parsing | Release 0.1 quality gate | [#45](https://github.com/infoconex/RecordSift/issues/45) (`NFR-005-SC01`) · [All scenarios](../scenarios/non-functional/NFR-005.md) |
+| NFR-006 | Actionable malformed-input failures | Release 0.1 quality gate | [#46](https://github.com/infoconex/RecordSift/issues/46) (`NFR-006-SC01`) · [All scenarios](../scenarios/non-functional/NFR-006.md) |
+| NFR-007 | Resource limits | Release 0.1 quality gate | [#47](https://github.com/infoconex/RecordSift/issues/47) (`NFR-007-SC01`) · [All scenarios](../scenarios/non-functional/NFR-007.md) |
+| NFR-008 | No execution of macros or input code | Release 0.1 quality gate | [#48](https://github.com/infoconex/RecordSift/issues/48) (`NFR-008-SC01`) · [All scenarios](../scenarios/non-functional/NFR-008.md) |
+| NFR-009 | Avoid unnecessary OS-specific components | Release 0.1 quality gate | [#49](https://github.com/infoconex/RecordSift/issues/49) (`NFR-009-SC01`) · [All scenarios](../scenarios/non-functional/NFR-009.md) |
+| NFR-010 | Observable public API compatibility | Release 0.1 quality gate | [#50](https://github.com/infoconex/RecordSift/issues/50) (`NFR-010-SC01`) · [All scenarios](../scenarios/non-functional/NFR-010.md) |
 
 ## Verification policy
 

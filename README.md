@@ -17,6 +17,7 @@ Planned modernization experiments will distinguish changes to project configurat
 - [Requirements, specifications, and engineering documentation](docs/README.md)
 - [Functional requirements](docs/requirements/functional.md)
 - [Nonfunctional requirements](docs/requirements/non-functional.md)
+- [Acceptance scenario specifications](docs/scenarios/README.md)
 
 ## Development workflow
 

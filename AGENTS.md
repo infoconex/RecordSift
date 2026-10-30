@@ -8,7 +8,7 @@ These repository-wide instructions apply to human and AI-assisted contributions.
 - One distinct FR/NFR or engineering issue per working branch. Branch from the latest `release/0.1` using `issue/<number>-<slug>`.
 - Target every issue PR to `release/0.1`; squash merge after evidence and review. Promote to `main` only through a release PR.
 - Do not build unrelated features into an issue. Cross-reference dependencies; do not mark another requirement complete without its own evidence.
-- Preserve stable `FR-###`, `NFR-###`, and `*-SC##` identifiers. Update docs/testing/traceability.md on implementation PRs.
+- Preserve stable `FR-###`, `NFR-###`, and `*-SC##` identifiers. Read and maintain `docs/scenarios/functional/FR-###.md` or `docs/scenarios/non-functional/NFR-###.md` as the authoritative behavior definition; update `docs/testing/traceability.md` on implementation PRs.
 
 ## Engineering and testing
 

@@ -5,6 +5,8 @@
 
 ## Test-driven development
 
+For each independently tracked FR/NFR, start from its authoritative `docs/scenarios/<category>/<ID>.md` specification. Every scenario must trace to a test or verification procedure as implementation progresses:
+
 For each independently tracked FR/NFR:
 
 1. **Red:** Add a small, observable acceptance or lower-level test that states the requirement and initially fails for the missing behavior.
