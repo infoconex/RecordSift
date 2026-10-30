@@ -7,6 +7,12 @@ These pages specify the proposed product and engineering process for **release 0
 - [Functional requirements](requirements/functional.md) — `FR-001` through `FR-039`, each with its own GitHub issue and acceptance scenario.
 - [Nonfunctional requirements](requirements/non-functional.md) — `NFR-001` through `NFR-010`, each with its own GitHub issue and verification obligation.
 
+## Specifications and verification
+
+- [Draft import specification](specifications/record-import.md)
+- [TDD and test types](testing/strategy.md)
+- [Requirement-to-scenario-to-test matrix](testing/traceability.md)
+
 ## Independent engineering issues
 
 - [#51 — Behavioral specification](https://github.com/infoconex/RecordSift/issues/51)
