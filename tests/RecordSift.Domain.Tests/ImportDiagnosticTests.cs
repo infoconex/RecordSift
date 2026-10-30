@@ -3,7 +3,7 @@ using NUnit.Framework;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 
-namespace RecordSift.Tests
+namespace RecordSift.Domain.Tests
 {
     [TestFixture]
     public sealed class ImportDiagnosticTests

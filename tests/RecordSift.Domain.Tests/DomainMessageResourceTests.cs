@@ -4,10 +4,9 @@ using System.Globalization;
 using System.Linq;
 using System.Resources;
 using NUnit.Framework;
-using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
 
-namespace RecordSift.Tests
+namespace RecordSift.Domain.Tests
 {
     [TestFixture]
     public sealed class DomainMessageResourceTests
@@ -129,11 +128,5 @@ namespace RecordSift.Tests
             }
         }
 
-        [Test]
-        public void CsvDefaultDelimiterIsOwnedByCoreConfiguration()
-        {
-            Assert.That(CsvReadOptions.Default.Delimiter, Is.EqualTo(","));
-            Assert.That(CsvReadOptions.Default.IsValid, Is.True);
-        }
     }
 }

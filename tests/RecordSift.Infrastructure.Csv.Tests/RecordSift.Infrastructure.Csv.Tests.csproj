@@ -43,9 +43,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RecordSift.Tests\RecordSift.Tests.csproj">
-      <Project>{63F4CF6E-47FC-4FFB-987F-095E81E0F3FD}</Project>
-      <Name>RecordSift.Tests</Name>
+    <ProjectReference Include="..\RecordSift.Application.Tests\RecordSift.Application.Tests.csproj">
+      <Project>{C1BE98D6-9C92-4858-9149-C2C1A0D10F49}</Project>
+      <Name>RecordSift.Application.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\RecordSift.Infrastructure.Csv\RecordSift.Infrastructure.Csv.csproj">
       <Project>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</Project>

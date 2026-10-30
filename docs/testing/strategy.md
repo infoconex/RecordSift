@@ -33,15 +33,16 @@ A requirement may need several tests, but a test should have one clear reason to
 
 Exploratory and manual tests may supplement automation, but must include a repeatable procedure and observed result. They do not replace automate-able acceptance tests.
 
-## Independent core unit tests and executable adapter contracts
+## Independent Domain, Application and adapter contract suites
 
 The architecture test-project split in [#91](https://github.com/infoconex/RecordSift/issues/91) makes dependency direction testable, not merely a contributor guideline:
 
-- `tests/RecordSift.Tests` references **only the separate RecordSift.Domain/RecordSift.Application assemblies and NUnit**, with **no CsvHelper or other third-party import parser**. Hand-written fakes test consumer policy, result/domain invariants, message resources and configuration. The test assembly must run independently with no adapter DLL in its output.
-- `tests/RecordSift.Tests/Contracts/CsvRecordReaderContractTests.cs` declares **vendor-independent shared behavioral assertions** for the core `ICsvRecordReader` contract: raw records, quoting, line/provenance, invalid source, bounded reads, security, caller ownership and immutable results.
+- `tests/RecordSift.Domain.Tests` references **only RecordSift.Domain and NUnit**; it cannot reference Application, Infrastructure or CsvHelper. It tests schema, diagnostics, messages and import-result invariants independently.
+- `tests/RecordSift.Application.Tests` references **Application, Domain and NUnit**, never Infrastructure or CsvHelper; hand-written fake ports test source/CSV policy and configuration independently.
+- `tests/RecordSift.Application.Tests/Contracts/CsvRecordReaderContractTests.cs` declares **vendor-independent shared behavioral assertions** for the Application-owned `ICsvRecordReader` port contract: raw records, quoting, line/provenance, invalid source, bounded reads, security, caller ownership and immutable results.
 - `tests/RecordSift.Infrastructure.Csv.Tests` references the real infrastructure adapter and **inherits the shared contract suite** through its own `CsvAdapterContractConformanceTests` fixture, alongside additional real-parser CSV header and delimiter integration tests. All future adapters must execute an equivalent inherited contract suite against the real implementation.
-- Windows CI builds both test assemblies, runs them **separately** via NUnit and publishes individual NUnit XML results. A dependency-audit guard checks project references and forbidden adapter imports in core tests.
-- NUnit itself is a development-only test framework, not an import processing dependency. The requirement is to eliminate **third-party import libraries** from core unit-test authoring, compilation and execution.
+- Windows CI builds **all three NUnit test assemblies**, runs Domain, Application and real-adapter suites **separately**, verifies independent output dependencies and publishes distinct NUnit XML files. Architecture validation rejects outward test project references, stale source folders and forbidden imports.
+- NUnit itself is a development-only test framework, not an import processing dependency. The requirement is to eliminate **third-party import libraries** from Domain/Application unit-test authoring, compilation and execution.
 
 ## Ports, adapters and architecture tests
 

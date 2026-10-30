@@ -44,8 +44,9 @@ src/
   RecordSift.Infrastructure.Csv/            -> Application + Domain
     CsvRecordReaderAdapter.cs              real CSV adapter backed by CsvHelper
 tests/
-  RecordSift.Tests/                         -> Domain + Application; no parser vendor
-  RecordSift.Infrastructure.Csv.Tests/        -> Domain + Application + real adapter
+  RecordSift.Domain.Tests/                  -> Domain only + NUnit
+  RecordSift.Application.Tests/             -> Application + Domain + NUnit
+  RecordSift.Infrastructure.Csv.Tests/      -> Application.Tests (shared fixture) + Application + Domain + CSV adapter
 ```
 
 The **Domain assembly does not reference `System.IO`, `TextReader`, the application assembly, or any third-party parser**. Application owns the reader port and may use framework IO types at an input boundary, but never a vendor parser type. Infrastructure translates parser exceptions into Domain-owned codes and resource-backed messages.
@@ -76,7 +77,7 @@ Apply these principles to **real seams**. Do not create interfaces for every DTO
 
 ## Domain contract and test ownership
 
-RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. The issue #91 change splits core and real-adapter NUnit assemblies and runs a core-owned behavioral contract fixture against the real CsvHelper adapter. The core test DLL has no parser dependency.
+RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. Issue #91 originally separated core tests from real-adapter NUnit tests; [issue #105](https://github.com/infoconex/RecordSift/issues/105) further separates Domain-only tests from Application tests. The shared Application-owned port contract fixture is inherited by adapter tests. Domain test DLLs neither reference Application nor contain parser/adapter dependencies.
 
 Core message resources and defaults are defined by [ADR 0010](decisions/0010-domain-message-resources.md), and [ADR 0016](decisions/0016-typed-domain-resource-messages.md) establishes named public message accessors. The raw resource-key lookup is internal to Domain; Application and Infrastructure must never refer to embedded `Argument_*` key strings. Diagnostic code values remain distinct machine-readable constants.
 

@@ -7,7 +7,7 @@ using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
 
-namespace RecordSift.Tests
+namespace RecordSift.Application.Tests
 {
     [TestFixture]
     public sealed class CsvReaderPortTests
