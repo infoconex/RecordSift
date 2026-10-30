@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RecordSift.Application.Messages;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 
@@ -36,7 +37,7 @@ namespace RecordSift.Application.Ports.Csv
         {
             if (diagnostic == null) throw new ArgumentNullException(nameof(diagnostic));
             if (diagnostic.Scope != DiagnosticScope.Source)
-                throw new ArgumentException(DomainMessageResources.ParserErrorScope, nameof(diagnostic));
+                throw new ArgumentException(CsvMessageResources.ParserErrorScope, nameof(diagnostic));
             return new CsvParseResult(
                 new ReadOnlyCollection<CsvRecord>(new List<CsvRecord>()),
                 new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic> { diagnostic }));

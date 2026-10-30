@@ -20,10 +20,10 @@
 ## Domain messages and meaningful constants
 
 - Stable diagnostic identifiers are **nonlocalized core constants**. Their invariant English text lives in `src/RecordSift.Domain/Diagnostics/Resources/DomainMessages.resx` and is retrieved through a core-owned resource accessor. Never include source data, secrets, file paths or vendor exception messages.
-- Argument-validation strings are resource-backed through named Domain properties (e.g. `DomainMessageResources.ReaderHeaderConflict`). `Get(string resourceKey)` is internal, and only the catalog knows literal `Argument_*` keys; Application never supplies a raw key. Consumers rely on exception types and parameter names, not English text. See [ADR 0016](decisions/0016-typed-domain-resource-messages.md).
+- Argument-validation strings are resource-backed through named properties in their **owning layer**: `DomainMessageResources.PositionMappingDuplicate` for Domain schema rules and `CsvMessageResources.ReaderHeaderConflict` for Application CSV rules. Raw `Argument_*` keys are confined to each catalog; `Get(string resourceKey)` remains internal. Consumers rely on exception types and parameter names, not English text. See [ADR 0016](decisions/0016-typed-domain-resource-messages.md) and [ADR 0020](decisions/0020-application-csv-message-ownership.md).
 - Keep options and defaults in the core, e.g. `CsvReadOptions.Default`. Third-party adapters must implement that contract.
 - Do not introduce constants for ordinary zero/one indices or CSV protocol syntax solely to eliminate literals; eliminate unexplained, duplicated, or variable business values.
-- `scripts/validate_core_messages.py` validates embedded resources and flags English prose in core C# source. Issue #91 separately enforces third-party-free domain unit tests.
+- `scripts/validate_core_messages.py` validates both embedded catalogs and flags English prose in Domain/Application C# source. Issue #91 separately enforces third-party-free domain unit tests.
 
 ## Enforced naming checks and remaining coverage
 

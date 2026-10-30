@@ -36,10 +36,37 @@ for code in defined_codes:
 CATALOG = CORE / "Diagnostics" / "DomainMessageResources.cs"
 APPLICATION = ROOT / "src" / "RecordSift.Application"
 argument_keys = {key for key in entries if key.startswith("Argument_")}
+APPLICATION_CSV_ARGUMENT_KEYS = {
+    "Argument_ReaderHeaderConflict",
+    "Argument_HeaderlessMissingPositions",
+    "Argument_FailedTableNoError",
+    "Argument_FailedTableNonSourceError",
+    "Argument_ParserErrorScope",
+}
+APPLICATION_CSV_RESX = APPLICATION / "Messages" / "Resources" / "CsvMessages.resx"
+if argument_keys.intersection(APPLICATION_CSV_ARGUMENT_KEYS):
+    errors.append("Domain resources contain Application-owned CSV validation messages")
+
+application_entries = {}
+if not APPLICATION_CSV_RESX.is_file():
+    errors.append("Application-owned CSV message resource manifest is missing")
+else:
+    application_root = ET.parse(APPLICATION_CSV_RESX).getroot()
+    for item in application_root.findall("data"):
+        key = item.attrib.get("name", "")
+        value = item.findtext("value")
+        if key in application_entries or not value or not value.strip():
+            errors.append("Duplicate or empty Application resource: " + key)
+        application_entries[key] = value
+    if set(application_entries) != APPLICATION_CSV_ARGUMENT_KEYS:
+        errors.append("Application must own exactly the five CSV-only argument resources")
+if set(entries).intersection(application_entries):
+    errors.append("Domain and Application resource catalogs must have disjoint keys")
+
 public_catalog = CATALOG.read_text(encoding="utf-8")
 
 def raw_argument_uses(source):
-    return re.findall(r'DomainMessageResources\.Get\("(Argument_\w+)"\)', source)
+    return re.findall(r'(?:DomainMessageResources|CsvMessageResources)\.Get\("(Argument_\w+)"\)', source)
 
 def validate_typed_message_contract(catalog, sources):
     violations = []
@@ -59,10 +86,27 @@ def validate_typed_message_contract(catalog, sources):
             violations.append(f"{where}: raw Argument_ resource key outside the catalog")
     return violations
 
+APPLICATION_CATALOG = APPLICATION / "Messages" / "CsvMessageResources.cs"
 sources = [(str(path.relative_to(ROOT)), path.read_text(encoding="utf-8"))
            for root in (CORE, APPLICATION)
            for path in root.rglob("*.cs")
-           if path != CATALOG and path.name != "AssemblyInfo.cs"]
+           if path not in (CATALOG, APPLICATION_CATALOG) and path.name != "AssemblyInfo.cs"]
+# Application-specific CSV validation messages have a separate typed catalog.
+if not APPLICATION_CATALOG.is_file():
+    errors.append("Application CSV typed resource catalog is missing")
+else:
+    application_catalog = APPLICATION_CATALOG.read_text(encoding="utf-8")
+    if re.search(r'public\s+static\s+string\s+Get\s*\(\s*string', application_catalog):
+        errors.append("Application CSV raw resource-key Get(string) must not be public")
+    accessor_pairs = re.findall(
+        r'public\s+static\s+string\s+(\w+)\s*=>\s*Get\("(Argument_\w+)"\)\s*;',
+        application_catalog)
+    mapping = {key: accessor for accessor, key in accessor_pairs}
+    if set(mapping) != APPLICATION_CSV_ARGUMENT_KEYS or len(accessor_pairs) != len(APPLICATION_CSV_ARGUMENT_KEYS):
+        errors.append("Application CSV typed resource accessors must cover all five keys exactly")
+    if any(accessor != key[len("Argument_"):] for accessor, key in accessor_pairs):
+        errors.append("Application CSV typed resource accessor does not match its key")
+
 errors.extend(validate_typed_message_contract(public_catalog, sources))
 # Independent negative fixtures: each regression is rejected even when the
 # currently valid catalog and application sources are otherwise unchanged.
@@ -74,16 +118,20 @@ assert any("literal resource lookup" in problem for problem in validate_typed_me
 assert any("raw Argument_" in problem for problem in validate_typed_message_contract(
     public_catalog, [("broken", 'var key = "Argument_DiagnosticNull";')]))
 assert raw_argument_uses('DomainMessageResources.Get("Argument_DiagnosticNull")') == ["Argument_DiagnosticNull"]
+assert not APPLICATION_CSV_ARGUMENT_KEYS.intersection(argument_keys), "Domain still owns CSV messages"
+assert set(application_entries) == APPLICATION_CSV_ARGUMENT_KEYS, "Application CSV resource set changed"
+assert not set(application_entries).intersection(entries), "Overlapping catalogs"
+
 
 # Every explicit resource reference in the core must resolve.
-resource_key_re = re.compile(r'DomainMessageResources\.Get\("([^"]+)"\)')
+resource_key_re = re.compile(r'(?:DomainMessageResources|CsvMessageResources)\.Get\("([^"]+)"\)')
 string_re = re.compile(r'"((?:\\.|[^"\\])*)"')
-for file in sorted(CORE.rglob("*.cs")):
+for file in sorted(list(CORE.rglob("*.cs")) + list(APPLICATION.rglob("*.cs"))):
     if file.name == "AssemblyInfo.cs":
         continue  # Compiler metadata has fixed required assembly strings.
     source = file.read_text(encoding="utf-8")
     for key in resource_key_re.findall(source):
-        if key not in entries:
+        if key not in entries and key not in application_entries:
             errors.append(f"{file.relative_to(ROOT)}: missing resource key {key}")
     for i, line in enumerate(source.splitlines(), start=1):
         # Guard English sentences in string literals, but allow symbolic resource
@@ -98,6 +146,7 @@ if errors:
     for error in errors:
         print(" - " + error)
     sys.exit(1)
-print(f"Domain message guard passed: {len(defined_codes)} diagnostic codes, "
-      f"{len(argument_keys)} typed argument message accessors, {len(entries)} resources, "
-      "no raw argument keys outside catalog and no inline production prose.")
+print(f"Resource guards passed: Domain {len(defined_codes)} diagnostic codes, "
+      f"{len(argument_keys)} typed arguments, {len(entries)} resources; "
+      f"Application CSV {len(APPLICATION_CSV_ARGUMENT_KEYS)} typed argument resources; "
+      "no cross-layer keys, raw lookups or inline production prose.")

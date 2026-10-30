@@ -24,15 +24,10 @@ namespace RecordSift.Domain.Diagnostics
         public static string DiagnosticScopeUnknown => Get("Argument_DiagnosticScopeUnknown");
         public static string DiagnosticWorksheetBlank => Get("Argument_DiagnosticWorksheetBlank");
         public static string ExpectedColumnName => Get("Argument_ExpectedColumnName");
-        public static string FailedTableNoError => Get("Argument_FailedTableNoError");
-        public static string FailedTableNonSourceError => Get("Argument_FailedTableNonSourceError");
         public static string FailedWithoutSourceError => Get("Argument_FailedWithoutSourceError");
-        public static string HeaderlessMissingPositions => Get("Argument_HeaderlessMissingPositions");
-        public static string ParserErrorScope => Get("Argument_ParserErrorScope");
         public static string PositionMappingDuplicate => Get("Argument_PositionMappingDuplicate");
         public static string PositionMappingNull => Get("Argument_PositionMappingNull");
         public static string PositionMappingUndeclared => Get("Argument_PositionMappingUndeclared");
-        public static string ReaderHeaderConflict => Get("Argument_ReaderHeaderConflict");
         public static string SourceDiagnosticHasRow => Get("Argument_SourceDiagnosticHasRow");
         public static string SourcePositionName => Get("Argument_SourcePositionName");
         public static string UnknownDiagnosticCode => Get("Argument_UnknownDiagnosticCode");

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using RecordSift.Application.Messages;
 using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Schema;
@@ -23,7 +24,7 @@ namespace RecordSift.Application.Importing.Csv
             if (policy != CsvHeaderPolicy.WithHeader && policy != CsvHeaderPolicy.WithoutHeader)
                 throw new ArgumentOutOfRangeException(nameof(policy));
             if (policy == CsvHeaderPolicy.WithHeader && positions != null)
-                throw new ArgumentException(DomainMessageResources.ReaderHeaderConflict,
+                throw new ArgumentException(CsvMessageResources.ReaderHeaderConflict,
                     nameof(positions));
 
             if (options != null && !options.IsValid)
@@ -55,7 +56,7 @@ namespace RecordSift.Application.Importing.Csv
             {
                 if (positions == null)
                     throw new ArgumentException(
-                        DomainMessageResources.HeaderlessMissingPositions, nameof(positions));
+                        CsvMessageResources.HeaderlessMissingPositions, nameof(positions));
                 bound = schema.BindPositions(raw.Records[0].Fields.Count, positions);
             }
 

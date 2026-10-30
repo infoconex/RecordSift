@@ -40,6 +40,8 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 - [Issue #89 — Message resources](https://github.com/infoconex/RecordSift/issues/89) — migration and regression validation.
 - [ADR 0016 — Typed Domain resource messages](engineering/decisions/0016-typed-domain-resource-messages.md) — replace public key lookup with named resource-backed Domain argument messages.
 - [Issue #101 — Typed message contract](https://github.com/infoconex/RecordSift/issues/101) — independent resource API refactoring and Red/Green contract checks.
+- [ADR 0020 — Application-owned CSV validation messages](engineering/decisions/0020-application-csv-message-ownership.md) — preserve text while relocating five CSV-specific precondition messages out of Domain resources.
+- [Issue #109](https://github.com/infoconex/RecordSift/issues/109) — own each resource catalog in the layer that defines its validation rules.
 - [Issue #91 — Third-party-free unit testing](https://github.com/infoconex/RecordSift/issues/91) — separate independent core unit and real-adapter tests using reusable domain-owned reader conformance fixture.
 
 ## Microsoft C# naming enforcement

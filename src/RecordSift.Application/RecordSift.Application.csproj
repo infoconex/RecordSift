@@ -41,6 +41,12 @@
     <Compile Include="Importing\Csv\CsvHeaderPolicy.cs" />
     <Compile Include="Importing\Csv\CsvTableReader.cs" />
     <Compile Include="Importing\Csv\CsvTableResult.cs" />
+    <Compile Include="Messages\CsvMessageResources.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Messages\Resources\CsvMessages.resx">
+      <LogicalName>RecordSift.Resources.CsvMessages.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RecordSift.Domain\RecordSift.Domain.csproj">
