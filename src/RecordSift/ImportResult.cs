@@ -47,13 +47,13 @@ namespace RecordSift
             foreach (var error in diagnostics)
             {
                 if (error == null)
-                    throw new ArgumentException("Diagnostics cannot contain null.", nameof(diagnostics));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticNull"), nameof(diagnostics));
 
                 if (error.Scope == DiagnosticScope.Record)
                 {
                     if (!error.Row.HasValue || error.Row.Value > processedCount)
                         throw new ArgumentOutOfRangeException(nameof(diagnostics),
-                            "Record diagnostics must identify a processed logical row.");
+                            DomainMessageResources.Get("Argument_DiagnosticRowOutOfRange"));
                     rejectedRows.Add(error.Row.Value);
                 }
                 else if (error.Scope == DiagnosticScope.Source)
@@ -62,16 +62,16 @@ namespace RecordSift
                 }
                 else
                 {
-                    throw new ArgumentException("Unrecognized diagnostic scope.", nameof(diagnostics));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticScopeUnknown"), nameof(diagnostics));
                 }
 
                 snapshot.Add(error);
             }
 
             if (status == ImportStatus.Completed && hasSourceError)
-                throw new ArgumentException("A completed import cannot contain fatal source errors.", nameof(diagnostics));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_CompletedSourceError"), nameof(diagnostics));
             if (status == ImportStatus.Failed && !hasSourceError)
-                throw new ArgumentException("A failed import must identify a source-level error.", nameof(diagnostics));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_FailedWithoutSourceError"), nameof(diagnostics));
 
             return new ImportResult(status,
                 new ImportSummary(processedCount, rejectedRows.Count),

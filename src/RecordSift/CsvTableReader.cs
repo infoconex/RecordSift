@@ -20,7 +20,7 @@ namespace RecordSift
             if (policy != CsvHeaderPolicy.WithHeader && policy != CsvHeaderPolicy.WithoutHeader)
                 throw new ArgumentOutOfRangeException(nameof(policy));
             if (policy == CsvHeaderPolicy.WithHeader && positions != null)
-                throw new ArgumentException("Headed sources use named header bindings, not positions.",
+                throw new ArgumentException(DomainMessageResources.Get("Argument_ReaderHeaderConflict"),
                     nameof(positions));
 
             if (options != null && !options.IsValid)
@@ -52,7 +52,7 @@ namespace RecordSift
             {
                 if (positions == null)
                     throw new ArgumentException(
-                        "Nonempty headerless CSV requires explicit positional mappings.", nameof(positions));
+                        DomainMessageResources.Get("Argument_HeaderlessMissingPositions"), nameof(positions));
                 bound = schema.BindPositions(raw.Records[0].Fields.Count, positions);
             }
 

@@ -50,6 +50,12 @@ The application orchestration can be unit-tested with a hand-written fake port r
 
 Apply these principles to **real seams**. Do not create interfaces for every DTO/value object, build a service locator, or introduce speculative extensibility.
 
+## Domain contract and test ownership
+
+RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. Current tests still share one adapter-referencing assembly: [#91](https://github.com/infoconex/RecordSift/issues/91) tracks the required physical separation.
+
+Core messages and defaults are defined by [ADR 0010](decisions/0010-domain-message-resources.md).
+
 ## Enforcement and review
 
 1. A third-party integration needs a recorded compatibility/licensing/security review and pinned versions. Constrain package references to adapter/test projects. Do not replace a proven parser with custom grammar logic without an explicit ADR and tests.

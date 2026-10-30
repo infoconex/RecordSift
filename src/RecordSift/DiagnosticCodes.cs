@@ -41,18 +41,18 @@ namespace RecordSift
         {
             switch (code)
             {
-                case SourceUnreadable: return "The source could not be read.";
-                case SourceLimitExceeded: return "The source exceeded the configured read limit.";
-                case RequiredHeaderMissing: return "A required source header is missing.";
-                case RequiredColumnMissing: return "A required source column is missing.";
-                case AmbiguousColumn: return "A declared source column is ambiguous.";
-                case InvalidColumnPosition: return "A declared source column position is outside the available field range.";
-                case MalformedSource: return "The source structure is malformed.";
-                case InvalidCsvDelimiter: return "The configured CSV delimiter is invalid.";
-                case RequiredFieldMissing: return "A required field is missing.";
-                case ConversionFailed: return "A field could not be converted.";
-                case ValidationFailed: return "A field failed validation.";
-                default: throw new ArgumentException("Unknown diagnostic code.", nameof(code));
+                case SourceUnreadable: return DomainMessageResources.Get(SourceUnreadable);
+                case SourceLimitExceeded: return DomainMessageResources.Get(SourceLimitExceeded);
+                case RequiredHeaderMissing: return DomainMessageResources.Get(RequiredHeaderMissing);
+                case RequiredColumnMissing: return DomainMessageResources.Get(RequiredColumnMissing);
+                case AmbiguousColumn: return DomainMessageResources.Get(AmbiguousColumn);
+                case InvalidColumnPosition: return DomainMessageResources.Get(InvalidColumnPosition);
+                case MalformedSource: return DomainMessageResources.Get(MalformedSource);
+                case InvalidCsvDelimiter: return DomainMessageResources.Get(InvalidCsvDelimiter);
+                case RequiredFieldMissing: return DomainMessageResources.Get(RequiredFieldMissing);
+                case ConversionFailed: return DomainMessageResources.Get(ConversionFailed);
+                case ValidationFailed: return DomainMessageResources.Get(ValidationFailed);
+                default: throw new ArgumentException(DomainMessageResources.Get("Argument_UnknownDiagnosticCode"), nameof(code));
             }
         }
     }

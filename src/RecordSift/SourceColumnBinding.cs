@@ -8,7 +8,7 @@ namespace RecordSift
         internal SourceColumnBinding(string name, int sourceIndex)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Bound column name must be nonempty.", nameof(name));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_BoundColumnName"), nameof(name));
             if (sourceIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(sourceIndex));
             Name = name;

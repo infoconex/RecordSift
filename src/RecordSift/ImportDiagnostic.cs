@@ -13,9 +13,9 @@ namespace RecordSift
             string code, string worksheet, int? physicalRow, int? physicalLine)
         {
             if (field != null && string.IsNullOrWhiteSpace(field))
-                throw new ArgumentException("Field must be nonempty when supplied.", nameof(field));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticFieldBlank"), nameof(field));
             if (worksheet != null && string.IsNullOrWhiteSpace(worksheet))
-                throw new ArgumentException("Worksheet must be nonempty when supplied.", nameof(worksheet));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticWorksheetBlank"), nameof(worksheet));
             if (physicalRow.HasValue && physicalRow.Value < 1)
                 throw new ArgumentOutOfRangeException(nameof(physicalRow));
             if (physicalLine.HasValue && physicalLine.Value < 1)
@@ -25,14 +25,14 @@ namespace RecordSift
                 if (!row.HasValue || row.Value < 1)
                     throw new ArgumentOutOfRangeException(nameof(row));
                 if (!DiagnosticCodes.IsRecordCode(code))
-                    throw new ArgumentException("Code is not a registered record error.", nameof(code));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticCodeNotRecord"), nameof(code));
             }
             else if (scope == DiagnosticScope.Source)
             {
                 if (row.HasValue)
-                    throw new ArgumentException("Source diagnostics cannot identify a logical data row.", nameof(row));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_SourceDiagnosticHasRow"), nameof(row));
                 if (!DiagnosticCodes.IsSourceCode(code))
-                    throw new ArgumentException("Code is not a registered source error.", nameof(code));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticCodeNotSource"), nameof(code));
             }
             else
                 throw new ArgumentOutOfRangeException(nameof(scope));
