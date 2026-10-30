@@ -6,6 +6,7 @@ Usage: python3 scripts/validate_docs.py
 """
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -133,6 +134,51 @@ def scenario_specifications() -> dict[str, str]:
     return scenarios
 
 
+def check_json_report_contract() -> None:
+    """Perform standard-library structural checks; full meta-schema validation comes with future contract tests."""
+    relative = "docs/specifications/schemas/import-result.schema.json"
+    content = read(relative)
+    try:
+        document = json.loads(content)
+    except json.JSONDecodeError as exc:
+        report(f"{relative}: invalid JSON: {exc}")
+        return
+    if document.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
+        report(f"{relative}: JSON Schema draft must be 2020-12")
+    if document.get("type") != "object" or document.get("additionalProperties") is not False:
+        report(f"{relative}: top-level schema must be closed object")
+    top = {"schemaVersion", "sourceId", "status", "message", "summary", "diagnostics"}
+    if set(document.get("required", [])) != top:
+        report(f"{relative}: unexpected or missing top-level required JSON fields")
+    if set(document.get("properties", {})) != top:
+        report(f"{relative}: unexpected or missing top-level JSON properties")
+    definitions = document.get("$defs", {})
+    summary = definitions.get("summary", {})
+    expected = {"processedCount", "acceptedCount", "rejectedCount"}
+    if set(summary.get("required", [])) != expected or set(summary.get("properties", {})) != expected:
+        report(f"{relative}: release 0.1 summary must have only three row counters")
+    if summary.get("additionalProperties") is not False:
+        report(f"{relative}: summary must reject unrecognized properties")
+    for key in expected:
+        field = summary.get("properties", {}).get(key, {})
+        if field.get("type") != "integer" or field.get("minimum") != 0:
+            report(f"{relative}: {key} must be a nonnegative integer")
+    if document.get("properties", {}).get("schemaVersion", {}).get("const") != "1.0":
+        report(f"{relative}: JSON contract version must be 1.0")
+    if document.get("properties", {}).get("status", {}).get("enum") != ["Completed", "Failed"]:
+        report(f"{relative}: unexpected import states")
+    diagnostic = definitions.get("diagnostic", {})
+    diagnostic_keys = {"scope", "row", "field", "code", "message"}
+    if set(diagnostic.get("required", [])) != diagnostic_keys or not diagnostic_keys.issubset(diagnostic.get("properties", {})):
+        report(f"{relative}: diagnostic fields differ from error-only contract")
+    if "severity" in diagnostic.get("properties", {}) or "warningRowCount" in summary.get("properties", {}):
+        report(f"{relative}: warnings and severity are deferred, not in JSON 1.0")
+    if document.get("properties", {}).get("summary", {}).get("$ref") != "#/$defs/summary":
+        report(f"{relative}: invalid summary reference")
+    if document.get("properties", {}).get("diagnostics", {}).get("items", {}).get("$ref") != "#/$defs/diagnostic":
+        report(f"{relative}: invalid diagnostics reference")
+
+
 def check_links() -> None:
     markdown = [ROOT / "README.md", ROOT / "AGENTS.md"]
     markdown.extend((ROOT / "docs").rglob("*.md"))
@@ -177,8 +223,8 @@ def validate() -> None:
     for scenario in sorted(set(trace_rows) - set(specs)):
         report(f"Traceability row has no specification: {scenario}")
 
-    if len(specs) < 110:
-        report(f"Expected at least 110 currently specified scenarios; found {len(specs)}")
+    if len(specs) < 109:
+        report(f"Expected at least 109 currently specified scenarios; found {len(specs)}")
 
     for requirement, catalog in sorted(requirement_catalog.items()):
         if len(catalog) != 4:
@@ -221,6 +267,7 @@ def validate() -> None:
         if cells[6] == "Blocked" and cells[7] in PLACEHOLDERS:
             report(f"{scenario}: Blocked requires an explanation")
 
+    check_json_report_contract()
     check_links()
     if errors:
         print(f"Documentation validation failed ({len(errors)} findings):")

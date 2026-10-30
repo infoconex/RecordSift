@@ -4,7 +4,7 @@ This directory is the **authoritative source of expected behavior** for RecordSi
 
 - [Functional scenarios](functional/) — 39 Markdown files, one per `FR-001` through `FR-039`.
 - [Nonfunctional scenarios](non-functional/) — 10 Markdown files, one per `NFR-001` through `NFR-010`.
-- [Scenario-level traceability](../testing/traceability.md) — 110 currently specified scenarios, their GitHub issues, test mappings and observed execution evidence (currently all Planned).
+- [Scenario-level traceability](../testing/traceability.md) — 109 currently specified scenarios, their GitHub issues, test mappings and observed execution evidence (currently all Planned).
 - [Functional requirements](../requirements/functional.md) and [Nonfunctional requirements](../requirements/non-functional.md).
 - [TDD and testing strategy](../testing/strategy.md).
 
@@ -39,7 +39,7 @@ The index at `docs/requirements/functional.md` stays concise. Avoid duplicating 
 
 ## Release scope and deferred scenarios
 
-`Must` requirements define the intended 0.1 baseline; `Should` and `Future` scenarios remain planned backlog. Some quality requirements include later modern-.NET platform checks; these must be explicitly deferred rather than claimed as complete on a .NET Framework 4.8 runner.
+`Must` requirements define the intended 0.1 baseline; `Should` and `Future` scenarios remain planned backlog. FR-025 severity customization is explicitly Future-only: release 0.1 uses accepted/rejected records with error diagnostics and no warnings. Some quality requirements include later modern-.NET platform checks; these must be explicitly deferred rather than claimed as complete on a .NET Framework 4.8 runner.
 
 ## Notes on requirement overlap
 

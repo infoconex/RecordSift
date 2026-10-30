@@ -9,8 +9,9 @@ These pages specify the proposed product and engineering process for **release 0
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 110 planned scenarios.
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 planned scenarios.
 - [Draft import specification](specifications/record-import.md)
+- [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
 - [TDD and test types](testing/strategy.md)
 - [Requirement-to-scenario-to-test matrix](testing/traceability.md)
 

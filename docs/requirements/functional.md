@@ -32,7 +32,7 @@
 | FR-022 | Custom validation rules | Must | [#23](https://github.com/infoconex/RecordSift/issues/23) (`FR-022-SC01`) · [All scenarios](../scenarios/functional/FR-022.md) |
 | FR-023 | Regular-expression validation | Should | [#24](https://github.com/infoconex/RecordSift/issues/24) (`FR-023-SC01`) · [All scenarios](../scenarios/functional/FR-023.md) |
 | FR-024 | Cross-field validation | Should | [#25](https://github.com/infoconex/RecordSift/issues/25) (`FR-024-SC01`) · [All scenarios](../scenarios/functional/FR-024.md) |
-| FR-025 | Configurable validation severity | Should | [#26](https://github.com/infoconex/RecordSift/issues/26) (`FR-025-SC01`) · [All scenarios](../scenarios/functional/FR-025.md) |
+| FR-025 | Configurable validation severity (deferred; no warnings in 0.1) | Future | [#26](https://github.com/infoconex/RecordSift/issues/26) (`FR-025-SC01`) · [All scenarios](../scenarios/functional/FR-025.md) |
 | FR-026 | Strongly typed record import | Must | [#27](https://github.com/infoconex/RecordSift/issues/27) (`FR-026-SC01`) · [All scenarios](../scenarios/functional/FR-026.md) |
 | FR-027 | Return accepted records | Must | [#28](https://github.com/infoconex/RecordSift/issues/28) (`FR-027-SC01`) · [All scenarios](../scenarios/functional/FR-027.md) |
 | FR-028 | Invalid-record diagnostics | Must | [#29](https://github.com/infoconex/RecordSift/issues/29) (`FR-028-SC01`) · [All scenarios](../scenarios/functional/FR-028.md) |

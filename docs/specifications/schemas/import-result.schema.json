@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RecordSift import result report",
+  "description": "Proposed JSON report contract v1.0. Data rows are accepted or rejected with error diagnostics only; warning severity is outside release 0.1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceId",
+    "status",
+    "message",
+    "summary",
+    "diagnostics"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Serialized contract version, independent of the RecordSift package version."
+    },
+    "sourceId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Caller-provided opaque source identifier, never an absolute filesystem path or credential."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Completed",
+        "Failed"
+      ],
+      "description": "Completed means import processing finished, including possible rejected records; Failed means a source/schema or other fatal failure."
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable informational or failure summary. Consumers must rely on status and diagnostics for decisions."
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      },
+      "description": "Individual error findings in deterministic processing order. No warnings, raw source values or absolute paths in version 1.0."
+    }
+  },
+  "$defs": {
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "processedCount",
+        "acceptedCount",
+        "rejectedCount"
+      ],
+      "properties": {
+        "processedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of logical data records processed (excluding headers)."
+        },
+        "acceptedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of processed records accepted; warnings alone do not reject a record."
+        },
+        "rejectedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of distinct processed records with at least one error-level record diagnostic."
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "row",
+        "field",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "Record",
+            "Source"
+          ],
+          "description": "Record refers to a logical data record; Source refers to a file/schema/import-level problem."
+        },
+        "row": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "One-based logical data-record ordinal excluding CSV headers; null for Source diagnostics."
+        },
+        "field": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "Declared source field name or identifier when applicable; null otherwise."
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "Stable machine-readable diagnostic identifier; registry established during implementation."
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable explanation without raw source data or full file paths by default."
+        },
+        "worksheet": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional XLSX worksheet name when available."
+        },
+        "physicalRow": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional 1-based physical XLSX row or reliable source row location."
+        },
+        "physicalLine": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional physical CSV line only if the reader provides it reliably."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "Source"
+              }
+            },
+            "required": [
+              "scope"
+            ]
+          },
+          "then": {
+            "properties": {
+              "row": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "Record"
+              }
+            },
+            "required": [
+              "scope"
+            ]
+          },
+          "then": {
+            "properties": {
+              "row": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      ],
+      "description": "An error diagnostic at a data row or import source/schema scope. Version 1.0 does not support warning diagnostics."
+    }
+  }
+}

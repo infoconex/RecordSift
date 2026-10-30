@@ -20,7 +20,7 @@ The initial baseline is synchronous and may materialize results, with explicit i
 6. Return only accepted typed records. Accumulate diagnostics for rejected records.
 7. Compute an internally consistent summary and expose JSON reporting from this in-memory result.
 
-Dependencies, exact API signatures, field conversion edge cases, and default limits remain decisions for implementation issues; this document is not an assertion of production behavior.
+Dependencies, exact API signatures, field conversion edge cases, and default limits remain decisions for implementation issues; this document is not an assertion of production behavior. The proposed JSON report contract is defined separately in [import-result.md](import-result.md) and [its JSON Schema](schemas/import-result.schema.json).
 
 ## Source location
 
@@ -32,12 +32,11 @@ No raw source value, credential, or full filesystem path is included in diagnost
 
 - `Processed = Accepted + Rejected` for completed imports at the logical-record level.
 - `RejectedCount` is the number of distinct processed data rows with at least one error-level record diagnostic (error-bearing rows), not the number of error messages.
-- `WarningRowCount` is the number of distinct processed data rows with at least one warning-level record diagnostic, regardless of the number of warnings on that row.
-- The same row may contribute to both `RejectedCount` and `WarningRowCount`, but `ProcessedCount = AcceptedCount + RejectedCount` for completed imports; warning-bearing rows are not an additional category of processed rows.
-- Warnings alone do not reject a row. Missing optional values should not automatically produce warnings unless a rule explicitly calls for an advisory diagnostic.
-- Individual diagnostics retain severity, code, source and row information and can be inspected independently of aggregate row counts.
-- File- or schema-level failures do not contribute to row-level rejection or warning counts; they must be represented through machine-readable outcome state and source-level diagnostics.
-- Avoid ambiguous summary `ErrorCount` and `WarningCount` fields. If total diagnostic occurrences become necessary, define them with unambiguous names such as `ErrorDiagnosticCount`.
+- `ProcessedCount = AcceptedCount + RejectedCount` for completed imports; each processed data row is either accepted or rejected due to one or more record errors.
+- An absent optional value does not cause an error by itself; advisory warnings and configurable severity are deferred beyond release 0.1.
+- Individual **error** diagnostics retain code, source and row information and can be inspected independently of aggregate row counts.
+- File- or schema-level failures do not contribute to row-level rejection counts; they are represented through machine-readable outcome state and source-level error diagnostics.
+- Avoid ambiguous summary `errorCount` fields: individual errors remain in the diagnostics collection. No warning-related fields appear in JSON contract version 1.0.
 - Accepted records preserve input order.
 - Record-validation errors can be accumulated while continuing to process subsequent rows (FR-029).
 - Source-level fatal errors cannot be misrepresented as a successful empty import.
@@ -50,14 +49,14 @@ A zero-record outcome is **not** automatically a failed import. RecordSift must 
 
 | Source and configuration | Outcome | Counts | Result message |
 | --- | --- | --- | --- |
-| Valid required headers, no data rows | Completed | ProcessedCount = AcceptedCount = RejectedCount = WarningRowCount = 0; zero validation errors | Informational: no data records found |
-| Zero bytes, explicitly headerless | Completed | Processed = Accepted = Rejected = 0; zero validation errors | Informational: source contains no records |
+| Valid required headers, no data rows | Completed | ProcessedCount = AcceptedCount = RejectedCount = 0; zero validation errors | Informational: no data records found |
+| Zero bytes, explicitly headerless | Completed | ProcessedCount = AcceptedCount = RejectedCount = WarningRowCount = 0; zero validation errors | Informational: source contains no records |
 | Zero bytes, required headers | Failed (source/schema) | ProcessedCount = AcceptedCount = RejectedCount = WarningRowCount = 0; a source/schema diagnostic is present | Error: required CSV header row is missing |
 | Nonempty CSV missing a required column | Failed (schema binding) | Do not claim a successful import; counts reflect actual processed records | Error: identify the missing required column |
 
 The messages are intended for humans and may be revised or localized. **A caller must be able to determine completion/failure from machine-readable result state and coded diagnostics without parsing message text.** An informational zero-row summary must not contribute to error or warning counts. A source/schema error must not be represented as a rejected data record that was never processed.
 
-The exact public API member names, failure codes, and text localization policy are deferred to their implementation issues. The distinction and semantics above are requirements.
+The external JSON report property names, required fields and initial status values are proposed in the [versioned JSON contract](import-result.md). The internal public .NET API member names, complete diagnostic-code registry, and text localization policy are deferred to their implementation issues. The distinction and semantics above are requirements.
 
 ## Format-specific requirements
 
@@ -72,7 +71,7 @@ The parser library's exceptions should be translated only where doing so improve
 
 ## Example scenario (illustrative, not a test result)
 
-Given five source data rows, one rejected row with three validation errors, another rejected row with one error and one warning, and a third accepted row with two warnings, a completed continue-on-error import should yield `ProcessedCount = 5`, `AcceptedCount = 3`, `RejectedCount = 2` and `WarningRowCount = 2`. Individual diagnostic entries remain available (four error diagnostics and three warning diagnostics), but those occurrences do not inflate the row counters.
+Given five source data rows, one rejected row with three validation errors and a second rejected row with one error, a completed continue-on-error import yields `ProcessedCount = 5`, `AcceptedCount = 3`, and `RejectedCount = 2`. Four individual error diagnostics remain available, but do not inflate the row counters.
 
 ## Open decisions
 
