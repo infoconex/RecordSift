@@ -29,7 +29,7 @@ jobs:
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
           $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
           if (-not $msbuild) { throw "MSBuild not found." }
-          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=AnyCPU /verbosity:minimal
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
           if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
       - name: Run NUnit smoke tests and assert discovery
         shell: pwsh

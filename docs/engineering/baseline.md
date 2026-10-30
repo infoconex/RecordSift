@@ -14,7 +14,7 @@ From the repository root in PowerShell (using a Developer PowerShell command pro
 
 ```powershell
 nuget restore .\RecordSift.sln -NonInteractive -PackagesDirectory packages
-msbuild .\RecordSift.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=AnyCPU
+msbuild .\RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU'
 New-Item -ItemType Directory -Force -Path .\TestResults | Out-Null
 .\packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe .\tests\RecordSift.Tests\bin\Release\RecordSift.Tests.dll '--result=TestResults/nunit-results.xml;format=nunit3'
 ```
