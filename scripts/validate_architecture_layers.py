@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parent.parent
 DOMAIN = ROOT / "src" / "RecordSift.Domain"
 APPLICATION = ROOT / "src" / "RecordSift.Application"
-INFRASTRUCTURE = ROOT / "src" / "RecordSift.CsvHelperAdapter"
+INFRASTRUCTURE = ROOT / "src" / "RecordSift.Infrastructure.CsvHelper"
 
 EXPECTED = {
     "RecordSift.Domain": {
@@ -28,7 +28,7 @@ EXPECTED = {
 }
 DOMAIN_RESX = "Diagnostics/Resources/DomainMessages.resx"
 RESX_IDENTITY = "RecordSift.Resources.DomainMessages.resources"
-ADAPTER_SOURCE = "Infrastructure/CsvHelper/CsvHelperRecordReader.cs"
+ADAPTER_SOURCE = "CsvHelperRecordReader.cs"
 
 def project(path):
     return ET.parse(path).getroot()
@@ -49,7 +49,7 @@ def verify_dependency_graph(graph):
     correct = {
         "RecordSift.Domain": [],
         "RecordSift.Application": ["RecordSift.Domain.csproj"],
-        "RecordSift.CsvHelperAdapter": [
+        "RecordSift.Infrastructure.CsvHelper": [
             "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
         ],
     }
@@ -62,6 +62,10 @@ def verify_layout():
     errors = []
     if (ROOT / "src" / "RecordSift" / "RecordSift.csproj").exists():
         errors.append("Legacy mixed domain/application project still exists")
+    if (ROOT / "src" / "RecordSift.CsvHelperAdapter").exists():
+        errors.append("Legacy vendor project does not identify the Infrastructure layer")
+    if (ROOT / "tests" / "RecordSift.CsvHelperAdapter.Tests").exists():
+        errors.append("Legacy vendor test project does not identify the Infrastructure layer")
     graph = {}
     for name in EXPECTED:
         location = ROOT / "src" / name
@@ -113,14 +117,23 @@ def verify_layout():
         )
         if assembly_names != [name]:
             errors.append(f"{name}: wrong CLR assembly identity")
-    adapter_project = INFRASTRUCTURE / "RecordSift.CsvHelperAdapter.csproj"
+    adapter_project = INFRASTRUCTURE / "RecordSift.Infrastructure.CsvHelper.csproj"
     if adapter_project.is_file():
         root = project(adapter_project)
-        graph["RecordSift.CsvHelperAdapter"] = dependencies(root)
+        graph["RecordSift.Infrastructure.CsvHelper"] = dependencies(root)
         if includes(root, "Compile") != [ADAPTER_SOURCE]:
-            errors.append("CsvHelper implementation must live in Infrastructure/CsvHelper")
+            errors.append("CsvHelper implementation must live in the infrastructure adapter project")
         if not (INFRASTRUCTURE / ADAPTER_SOURCE).is_file():
             errors.append("CsvHelper implementation source missing")
+        else:
+            adapter_source = (INFRASTRUCTURE / ADAPTER_SOURCE).read_text(encoding="utf-8")
+            if not re.search(r"namespace\s+RecordSift\.Infrastructure\.CsvHelper\s*\{", adapter_source):
+                errors.append("Infrastructure CsvHelper implementation namespace is inconsistent")
+        assembly_names = [child.text for child in root.iter()
+                          if child.tag.rsplit("}", 1)[-1] == "AssemblyName"]
+        if assembly_names != ["RecordSift.Infrastructure.CsvHelper"]:
+            errors.append("Infrastructure CLR assembly name must include its layer")
+
     else:
         errors.append("Infrastructure project missing")
     errors.extend(verify_dependency_graph(graph))
@@ -138,9 +151,9 @@ def verify_layout():
     # Check test project ownership at the assembly level too.
     for project_name, expected_refs in {
         "RecordSift.Tests": ["RecordSift.Domain.csproj", "RecordSift.Application.csproj"],
-        "RecordSift.CsvHelperAdapter.Tests": [
+        "RecordSift.Infrastructure.CsvHelper.Tests": [
             "RecordSift.Tests.csproj", "RecordSift.Domain.csproj",
-            "RecordSift.Application.csproj", "RecordSift.CsvHelperAdapter.csproj",
+            "RecordSift.Application.csproj", "RecordSift.Infrastructure.CsvHelper.csproj",
         ],
     }.items():
         path = ROOT / "tests" / project_name / (project_name + ".csproj")
@@ -156,7 +169,7 @@ def self_test():
     valid = {
         "RecordSift.Domain": [],
         "RecordSift.Application": ["RecordSift.Domain.csproj"],
-        "RecordSift.CsvHelperAdapter": [
+        "RecordSift.Infrastructure.CsvHelper": [
             "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
         ],
     }
@@ -164,7 +177,7 @@ def self_test():
     broken = {**valid, "RecordSift.Domain": ["RecordSift.Application.csproj"]}
     assert any("RecordSift.Domain" in error for error in verify_dependency_graph(broken)), \
         "Forbidden Domain->Application dependency was not detected"
-    broken = {**valid, "RecordSift.Application": ["RecordSift.CsvHelperAdapter.csproj"]}
+    broken = {**valid, "RecordSift.Application": ["RecordSift.Infrastructure.CsvHelper.csproj"]}
     assert any("RecordSift.Application" in error for error in verify_dependency_graph(broken)), \
         "Forbidden Application->Infrastructure dependency was not detected"
 
