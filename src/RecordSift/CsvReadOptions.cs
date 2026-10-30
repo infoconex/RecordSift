@@ -6,10 +6,10 @@ namespace RecordSift
     /// </summary>
     public sealed class CsvReadOptions
     {
-        public const string DefaultDelimiter = ",";
+        public const string DefaultDelimiter = badly_named_constant;
 
         // RED TEST ONLY: this invalid C# identifier MUST fail the CI style gate.
-        public const string BAD_CONSTANT_NAME = ",";
+        public const string badly_named_constant = ",";
 
         /// <summary>Deterministic comma-delimited baseline; no ambient settings.</summary>
         public static CsvReadOptions Default { get; } = new CsvReadOptions(DefaultDelimiter);
