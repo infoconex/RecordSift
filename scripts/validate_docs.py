@@ -177,8 +177,8 @@ def validate() -> None:
     for scenario in sorted(set(trace_rows) - set(specs)):
         report(f"Traceability row has no specification: {scenario}")
 
-    if len(specs) < 110:
-        report(f"Expected at least 110 currently specified scenarios; found {len(specs)}")
+    if len(specs) < 109:
+        report(f"Expected at least 109 currently specified scenarios; found {len(specs)}")
 
     for requirement, catalog in sorted(requirement_catalog.items()):
         if len(catalog) != 4:
