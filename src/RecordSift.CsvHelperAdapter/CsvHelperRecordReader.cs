@@ -35,10 +35,9 @@ namespace RecordSift.Adapters.CsvHelper
                 using (var limited = new CharacterLimitedTextReader(source, maxCharacters))
                 using (var parser = new CsvParser(limited, configuration, true))
                 {
-                    string[] fields;
-                    while ((fields = parser.Read()) != null)
+                    while (parser.Read())
                     {
-                        records.Add(new CsvRecord(records.Count + 1, physicalLine, fields));
+                        records.Add(new CsvRecord(records.Count + 1, physicalLine, parser.Record));
                         physicalLine = parser.RawRow + 1;
                     }
                 }
