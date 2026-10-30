@@ -66,7 +66,7 @@ def verify_adapter_source_ownership(sources):
         if source is None:
             errors.append(f"Missing focused infrastructure source {file}")
             continue
-        declared = re.findall(r"\\b(?:public|internal)\\s+sealed\\s+class\\s+(\\w+)", source)
+        declared = re.findall(r"\b(?:public|internal)\s+sealed\s+class\s+(\w+)", source)
         if declared != [expected_type]:
             errors.append(f"{file}: expected one owned class {expected_type}, got {declared}")
         errors.extend(verify_namespace(source, "RecordSift.Infrastructure.Csv", file))
@@ -350,7 +350,7 @@ def self_test():
         for owner in ("RecordSift.Domain", "RecordSift.Application"):
             assert verify_core_dependency_metadata(root, owner), \
                 f"{owner} accepted {label}"
-    focused = {name: "namespace RecordSift.Infrastructure.Csv\\n{ internal sealed class " +
+    focused = {name: "namespace RecordSift.Infrastructure.Csv\n{ internal sealed class " +
                name[:-3] + " { } }" for name in ADAPTER_FILES}
     assert not verify_adapter_source_ownership(focused), "Focused adapter layout rejected"
     missing = {key: value for key, value in focused.items()
