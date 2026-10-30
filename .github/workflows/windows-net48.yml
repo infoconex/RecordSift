@@ -30,7 +30,7 @@ jobs:
         run: |
           nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
           if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
-      - name: Build both legacy projects with Visual Studio MSBuild
+      - name: Build separate Domain, Application and Infrastructure projects with MSBuild
         shell: pwsh
         run: |
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
@@ -145,8 +145,10 @@ jobs:
               throw "Unexpected CSV adapter dependency: $id $($package.version)"
             }
           }
-          if ((Get-Content src/RecordSift/RecordSift.csproj -Raw) -match 'CsvHelper|\\.\\.\\RecordSift.CsvHelperAdapter') {
-            throw "Domain core must not reference CSV parser vendor or adapter assemblies."
+          foreach ($layer in @("RecordSift.Domain", "RecordSift.Application")) {
+            if ((Get-Content "src/$layer/$layer.csproj" -Raw) -match 'CsvHelper') {
+              throw "$layer must not reference the CSV vendor or adapter."
+            }
           }
           New-Item -ItemType Directory -Force -Path TestResults | Out-Null
           $lines = @(& nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config -Verbosity normal 2>&1)

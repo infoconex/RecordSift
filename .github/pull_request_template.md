@@ -29,7 +29,7 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] Public API and report format compatibility reviewed.
 - [ ] Docs, specs and acceptance criteria updated if the contract changed.
 - [ ] Security/privacy implications of untrusted files considered.
-- [ ] Domain/application code depends inward on RecordSift-owned contracts; no parser-vendor types or constructors leaked across boundaries.
+- [ ] Physical assembly dependency graph is `Domain <- Application <- Infrastructure` (vendor adapter may also directly reference Domain), checked by `scripts/validate_architecture_layers.py` and project references; public API assembly moves reviewed.
 - [ ] Replaceable input/validation seams have fake-based unit tests **and** real-adapter component tests when adapters change (or explain why not applicable).
 - [ ] Domain-owned diagnostic codes, invariant resource-backed messages and configuration defaults preserved; no hardcoded production prose or vendor exception text leaks.
 - [ ] Core unit tests do not require parser vendors; adapter-specific tests independently prove the same RecordSift-owned behavioral contract (separate NUnit assemblies enforced under #91).

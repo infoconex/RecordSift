@@ -8,7 +8,7 @@ RecordSift is an open-source .NET library project intended to import records fro
 
 **Release 0.1 is under development.** A deliberately constructed, traditional .NET Framework 4.8 solution and executable NUnit smoke tests are introduced by engineering issue #57. The FR-030 in-memory summary/status model has automated unit coverage. No CSV/XLSX importer, end-to-end requirement verification, or published NuGet package is claimed yet.
 
-The historical project configuration exists for a documented modernization experiment, not as recovered legacy production code. Subsequent experiments will separately change NuGet dependency management, project format, build SDK and target framework.
+The historical project configuration exists for a documented modernization experiment, not as recovered legacy production code. The implementation is physically separated into `RecordSift.Domain`, `RecordSift.Application`, and the vendor-isolated `RecordSift.CsvHelperAdapter` (see [architecture](docs/engineering/architecture.md) and [ADR 0013](docs/engineering/decisions/0013-physical-domain-application-infrastructure-assemblies.md)). Subsequent experiments will separately change NuGet dependency management, project format, build SDK and target framework.
 
 ## Development baseline
 

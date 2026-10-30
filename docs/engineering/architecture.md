@@ -28,7 +28,29 @@ RecordSift domain                 RecordSift-owned input ports
 - **Infrastructure adapters:** depend inward on the RecordSift-owned contracts; encapsulate parsing, physical IO, and library-specific configuration. An adapter converts third-party records/errors into our records, provenance and safe diagnostic codes. A vendor package must not be needed to compile the domain/application-core assembly.
 - **Composition:** callers select and inject an adapter through a constructor or explicit dependency parameter. Do not hide vendor construction inside a domain service, use global mutable registries, or require a DI framework. An optional convenience facade can preserve an existing public API while delegating to injected implementation.
 
-The issue #85 migration introduces a dedicated `RecordSift.CsvHelperAdapter` assembly referencing the core and the parser package. Domain/core source has no third-party parser reference. These are still evolving boundaries, not a claim that the full importer is implemented. Avoid moving everything into new projects just to simulate layers; test and document any public API changes.
+The [#95](https://github.com/infoconex/RecordSift/issues/95) architecture correction makes all three production layers **separate .NET Framework 4.8 CLR assemblies**: `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.CsvHelperAdapter`. The original combined `RecordSift.dll` is retired (binary-breaking); the existing `RecordSift` source namespace remains for this release. The adapter references Application and Domain, but the dependency direction cannot be reversed. Domain/core source has no third-party parser reference. These are still evolving boundaries, not a claim that the full importer is implemented. Project splitting is intentional here: it gives the architecture compiler-enforced boundaries, not merely folders and guidelines.
+
+## Physical solution structure and enforced graph
+
+```text
+src/
+  RecordSift.Domain/                        (no ProjectReference)
+    Diagnostics/                            diagnostic IDs, safe messages/resources
+    Schema/                                 declarations, bindings and schema invariants
+    Results/                                import outcome and aggregate invariants
+  RecordSift.Application/                   -> RecordSift.Domain
+    Abstractions/Csv/                       owned ICsvRecordReader and neutral DTOs/options
+    Importing/Csv/                          table orchestration and header policy
+  RecordSift.CsvHelperAdapter/              -> Application + Domain
+    Infrastructure/CsvHelper/               real CsvHelper implementation only
+tests/
+  RecordSift.Tests/                         -> Domain + Application; no parser vendor
+  RecordSift.CsvHelperAdapter.Tests/        -> Domain + Application + real adapter
+```
+
+The **Domain assembly does not reference `System.IO`, `TextReader`, the application assembly, or any third-party parser**. Application owns the reader port and may use framework IO types at an input boundary, but never a vendor parser type. Infrastructure translates parser exceptions into Domain-owned codes and resource-backed messages.
+
+`scripts/validate_architecture_layers.py` verifies source ownership, explicit traditional project `Compile` items, resource identity, legal `ProjectReference` edges, test assembly isolation and negative dependency test cases in CI. The compiler enforces the same references. See [ADR 0013](decisions/0013-physical-domain-application-infrastructure-assemblies.md).
 
 ## Replaceable source-reader contracts
 
@@ -61,5 +83,5 @@ Core messages and defaults are defined by [ADR 0010](decisions/0010-domain-messa
 1. A third-party integration needs a recorded compatibility/licensing/security review and pinned versions. Constrain package references to adapter/test projects. Do not replace a proven parser with custom grammar logic without an explicit ADR and tests.
 2. Prefer constructor injection and hand-written fakes for small interfaces; use mocking libraries only when they add clear value. Unit-test policies without IO and component-test adapters with real input.
 3. Preserve public API and JSON compatibility with characterization/contract tests and an ADR for intentional change. In particular keep source/row diagnostics safe, deterministic, and explicit about physical versus logical rows.
-4. Review namespace and assembly references when adding dependencies; a reviewer should be able to identify the direction from `.csproj` references. Automated architecture/dependency gates will be added separately; current `.editorconfig` is **editor guidance, not an enforced build rule**.
+4. Review namespace and assembly references when adding dependencies; CI runs an automated architecture/dependency gate over `.csproj` references and folders. Microsoft naming rules are independently enforced with Roslyn IDE1006 and the constant naming guard.
 5. Use [Microsoft coding standards](csharp-style.md), [TDD strategy](../testing/strategy.md), and the [PR checklist](../../.github/pull_request_template.md). Exceptions belong in a scoped ADR or issue, never as an undocumented shortcut.

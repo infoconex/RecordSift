@@ -11,7 +11,7 @@ namespace RecordSift.Tests
     {
         private static Assembly LoadProductionAssembly()
         {
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "RecordSift.dll");
+            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, "RecordSift.Application.dll");
             Assert.That(File.Exists(path), Is.True, "MSBuild must copy the referenced production assembly.");
             return Assembly.LoadFrom(path);
         }
@@ -20,7 +20,7 @@ namespace RecordSift.Tests
         public void ProductionAssembly_LoadsWithExpectedIdentity()
         {
             var assembly = LoadProductionAssembly();
-            Assert.That(assembly.GetName().Name, Is.EqualTo("RecordSift"));
+            Assert.That(assembly.GetName().Name, Is.EqualTo("RecordSift.Application"));
         }
 
         [Test]

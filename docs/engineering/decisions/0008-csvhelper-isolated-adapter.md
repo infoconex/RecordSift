@@ -10,7 +10,7 @@
 
 ## Architectural seam
 
-- Core `RecordSift` defines `ICsvRecordReader.Read(TextReader, int)` and owns `CsvRecord`, `CsvParseResult` and safe `ImportDiagnostic` codes. **No CsvHelper assembly reference in the core project.**
+- **As implemented after ADR 0013:** `RecordSift.Application` defines `ICsvRecordReader` and parser-neutral records/options; `RecordSift.Domain` defines safe `ImportDiagnostic` codes/messages, schema and results. **Neither Domain nor Application references CsvHelper.** Both assemblies are compiled independently.
 - Infrastructure project `RecordSift.CsvHelperAdapter` references both the core project and CsvHelper. The caller composes `CsvTableReader.Read(recordReader, source, maxCharacters, schema, policy, positions)` using an injected reader.
 - The adapter reads **already-decoded** CSV text. It does not infer headers, convert types, interpret cultural formats or choose encodings. Delimiters were added independently through [ADR 0009](0009-configurable-csv-delimiters.md) / FR-003.
 - Malformed vendor parser exceptions are translated into `MALFORMED_SOURCE`; IO problems and budget overruns are source diagnostics. Raw values and vendor exception messages never escape.
