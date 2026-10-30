@@ -40,6 +40,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaselineAssemblyTests.cs" />
     <Compile Include="CsvReaderPortTests.cs" />
+    <Compile Include="CsvImporterTests.cs" />
     <Compile Include="CsvReadOptionsTests.cs" />
     <Compile Include="CsvMessageResourceTests.cs" />
     <Compile Include="Contracts\CsvRecordReaderContractTests.cs" />
