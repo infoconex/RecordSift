@@ -12,6 +12,12 @@ The initial functional baseline is intended to target .NET Framework 4.8, using 
 
 Planned modernization experiments will distinguish changes to project configuration, NuGet dependency management, the build SDK, and the target framework. In particular, a .NET 8 target will later be evaluated using the .NET 10 SDK without changing the target framework.
 
+## Project requirements
+
+- [Requirements, specifications, and engineering documentation](docs/README.md)
+- [Functional requirements](docs/requirements/functional.md)
+- [Nonfunctional requirements](docs/requirements/non-functional.md)
+
 ## Development workflow
 
 - `main` is reserved for accepted release integrations.
