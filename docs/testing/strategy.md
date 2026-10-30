@@ -1,7 +1,7 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1. Three baseline assembly smoke tests exist; FR/NFR acceptance tests have not been added yet.
+**Status:** Engineering policy for release 0.1. 16 existing baseline and FR-030 tests plus 19 FR-028 unit-contract test cases now execute in the historical net48 Windows suite; FR-028 integration acceptance remains planned.
 
 ## Test-driven development
 
@@ -61,4 +61,4 @@ Use a maintained test framework and adapter compatible with the historical net48
 
 ## Current status
 
-**FR-030-SC01–SC05 have observed in-memory unit evidence; the remaining 104 requirement scenarios remain Planned.** Initial .NET Framework 4.8 assembly smoke tests ran on Windows ([run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680): 3 passed, 0 failed). These are not requirement acceptance tests. Ongoing CI is implemented through issue #64.
+**FR-030-SC01–SC05 have observed in-memory unit evidence; the remaining 104 requirement scenarios remain Planned.** FR-028 now has diagnostic contract unit tests but has not demonstrated real-reader acceptance. The 35-test Windows suite passed in [run #41069875870](https://github.com/infoconex/RecordSift/actions/runs/41069875870). Initial .NET Framework 4.8 assembly smoke tests ran on Windows ([run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680): 3 passed, 0 failed). These are not requirement acceptance tests. Ongoing CI is implemented through issue #64.

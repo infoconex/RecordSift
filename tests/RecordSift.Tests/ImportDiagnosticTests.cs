@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using NUnit.Framework;
 
 namespace RecordSift.Tests
@@ -54,13 +53,12 @@ namespace RecordSift.Tests
         }
 
         [Test]
-        public void SafeDefaultMessageDoesNotEchoFieldNameOrRawValue()
+        public void SafeDefaultMessageUsesOnlyTrustedRegistryTemplate()
         {
-            const string sensitive = "password=secret123";
-            var error = ImportDiagnostic.ForRecord(1, sensitive, DiagnosticCodes.ValidationFailed);
-            Assert.That(error.Message, Is.Not.Empty);
-            Assert.That(error.Message, Does.Not.Contain(sensitive));
-            Assert.That(error.Message, Does.Not.Contain("secret123"));
+            var one = ImportDiagnostic.ForRecord(1, "CustomerId", DiagnosticCodes.ValidationFailed);
+            var two = ImportDiagnostic.ForRecord(2, "OrderId", DiagnosticCodes.ValidationFailed);
+            Assert.That(one.Message, Is.EqualTo("A field failed validation."));
+            Assert.That(two.Message, Is.EqualTo(one.Message));
         }
 
         [Test]
