@@ -120,10 +120,10 @@ namespace RecordSift.Tests
         [Test]
         public void MalformedDiagnosticNeverEchoesRawSourceText()
         {
-            const string secret = "api-key=secret123";
-            var result = Parse("\"" + secret);
+            const string Secret = "api-key=secret123";
+            var result = Parse("\"" + Secret);
             Assert.That(result.IsSuccessful, Is.False);
-            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain(secret));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain(Secret));
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("secret123"));
         }
 

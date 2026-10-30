@@ -1,5 +1,5 @@
 # RecordSift: .NET Framework 4.8 / C# 7.3 baseline
-# EditorConfig guides editors; it is not a substitute for compiled analyzer gates.
+# Microsoft naming rules are checked by the Windows CI Roslyn/dotnet-format style gate.
 root = true
 
 [*]
@@ -25,13 +25,69 @@ csharp_style_var_elsewhere = false:suggestion
 csharp_style_namespace_declarations = block_scoped:suggestion
 csharp_prefer_braces = true:suggestion
 
-# Public interfaces use I + PascalCase, consistent with .NET library conventions.
-dotnet_naming_rule.interfaces_use_i.severity = suggestion
+# Microsoft/.NET naming rules (IDE1006); identifiers, not protocol string values.
+# Explicit severity is required for command-line analyzer enforcement.
+dotnet_diagnostic.IDE1006.severity = error
+
+# Constants take priority over the static-field prefix convention.
+dotnet_naming_rule.constants_pascal.severity = error
+dotnet_naming_rule.constants_pascal.symbols = constants
+dotnet_naming_rule.constants_pascal.style = pascal_case
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+# Private static constants need an explicit intersection rule so they do not
+# inherit the separate s_ prefix for mutable/readonly static fields.
+dotnet_naming_rule.private_constants_pascal.severity = error
+dotnet_naming_rule.private_constants_pascal.symbols = private_constants
+dotnet_naming_rule.private_constants_pascal.style = pascal_case
+dotnet_naming_symbols.private_constants.applicable_kinds = field
+dotnet_naming_symbols.private_constants.applicable_accessibilities = private
+dotnet_naming_symbols.private_constants.required_modifiers = const
+
+# Interface names always include I and use PascalCase.
+dotnet_naming_rule.interfaces_use_i.severity = error
 dotnet_naming_rule.interfaces_use_i.symbols = interfaces
 dotnet_naming_rule.interfaces_use_i.style = prefixed_pascal
 dotnet_naming_symbols.interfaces.applicable_kinds = interface
 dotnet_naming_style.prefixed_pascal.required_prefix = I
 dotnet_naming_style.prefixed_pascal.capitalization = pascal_case
+
+# Local variables and parameters, including private test helpers.
+dotnet_naming_rule.locals_and_parameters_camel.severity = error
+dotnet_naming_rule.locals_and_parameters_camel.symbols = locals_and_parameters
+dotnet_naming_rule.locals_and_parameters_camel.style = camel_case
+dotnet_naming_symbols.locals_and_parameters.applicable_kinds = local, parameter
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+# Shared source projects additionally require Microsoft member/field naming.
+[src/**/*.cs]
+dotnet_naming_rule.types_and_members_pascal.severity = error
+dotnet_naming_rule.types_and_members_pascal.symbols = types_and_members
+dotnet_naming_rule.types_and_members_pascal.style = pascal_case
+dotnet_naming_symbols.types_and_members.applicable_kinds = class, struct, enum, delegate, method, property, event
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+dotnet_naming_rule.instance_fields_underscore.severity = error
+dotnet_naming_rule.instance_fields_underscore.symbols = private_fields
+dotnet_naming_rule.instance_fields_underscore.style = underscore_camel
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+
+dotnet_naming_rule.static_fields_s_prefix.severity = error
+dotnet_naming_rule.static_fields_s_prefix.symbols = private_static_fields
+dotnet_naming_rule.static_fields_s_prefix.style = s_camel
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+dotnet_naming_style.s_camel.capitalization = camel_case
+dotnet_naming_style.s_camel.required_prefix = s_
+
+# Test methods carry stable FR-/NFR- scenario IDs and are exempt from
+# general PascalCase member rules, but constants/locals/interfaces still apply.
 
 [*.{csproj,props,targets,config,xml}]
 indent_size = 2

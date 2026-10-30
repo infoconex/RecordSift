@@ -8,6 +8,7 @@ namespace RecordSift
     {
         public const string DefaultDelimiter = ",";
 
+
         /// <summary>Deterministic comma-delimited baseline; no ambient settings.</summary>
         public static CsvReadOptions Default { get; } = new CsvReadOptions(DefaultDelimiter);
 

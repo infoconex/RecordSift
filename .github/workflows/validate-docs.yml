@@ -29,5 +29,7 @@ jobs:
           persist-credentials: false
       - name: Validate versioned requirements and Markdown links
         run: python3 scripts/validate_docs.py
+      - name: Verify PascalCase constant identifiers and negative fixtures
+        run: python3 scripts/validate_constant_names.py
       - name: Validate domain message resources and production string policy
         run: python3 scripts/validate_core_messages.py

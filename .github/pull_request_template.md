@@ -33,6 +33,7 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] Replaceable input/validation seams have fake-based unit tests **and** real-adapter component tests when adapters change (or explain why not applicable).
 - [ ] Domain-owned diagnostic codes, invariant resource-backed messages and configuration defaults preserved; no hardcoded production prose or vendor exception text leaks.
 - [ ] Core unit tests do not require parser vendors; adapter-specific tests independently prove the same RecordSift-owned behavioral contract (separate NUnit assemblies enforced under #91).
+- [ ] Microsoft C# naming is enforced by Roslyn IDE1006 and constant identifier guard in CI; do not use uppercase constant names even when external diagnostic string values are uppercase.
 - [ ] SOLID responsibilities, Microsoft C# naming/style (`.editorconfig`) and net48/C# 7.3 language compatibility reviewed.
 - [ ] Any third-party dependency is confined to an adapter/test assembly; exact version, license, framework compatibility, audit/CI inventory and ADR reviewed.
 

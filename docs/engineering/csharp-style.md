@@ -10,7 +10,7 @@
 
 ## Names, APIs and safety
 
-- Public namespaces, types, methods, properties, events and enum members: **PascalCase**. Interfaces: `I` + PascalCase (e.g. `ICsvRecordReader`). Parameters and locals: **camelCase**. Private fields: `_camelCase` where instance fields are needed. Constants: PascalCase. Prefer meaningful domain names over implementation names.
+- Public namespaces, types, methods, properties, events and enum members: **PascalCase**. Interfaces: `I` + PascalCase (e.g. `ICsvRecordReader`). Parameters and locals: **camelCase**. Private nonconstant instance fields: `_camelCase`; private static nonconstant fields: `s_camelCase`. All `const` identifiers (public/private/local) are PascalCase **without underscores**. The default diagnostic string values such as `SOURCE_UNREADABLE` are stable external data, not C# names. Prefer meaningful domain names over implementation names.
 - Method names express actions; properties represent state. Prefer explicit guards and `nameof(parameter)` for argument exceptions. Document externally observable behavior and ownership of input readers/streams.
 - Preserve public API compatibility; do not expose vendor types or leak unsafe exception text in diagnostics. Follow standard `IDisposable` ownership rules for resources the implementation owns.
 - Prefer `var` only when the type is readily apparent; otherwise declare the type. Favor explicit culture/encoding and immutable or read-only views of returned data.
@@ -25,9 +25,19 @@
 - Do not introduce constants for ordinary zero/one indices or CSV protocol syntax solely to eliminate literals; eliminate unexplained, duplicated, or variable business values.
 - `scripts/validate_core_messages.py` validates embedded resources and flags English prose in core C# source. Issue #91 separately enforces third-party-free domain unit tests.
 
-## Enforcement strategy
+## Enforced naming checks and remaining coverage
 
-The root `.editorconfig` is editor-level guidance for baseline C# style and interface naming. The existing traditional projects do **not** yet run a mandatory Roslyn analyzer/format gate; do not claim style is automated or enforced in CI. Add analyzers and baseline-aware gate in a separately approved engineering change, after evaluating version compatibility and pre-existing violations. Current mandatory observed gates remain the Windows net48 build/NUnit suite and documentation validator.
+The root `.editorconfig` specifies the Microsoft naming conventions (PascalCase constants, interfaces beginning with `I`, PascalCase types/members, camelCase locals and parameters, `_camelCase` private instance fields, `s_camelCase` private static fields). The Windows CI build runs the **Microsoft Roslyn IDE1006** naming analyzer through `dotnet format style` and fails on naming diagnostics. This works with the historical non-SDK net48 solution and does not retarget or add runtime dependencies.
+
+```powershell
+nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+dotnet format style RecordSift.sln --no-restore --verify-no-changes --diagnostics IDE1006 --severity error --verbosity normal
+python scripts/validate_constant_names.py
+```
+
+Microsoft's Roslyn naming analyzer does not consistently reject uppercase `UPPER_SNAKE_CASE` constant declarations, so the standard-library Python const-declaration guard **supplements** IDE1006. It validates positive and negative examples on every documentation CI run and inspects C# production and test sources, without loading any parser vendor package. An actual analyzer Red test is preserved in [issue #93](https://github.com/infoconex/RecordSift/issues/93). Separate test method identifiers intentionally include immutable `FR_###_SC##` / `NFR_###_SC##` traceability labels; the broad member-naming rule targets production code, while constant/parameter/interface rules apply to all source and tests.
+
+This is **mandatory naming enforcement**, not proof that every Microsoft formatting and design recommendation has been automated. Existing code-style settings for braces, `var`, and qualification remain review guidance; a wider formatting/analyzer baseline should be introduced as independent work, not mixed into a non-behavioral naming migration. See [ADR 0012](decisions/0012-microsoft-csharp-naming-ci.md).
 
 ## Microsoft reference guides
 
