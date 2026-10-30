@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using RecordSift.Adapters.CsvHelper;
+using RecordSift;
+using RecordSift.Infrastructure.Csv;
 
-namespace RecordSift.Tests
+namespace RecordSift.Infrastructure.Csv.Tests
 {
     [TestFixture]
     public sealed class CsvHeaderPolicyTests
@@ -20,7 +21,7 @@ namespace RecordSift.Tests
             IEnumerable<SourceColumnPosition> positions = null)
         {
             using (var text = new StringReader(csv))
-                return CsvTableReader.Read(new CsvHelperRecordReader(), text, 4096, Schema(), policy, positions);
+                return CsvTableReader.Read(new CsvRecordReaderAdapter(), text, 4096, Schema(), policy, positions);
         }
 
         [Test]
@@ -171,9 +172,9 @@ namespace RecordSift.Tests
             using (var text = new StringReader("Id,Name\n1,A"))
             {
                 Assert.Throws<ArgumentOutOfRangeException>(() =>
-                    CsvTableReader.Read(new CsvHelperRecordReader(), text, 100, Schema(), (CsvHeaderPolicy)0));
+                    CsvTableReader.Read(new CsvRecordReaderAdapter(), text, 100, Schema(), (CsvHeaderPolicy)0));
                 Assert.Throws<ArgumentNullException>(() =>
-                    CsvTableReader.Read(new CsvHelperRecordReader(), text, 100, null, CsvHeaderPolicy.WithHeader));
+                    CsvTableReader.Read(new CsvRecordReaderAdapter(), text, 100, null, CsvHeaderPolicy.WithHeader));
             }
         }
 

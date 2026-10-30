@@ -28,7 +28,7 @@ RecordSift domain                 RecordSift-owned input ports
 - **Infrastructure adapters:** depend inward on the RecordSift-owned contracts; encapsulate parsing, physical IO, and library-specific configuration. An adapter converts third-party records/errors into our records, provenance and safe diagnostic codes. A vendor package must not be needed to compile the domain/application-core assembly.
 - **Composition:** callers select and inject an adapter through a constructor or explicit dependency parameter. Do not hide vendor construction inside a domain service, use global mutable registries, or require a DI framework. An optional convenience facade can preserve an existing public API while delegating to injected implementation.
 
-The [#95](https://github.com/infoconex/RecordSift/issues/95) architecture correction makes all three production layers **separate .NET Framework 4.8 CLR assemblies**: `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.CsvHelperAdapter`. The original combined `RecordSift.dll` is retired (binary-breaking); the existing `RecordSift` source namespace remains for this release. The adapter references Application and Domain, but the dependency direction cannot be reversed. Domain/core source has no third-party parser reference. These are still evolving boundaries, not a claim that the full importer is implemented. Project splitting is intentional here: it gives the architecture compiler-enforced boundaries, not merely folders and guidelines.
+The [#95](https://github.com/infoconex/RecordSift/issues/95) architecture correction and [#97](https://github.com/infoconex/RecordSift/issues/97) infrastructure naming follow-up makes all three production layers **separate .NET Framework 4.8 CLR assemblies**: `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv`. The original combined `RecordSift.dll` is retired (binary-breaking); the existing `RecordSift` source namespace remains for this release. The adapter references Application and Domain, but the dependency direction cannot be reversed. Domain/core source has no third-party parser reference. These are still evolving boundaries, not a claim that the full importer is implemented. Project splitting is intentional here: it gives the architecture compiler-enforced boundaries, not merely folders and guidelines.
 
 ## Physical solution structure and enforced graph
 
@@ -41,16 +41,18 @@ src/
   RecordSift.Application/                   -> RecordSift.Domain
     Abstractions/Csv/                       owned ICsvRecordReader and neutral DTOs/options
     Importing/Csv/                          table orchestration and header policy
-  RecordSift.CsvHelperAdapter/              -> Application + Domain
-    Infrastructure/CsvHelper/               real CsvHelper implementation only
+  RecordSift.Infrastructure.Csv/            -> Application + Domain
+    CsvRecordReaderAdapter.cs              real CSV adapter backed by CsvHelper
 tests/
   RecordSift.Tests/                         -> Domain + Application; no parser vendor
-  RecordSift.CsvHelperAdapter.Tests/        -> Domain + Application + real adapter
+  RecordSift.Infrastructure.Csv.Tests/        -> Domain + Application + real adapter
 ```
 
 The **Domain assembly does not reference `System.IO`, `TextReader`, the application assembly, or any third-party parser**. Application owns the reader port and may use framework IO types at an input boundary, but never a vendor parser type. Infrastructure translates parser exceptions into Domain-owned codes and resource-backed messages.
 
 `scripts/validate_architecture_layers.py` verifies source ownership, explicit traditional project `Compile` items, resource identity, legal `ProjectReference` edges, test assembly isolation and negative dependency test cases in CI. The compiler enforces the same references. See [ADR 0013](decisions/0013-physical-domain-application-infrastructure-assemblies.md).
+
+The concrete `CsvRecordReaderAdapter : ICsvRecordReader` translates the third-party CsvHelper parser into our Application-owned contract. We reserve the suffix `Adapter` for such concrete implementations; it is **not** part of the application port's name. The project is named after the source format rather than the vendor package, so a future parser swap does not change our architectural vocabulary. See [ADR 0014](decisions/0014-infrastructure-csv-adapter-naming.md).
 
 ## Replaceable source-reader contracts
 

@@ -55,12 +55,12 @@ jobs:
           $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
           if (-not (Test-Path $runner)) { throw "NUnit runner is missing: $runner" }
           $coreAssembly = 'tests\RecordSift.Tests\bin\Release\RecordSift.Tests.dll'
-          $adapterAssembly = 'tests\RecordSift.CsvHelperAdapter.Tests\bin\Release\RecordSift.CsvHelperAdapter.Tests.dll'
+          $adapterAssembly = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
           foreach ($assembly in @($coreAssembly, $adapterAssembly)) {
             if (-not (Test-Path $assembly)) { throw "Test assembly is missing: $assembly" }
           }
           $coreOutput = Split-Path -Parent $coreAssembly
-          if (Test-Path (Join-Path $coreOutput 'RecordSift.CsvHelperAdapter.dll')) {
+          if (Test-Path (Join-Path $coreOutput 'RecordSift.Infrastructure.Csv.dll')) {
             throw 'Domain tests must not copy or load vendor adapter assemblies.'
           }
           & $runner $coreAssembly '--result=TestResults/nunit-core.xml;format=nunit3' --noheader
@@ -107,7 +107,7 @@ jobs:
               throw "Unexpected pinned dependency: $id $($package.version)"
             }
           }
-          [xml]$adapterTests = Get-Content tests/RecordSift.CsvHelperAdapter.Tests/packages.config -Raw
+          [xml]$adapterTests = Get-Content tests/RecordSift.Infrastructure.Csv.Tests/packages.config -Raw
           $adapterTestPackages = @($adapterTests.packages.package)
           if ($adapterTestPackages.Count -ne 1 -or
               [string]$adapterTestPackages[0].id -ne 'NUnit' -or
@@ -115,15 +115,15 @@ jobs:
             throw 'Unexpected adapter test dependency inventory.'
           }
           $coreTestsProject = Get-Content tests/RecordSift.Tests/RecordSift.Tests.csproj -Raw
-          if ($coreTestsProject -match 'CsvHelper|RecordSift.CsvHelperAdapter') {
+          if ($coreTestsProject -match 'CsvHelper|RecordSift.Infrastructure.Csv') {
             throw 'Core unit-test project must not reference CSV parser or vendor adapters.'
           }
           $badCoreSource = @(Get-ChildItem tests/RecordSift.Tests -Recurse -Filter '*.cs' |
-              Select-String -Pattern '^\s*using\s+(?:CsvHelper|RecordSift\.Adapters)\b')
+              Select-String -Pattern '^\s*using\s+(?:CsvHelper|RecordSift\.Infrastructure)\b')
           if ($badCoreSource.Count -gt 0) {
             throw 'Core unit-test source must not import parser vendor or adapter namespaces.'
           }
-          [xml]$adapterConfig = Get-Content src/RecordSift.CsvHelperAdapter/packages.config -Raw
+          [xml]$adapterConfig = Get-Content src/RecordSift.Infrastructure.Csv/packages.config -Raw
           $adapterPackages = @($adapterConfig.packages.package)
           $adapterExpected = @{
             CsvHelper = '33.1.0'

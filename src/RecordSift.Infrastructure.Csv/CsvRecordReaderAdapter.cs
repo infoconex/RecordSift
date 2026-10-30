@@ -5,13 +5,13 @@ using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-namespace RecordSift.Adapters.CsvHelper
+namespace RecordSift.Infrastructure.Csv
 {
     /// <summary>
     /// CsvHelper-backed implementation of the RecordSift-owned CSV record port.
     /// Parser types and exceptions never cross this adapter boundary.
     /// </summary>
-    public sealed class CsvHelperRecordReader : ICsvRecordReader
+    public sealed class CsvRecordReaderAdapter : ICsvRecordReader
     {
         public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
         {
