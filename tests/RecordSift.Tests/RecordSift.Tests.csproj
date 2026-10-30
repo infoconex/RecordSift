@@ -48,6 +48,7 @@
     <Compile Include="CsvReaderPortTests.cs" />
     <Compile Include="CsvDelimiterTests.cs" />
     <Compile Include="DomainMessageResourceTests.cs" />
+    <Compile Include="DomainTestIsolationTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
