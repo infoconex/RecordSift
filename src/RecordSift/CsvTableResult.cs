@@ -39,11 +39,11 @@ namespace RecordSift
             if (diagnostics == null) throw new ArgumentNullException(nameof(diagnostics));
             var snapshot = new List<ImportDiagnostic>(diagnostics);
             if (snapshot.Count == 0)
-                throw new ArgumentException("Failed CSV table must identify a source error.", nameof(diagnostics));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_FailedTableNoError"), nameof(diagnostics));
             foreach (var error in snapshot)
             {
                 if (error == null || error.Scope != DiagnosticScope.Source)
-                    throw new ArgumentException("Failed CSV table requires source errors.", nameof(diagnostics));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_FailedTableNonSourceError"), nameof(diagnostics));
             }
 
             return new CsvTableResult(ImportStatus.Failed,

@@ -36,6 +36,7 @@
     <Compile Include="ImportStatus.cs" />
     <Compile Include="DiagnosticScope.cs" />
     <Compile Include="DiagnosticCodes.cs" />
+    <Compile Include="DomainMessageResources.cs" />
     <Compile Include="ImportDiagnostic.cs" />
     <Compile Include="ImportSummary.cs" />
     <Compile Include="ImportResult.cs" />
@@ -52,6 +53,11 @@
     <Compile Include="CsvDataRow.cs" />
     <Compile Include="CsvTableResult.cs" />
     <Compile Include="CsvTableReader.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\DomainMessages.resx">
+      <LogicalName>RecordSift.Resources.DomainMessages.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

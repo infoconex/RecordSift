@@ -6,6 +6,11 @@ namespace RecordSift
     /// </summary>
     public sealed class CsvReadOptions
     {
+        public const string DefaultDelimiter = ",";
+
+        /// <summary>Deterministic comma-delimited baseline; no ambient settings.</summary>
+        public static CsvReadOptions Default { get; } = new CsvReadOptions(DefaultDelimiter);
+
         public CsvReadOptions(string delimiter)
         {
             Delimiter = delimiter;

@@ -34,7 +34,7 @@ namespace RecordSift
         {
             if (diagnostic == null) throw new ArgumentNullException(nameof(diagnostic));
             if (diagnostic.Scope != DiagnosticScope.Source)
-                throw new ArgumentException("CSV parsing errors must be source-scoped.", nameof(diagnostic));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_ParserErrorScope"), nameof(diagnostic));
             return new CsvParseResult(
                 new ReadOnlyCollection<CsvRecord>(new List<CsvRecord>()),
                 new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic> { diagnostic }));

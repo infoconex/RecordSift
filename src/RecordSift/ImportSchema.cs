@@ -18,9 +18,9 @@ namespace RecordSift
             foreach (var column in columns)
             {
                 if (column == null)
-                    throw new ArgumentException("Column declarations cannot contain null.", nameof(columns));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_ColumnDeclarationNull"), nameof(columns));
                 if (!names.Add(column.Name))
-                    throw new ArgumentException("Declared column names must be unique (ordinal match).",
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_ColumnNamesDuplicate"),
                         nameof(columns));
                 snapshot.Add(column);
             }
@@ -56,12 +56,12 @@ namespace RecordSift
             foreach (var mapping in positions)
             {
                 if (mapping == null)
-                    throw new ArgumentException("Position mappings cannot contain null.", nameof(positions));
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_PositionMappingNull"), nameof(positions));
                 if (!declarations.Contains(mapping.Name))
-                    throw new ArgumentException("Position mapping refers to an undeclared source column.",
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_PositionMappingUndeclared"),
                         nameof(positions));
                 if (mappings.ContainsKey(mapping.Name))
-                    throw new ArgumentException("A declared source column cannot have multiple positions.",
+                    throw new ArgumentException(DomainMessageResources.Get("Argument_PositionMappingDuplicate"),
                         nameof(positions));
                 mappings.Add(mapping.Name, mapping.SourceIndex);
 

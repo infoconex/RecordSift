@@ -8,7 +8,7 @@ namespace RecordSift
         public ExpectedColumn(string name, bool isRequired)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Expected column name must be nonempty.", nameof(name));
+                throw new ArgumentException(DomainMessageResources.Get("Argument_ExpectedColumnName"), nameof(name));
             Name = name;
             IsRequired = isRequired;
         }

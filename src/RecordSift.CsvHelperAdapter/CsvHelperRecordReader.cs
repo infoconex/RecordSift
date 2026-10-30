@@ -28,7 +28,7 @@ namespace RecordSift.Adapters.CsvHelper
             var physicalLine = 1;
             var configuration = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                Delimiter = options == null ? "," : options.Delimiter,
+                Delimiter = (options ?? CsvReadOptions.Default).Delimiter,
                 HasHeaderRecord = false,
                 IgnoreBlankLines = false,
                 ExceptionMessagesContainRawData = false,
