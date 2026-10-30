@@ -24,6 +24,7 @@ EXPECTED = {
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult"),
+        "Messages": ("CsvMessageResources",),
     },
 }
 TEST_PROJECT_REFERENCES = {
@@ -226,6 +227,18 @@ def verify_layout():
         elif [entry.text for entry in resources[0]
               if entry.tag.rsplit("}", 1)[-1] == "LogicalName"] != [RESX_IDENTITY]:
             errors.append("Domain diagnostic resource manifest identity changed")
+    application_resources = APPLICATION / "RecordSift.Application.csproj"
+    if application_resources.is_file():
+        resx = items(project(application_resources), "EmbeddedResource")
+        expected_resource = "Messages/Resources/CsvMessages.resx"
+        if len(resx) != 1 or resx[0].attrib.get("Include", "").replace("\\", "/") != expected_resource:
+            errors.append("Application CSV .resx must be embedded at its physical location")
+        elif not (APPLICATION / expected_resource).is_file():
+            errors.append("Missing Application CSV .resx")
+        elif [entry.text for entry in resx[0]
+              if entry.tag.rsplit("}", 1)[-1] == "LogicalName"] != [
+                  "RecordSift.Resources.CsvMessages.resources"]:
+            errors.append("Application CSV resource manifest identity changed")
     # Verify exact test boundaries, including source ownership and dependencies.
     test_graph = {}
     for project_name in TEST_PROJECT_REFERENCES:

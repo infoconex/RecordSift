@@ -1,5 +1,7 @@
 # ADR 0016 — Typed Domain resource-backed messages
 
+**Historical ownership note:** [ADR 0020](0020-application-csv-message-ownership.md) subsequently moved five CSV-only argument messages and their named accessors to Application. The 35/24 counts and code examples below document the original #101 migration, not the current split.
+
 **Status:** Accepted through [engineering issue #101](https://github.com/infoconex/RecordSift/issues/101), following [ADR 0015](0015-layer-aligned-public-namespaces.md). This refines the public resource accessor introduced by [ADR 0010](0010-domain-message-resources.md).
 
 ## Context

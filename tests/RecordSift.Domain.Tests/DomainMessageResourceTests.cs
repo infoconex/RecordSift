@@ -87,8 +87,8 @@ namespace RecordSift.Domain.Tests
         {
             Assert.That(Catalog().GetString("Argument_ColumnDeclarationNull", CultureInfo.InvariantCulture),
                 Is.EqualTo("Column declarations cannot contain null."));
-            Assert.That(Catalog().GetString("Argument_ReaderHeaderConflict", CultureInfo.InvariantCulture),
-                Is.EqualTo("Headed sources use named header bindings, not positions."));
+            Assert.That(Catalog().GetString("Argument_PositionMappingDuplicate", CultureInfo.InvariantCulture),
+                Is.EqualTo("A declared source column cannot have multiple positions."));
         }
 
         [Test]
@@ -99,7 +99,7 @@ namespace RecordSift.Domain.Tests
             Assert.That(typeof(DomainMessageResources).GetMethod("Get", publicMembers), Is.Null);
 
             var namedMessages = typeof(DomainMessageResources).GetProperties(publicMembers);
-            Assert.That(namedMessages, Has.Length.EqualTo(24));
+            Assert.That(namedMessages, Has.Length.EqualTo(19));
             foreach (var property in namedMessages)
             {
                 Assert.That(property.PropertyType, Is.EqualTo(typeof(string)));
@@ -117,8 +117,8 @@ namespace RecordSift.Domain.Tests
             try
             {
                 CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR");
-                Assert.That(DomainMessageResources.ReaderHeaderConflict,
-                    Is.EqualTo("Headed sources use named header bindings, not positions."));
+                Assert.That(DomainMessageResources.PositionMappingDuplicate,
+                    Is.EqualTo("A declared source column cannot have multiple positions."));
                 Assert.That(DomainMessageResources.ColumnDeclarationNull,
                     Is.EqualTo("Column declarations cannot contain null."));
             }

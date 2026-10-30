@@ -30,11 +30,6 @@
   <data name="Argument_DiagnosticScopeUnknown" xml:space="preserve"><value>Unrecognized diagnostic scope.</value></data>
   <data name="Argument_CompletedSourceError" xml:space="preserve"><value>A completed import cannot contain fatal source errors.</value></data>
   <data name="Argument_FailedWithoutSourceError" xml:space="preserve"><value>A failed import must identify a source-level error.</value></data>
-  <data name="Argument_ReaderHeaderConflict" xml:space="preserve"><value>Headed sources use named header bindings, not positions.</value></data>
-  <data name="Argument_HeaderlessMissingPositions" xml:space="preserve"><value>Nonempty headerless CSV requires explicit positional mappings.</value></data>
-  <data name="Argument_FailedTableNoError" xml:space="preserve"><value>Failed CSV table must identify a source error.</value></data>
-  <data name="Argument_FailedTableNonSourceError" xml:space="preserve"><value>Failed CSV table requires source errors.</value></data>
-  <data name="Argument_ParserErrorScope" xml:space="preserve"><value>CSV parsing errors must be source-scoped.</value></data>
   <data name="Argument_ExpectedColumnName" xml:space="preserve"><value>Expected column name must be nonempty.</value></data>
   <data name="Argument_SourcePositionName" xml:space="preserve"><value>Declared column name must be nonempty.</value></data>
   <data name="Argument_BoundColumnName" xml:space="preserve"><value>Bound column name must be nonempty.</value></data>

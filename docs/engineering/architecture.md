@@ -39,6 +39,7 @@ src/
     Schema/                                 declarations, bindings and schema invariants
     Results/                                import outcome and aggregate invariants
   RecordSift.Application/                   -> RecordSift.Domain
+    Messages/                              Application-owned CSV validation resources
     Ports/Csv/                       owned ICsvRecordReader and neutral DTOs/options
     Importing/Csv/                          table orchestration and header policy
   RecordSift.Infrastructure.Csv/            -> Application + Domain
@@ -81,7 +82,7 @@ Apply these principles to **real seams**. Do not create interfaces for every DTO
 
 RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. Issue #91 originally separated core tests from real-adapter NUnit tests; [issue #105](https://github.com/infoconex/RecordSift/issues/105) further separates Domain-only tests from Application tests. The shared Application-owned port contract fixture is inherited by adapter tests. Domain test DLLs neither reference Application nor contain parser/adapter dependencies.
 
-Core message resources and defaults are defined by [ADR 0010](decisions/0010-domain-message-resources.md), and [ADR 0016](decisions/0016-typed-domain-resource-messages.md) establishes named public message accessors. The raw resource-key lookup is internal to Domain; Application and Infrastructure must never refer to embedded `Argument_*` key strings. Diagnostic code values remain distinct machine-readable constants.
+Domain diagnostics and business-validation messages are defined by [ADR 0010](decisions/0010-domain-message-resources.md) and [ADR 0016](decisions/0016-typed-domain-resource-messages.md). [ADR 0020](decisions/0020-application-csv-message-ownership.md) assigns the five CSV port/table validation messages to an Application-owned embedded catalog. Both expose named typed resource accessors and hide raw key lookup internally; Domain does not know Application CSV workflow semantics. Stable diagnostic codes remain Domain-owned and machine-readable, with invariant resource-backed safe text.
 
 ## Enforcement and review
 
