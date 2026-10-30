@@ -11,7 +11,7 @@ namespace RecordSift.Tests
         {
             public int CallCount { get; private set; }
 
-            public CsvParseResult Read(TextReader source, int maxCharacters)
+            public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
             {
                 CallCount++;
                 return CsvParseResult.Success(new[] {
@@ -23,7 +23,7 @@ namespace RecordSift.Tests
 
         private sealed class FailingReader : ICsvRecordReader
         {
-            public CsvParseResult Read(TextReader source, int maxCharacters)
+            public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
             {
                 return CsvParseResult.Failure(ImportDiagnostic.ForSource(
                     null, DiagnosticCodes.MalformedSource));

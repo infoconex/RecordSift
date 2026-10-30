@@ -55,6 +55,7 @@ namespace RecordSift.Tests
             }
         }
 
+        [TestCase(null)]
         [TestCase("")]
         [TestCase(" ")]
         [TestCase("||")]
@@ -74,7 +75,8 @@ namespace RecordSift.Tests
                 Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
                 Assert.That(result.Diagnostics[0].Code,
                     Is.EqualTo(DiagnosticCodes.InvalidCsvDelimiter));
-                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain(delimiter == null ? "null" : delimiter));
+                Assert.That(result.Diagnostics[0].Message,
+                    Is.EqualTo("The configured CSV delimiter is invalid."));
                 Assert.That(source.Peek(), Is.EqualTo('n'));
             }
         }

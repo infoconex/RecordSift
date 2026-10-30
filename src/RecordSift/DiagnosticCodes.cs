@@ -11,6 +11,7 @@ namespace RecordSift
         public const string RequiredColumnMissing = "REQUIRED_COLUMN_MISSING";
         public const string AmbiguousColumn = "AMBIGUOUS_COLUMN";
         public const string InvalidColumnPosition = "INVALID_COLUMN_POSITION";
+        public const string InvalidCsvDelimiter = "INVALID_CSV_DELIMITER";
         public const string MalformedSource = "MALFORMED_SOURCE";
         public const string RequiredFieldMissing = "REQUIRED_FIELD_MISSING";
         public const string ConversionFailed = "CONVERSION_FAILED";
@@ -26,7 +27,8 @@ namespace RecordSift
             return code == SourceUnreadable || code == SourceLimitExceeded ||
                    code == RequiredHeaderMissing ||
                    code == MalformedSource || code == RequiredColumnMissing ||
-                   code == AmbiguousColumn || code == InvalidColumnPosition;
+                   code == AmbiguousColumn || code == InvalidColumnPosition ||
+                   code == InvalidCsvDelimiter;
         }
 
         public static bool IsRecordCode(string code)
@@ -46,6 +48,7 @@ namespace RecordSift
                 case AmbiguousColumn: return "A declared source column is ambiguous.";
                 case InvalidColumnPosition: return "A declared source column position is outside the available field range.";
                 case MalformedSource: return "The source structure is malformed.";
+                case InvalidCsvDelimiter: return "The configured CSV delimiter is invalid.";
                 case RequiredFieldMissing: return "A required field is missing.";
                 case ConversionFailed: return "A field could not be converted.";
                 case ValidationFailed: return "A field failed validation.";

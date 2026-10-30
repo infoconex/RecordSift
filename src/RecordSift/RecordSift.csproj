@@ -45,6 +45,7 @@
     <Compile Include="SourceColumnPosition.cs" />
     <Compile Include="SchemaBindingResult.cs" />
     <Compile Include="ICsvRecordReader.cs" />
+    <Compile Include="CsvReadOptions.cs" />
     <Compile Include="CsvParseResult.cs" />
     <Compile Include="CsvRecord.cs" />
     <Compile Include="CsvHeaderPolicy.cs" />

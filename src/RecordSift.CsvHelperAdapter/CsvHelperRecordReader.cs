@@ -13,18 +13,22 @@ namespace RecordSift.Adapters.CsvHelper
     /// </summary>
     public sealed class CsvHelperRecordReader : ICsvRecordReader
     {
-        public CsvParseResult Read(TextReader source, int maxCharacters)
+        public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
             if (maxCharacters <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxCharacters));
 
+            if (options != null && !options.IsValid)
+                return CsvParseResult.Failure(ImportDiagnostic.ForSource(null,
+                    DiagnosticCodes.InvalidCsvDelimiter));
+
             var records = new List<CsvRecord>();
             var physicalLine = 1;
             var configuration = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                Delimiter = ",",
+                Delimiter = options == null ? "," : options.Delimiter,
                 HasHeaderRecord = false,
                 IgnoreBlankLines = false,
                 ExceptionMessagesContainRawData = false,
