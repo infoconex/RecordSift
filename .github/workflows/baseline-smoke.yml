@@ -1,0 +1,48 @@
+name: Verify legacy baseline (issue 57)
+on:
+  pull_request:
+    branches:
+      - 'release/0.1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  legacy-baseline:
+    name: Windows net48 restore, build and NUnit smoke
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Restore packages.config dependencies
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+      - name: Build both legacy projects with Visual Studio MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw "MSBuild not found." }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=AnyCPU /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+      - name: Run NUnit smoke tests and assert discovery
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          if (-not (Test-Path $runner)) { throw "NUnit runner is missing: $runner" }
+          $assembly = 'tests\RecordSift.Tests\bin\Release\RecordSift.Tests.dll'
+          if (-not (Test-Path $assembly)) { throw "Test assembly is missing: $assembly" }
+          & $runner $assembly '--result=TestResults/nunit-results.xml;format=nunit3' --noheader
+          if ($LASTEXITCODE -ne 0) { throw "NUnit reported failures: $LASTEXITCODE" }
+          [xml]$result = Get-Content TestResults/nunit-results.xml
+          $count = [int]$result.'test-run'.total
+          $failed = [int]$result.'test-run'.failed
+          if ($count -lt 3 -or $failed -ne 0) { throw "Expected at least 3 passing discovered tests; found $count, failed $failed." }
+          Write-Host "Verified NUnit test count=$count failed=$failed."
