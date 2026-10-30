@@ -1,7 +1,7 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1. 16 existing baseline and FR-030 tests, 19 FR-028 unit-contract cases, and 13 FR-009 schema-binding tests 13 FR-013 positional-binding tests and 18 FR-001 CSV parser component tests and 15 FR-004 header-policy component tests execute in the historical net48 Windows suite; full importer acceptance remains planned.
+**Status:** Engineering policy for release 0.1. The historical net48 Windows suite observed 97/97 passing NUnit tests in [issue #85](https://github.com/infoconex/RecordSift/issues/85), including 18 real CsvHelper adapter characterization cases, 15 headed/headerless table cases, and 3 fake reader-port contract cases. Full typed importer acceptance remains planned.
 
 ## Test-driven development
 

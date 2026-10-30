@@ -1,6 +1,6 @@
 # RecordSift engineering documentation
 
-These pages specify the proposed product and engineering process for **release 0.1**; they do not imply an implementation exists.
+These pages specify the product and engineering process for **release 0.1**. Some in-memory and raw CSV components are implemented; the complete typed import API and all end-to-end acceptance scenarios are not yet implemented.
 
 ## Requirement catalogs
 

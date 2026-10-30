@@ -14,7 +14,7 @@ These repository-wide instructions apply to human and AI-assisted contributions.
 
 - Follow [domain-centric architecture](docs/engineering/architecture.md), [ADR 0007](docs/engineering/decisions/0007-domain-ports-and-adapters.md), [Microsoft C# style](docs/engineering/csharp-style.md), and the root `.editorconfig`. Keep new code compatible with net48 / C# 7.3.
 - Apply SOLID pragmatically: domain rules and import orchestration depend on RecordSift-owned contracts; third-party readers live behind injected ports in adapter assemblies. No vendor types in domain, public result/diagnostic contracts, or application policy. Test port consumers with fakes and implementations with real adapter tests.
-- Record package selection, licensing, vulnerabilities, pinned dependency versions and any public API migration in a dedicated issue/ADR. Existing CSV parser migration is [#85](https://github.com/infoconex/RecordSift/issues/85); do not treat it as already implemented.
+- Record package selection, licensing, vulnerabilities, pinned dependency versions and any public API migration in a dedicated issue/ADR. The CSV adapter migration is tracked in [#85](https://github.com/infoconex/RecordSift/issues/85) and [ADR 0008](docs/engineering/decisions/0008-csvhelper-isolated-adapter.md); do not claim full typed CSV acceptance from adapter tests.
 
 - Follow `docs/testing/strategy.md`: Red → Green → Refactor. Give every feature positive, negative and boundary test cases as appropriate.
 - Keep parsing, mapping, validation, and reporting behavior deterministic. Avoid ambient culture and hidden global state.
