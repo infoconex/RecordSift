@@ -14,7 +14,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
     {
         protected override ICsvRecordReader CreateReader()
         {
-            return new CsvRecordReader();
+            return new CsvRecordReaderAdapter();
         }
     }
 }

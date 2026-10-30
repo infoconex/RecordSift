@@ -22,7 +22,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             using (var source = new StringReader("Id;Description\r\n1;\"hello;world\"\r\n2;done"))
             {
-                var result = CsvTableReader.Read(new CsvRecordReader(), source, 200,
+                var result = CsvTableReader.Read(new CsvRecordReaderAdapter(), source, 200,
                     Schema(), CsvHeaderPolicy.WithHeader, options: new CsvReadOptions(";"));
                 Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
                 Assert.That(result.DataRows, Has.Count.EqualTo(2));
@@ -39,7 +39,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             using (var source = new StringReader("a" + delimiter + "\"b" + delimiter + "c\""))
             {
-                var result = new CsvRecordReader().Read(
+                var result = new CsvRecordReaderAdapter().Read(
                     source, 100, new CsvReadOptions(delimiter));
                 Assert.That(result.IsSuccessful, Is.True);
                 Assert.That(result.Records[0].Fields, Is.EqualTo(new[] { "a", "b" + delimiter + "c" }));
@@ -51,7 +51,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             using (var source = new StringReader("a,b"))
             {
-                var result = new CsvRecordReader().Read(source, 100);
+                var result = new CsvRecordReaderAdapter().Read(source, 100);
                 Assert.That(result.Records[0].Fields, Is.EqualTo(new[] { "a", "b" }));
             }
         }
@@ -68,7 +68,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             using (var source = new StringReader("never read"))
             {
-                var result = new CsvRecordReader().Read(source, 100,
+                var result = new CsvRecordReaderAdapter().Read(source, 100,
                     new CsvReadOptions(delimiter));
                 Assert.That(result.IsSuccessful, Is.False);
                 Assert.That(result.Records, Is.Empty);
@@ -104,7 +104,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             using (var source = new StringReader("A;B\r\n1;\"hello\r\nworld\"\r\n2;C"))
             {
-                var result = new CsvRecordReader().Read(
+                var result = new CsvRecordReaderAdapter().Read(
                     source, 300, new CsvReadOptions(";"));
                 Assert.That(result.IsSuccessful, Is.True);
                 Assert.That(result.Records, Has.Count.EqualTo(3));

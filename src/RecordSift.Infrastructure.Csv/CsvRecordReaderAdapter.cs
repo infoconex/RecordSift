@@ -11,7 +11,7 @@ namespace RecordSift.Infrastructure.Csv
     /// CsvHelper-backed implementation of the RecordSift-owned CSV record port.
     /// Parser types and exceptions never cross this adapter boundary.
     /// </summary>
-    public sealed class CsvRecordReader : ICsvRecordReader
+    public sealed class CsvRecordReaderAdapter : ICsvRecordReader
     {
         public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
         {
