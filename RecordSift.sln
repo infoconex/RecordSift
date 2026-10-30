@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift", "src\RecordSif
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.Tests", "tests\RecordSift.Tests\RecordSift.Tests.csproj", "{63F4CF6E-47FC-4FFB-987F-095E81E0F3FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.CsvHelperAdapter", "src\\RecordSift.CsvHelperAdapter\\RecordSift.CsvHelperAdapter.csproj", "{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.CsvHelperAdapter", "src\RecordSift.CsvHelperAdapter\RecordSift.CsvHelperAdapter.csproj", "{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

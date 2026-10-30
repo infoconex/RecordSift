@@ -42,3 +42,7 @@ The PR for issue #57 must link an observed Windows workflow run and report actua
 ## Observed initial baseline evidence
 
 Issue #57 was squash-merged after a successful Windows build and **3 of 3** NUnit baseline tests in [Actions run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680). The requirement scenarios are still Planned; assembly smoke tests cannot certify CSV/XLSX behavior.
+
+## Issue #85 CSV adapter addition
+
+The initial issue #57 dependency inventory above is historical evidence; it is not the current total after CSV adapter integration. Issue #85 adds the independent traditional `src/RecordSift.CsvHelperAdapter` project and its pinned CSV runtime dependency graph; core `RecordSift` remains free of NuGet parser packages. See [ADR 0008](decisions/0008-csvhelper-isolated-adapter.md) for the current design and [PR #87](https://github.com/infoconex/RecordSift/pull/87) for observed verification.
