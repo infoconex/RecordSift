@@ -38,6 +38,16 @@ jobs:
           if (-not $msbuild) { throw "MSBuild not found." }
           & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
           if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+      - name: Enforce Microsoft C# naming with Roslyn IDE1006
+        shell: pwsh
+        run: |
+          # A semantic analyzer is required; a regex check cannot distinguish
+          # const fields from locals, static fields, or contractual string values.
+          $sdk = & dotnet --version
+          if ($LASTEXITCODE -ne 0) { throw 'Required .NET SDK for Roslyn style analysis not found.' }
+          Write-Host "Roslyn analysis SDK=$sdk"
+          & dotnet format style RecordSift.sln --no-restore --verify-no-changes --diagnostics IDE1006 --severity error --verbosity normal
+          if ($LASTEXITCODE -ne 0) { throw "IDE1006 C# naming gate failed: $LASTEXITCODE" }
       - name: Run independent core unit and real-adapter contract NUnit suites
         shell: pwsh
         run: |

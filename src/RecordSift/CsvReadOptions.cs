@@ -8,6 +8,9 @@ namespace RecordSift
     {
         public const string DefaultDelimiter = ",";
 
+        // RED TEST ONLY: this invalid C# identifier MUST fail the CI style gate.
+        private const string BAD_CONSTANT_NAME = ",";
+
         /// <summary>Deterministic comma-delimited baseline; no ambient settings.</summary>
         public static CsvReadOptions Default { get; } = new CsvReadOptions(DefaultDelimiter);
 
