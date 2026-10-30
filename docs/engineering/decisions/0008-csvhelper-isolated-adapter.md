@@ -12,7 +12,7 @@
 
 - Core `RecordSift` defines `ICsvRecordReader.Read(TextReader, int)` and owns `CsvRecord`, `CsvParseResult` and safe `ImportDiagnostic` codes. **No CsvHelper assembly reference in the core project.**
 - Infrastructure project `RecordSift.CsvHelperAdapter` references both the core project and CsvHelper. The caller composes `CsvTableReader.Read(recordReader, source, maxCharacters, schema, policy, positions)` using an injected reader.
-- The adapter reads **already-decoded** CSV text. It does not infer headers, convert types, interpret cultural formats, choose encodings or implement FR-003 delimiters. Those remain independently tracked.
+- The adapter reads **already-decoded** CSV text. It does not infer headers, convert types, interpret cultural formats or choose encodings. Delimiters were added independently through [ADR 0009](0009-configurable-csv-delimiters.md) / FR-003.
 - Malformed vendor parser exceptions are translated into `MALFORMED_SOURCE`; IO problems and budget overruns are source diagnostics. Raw values and vendor exception messages never escape.
 - A bounded `TextReader` wrapper enforces the existing **caller-supplied maximum decoded characters**, counting an exact-limit EOF as valid. It implements no CSV grammar and leaves the caller's reader open.
 - Existing records retain ordered fields, one-based source record and starting physical line, immutable snapshots, source-failure atomicity and headed/headerless policies.
