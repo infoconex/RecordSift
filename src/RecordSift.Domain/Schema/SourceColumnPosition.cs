@@ -12,7 +12,7 @@ namespace RecordSift.Domain.Schema
         public SourceColumnPosition(string name, int sourceIndex)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException(DomainMessageResources.Get("Argument_SourcePositionName"), nameof(name));
+                throw new ArgumentException(DomainMessageResources.SourcePositionName, nameof(name));
             if (sourceIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(sourceIndex));
             Name = name;

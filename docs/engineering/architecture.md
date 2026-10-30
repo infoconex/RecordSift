@@ -78,7 +78,7 @@ Apply these principles to **real seams**. Do not create interfaces for every DTO
 
 RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. The issue #91 change splits core and real-adapter NUnit assemblies and runs a core-owned behavioral contract fixture against the real CsvHelper adapter. The core test DLL has no parser dependency.
 
-Core messages and defaults are defined by [ADR 0010](decisions/0010-domain-message-resources.md).
+Core message resources and defaults are defined by [ADR 0010](decisions/0010-domain-message-resources.md), and [ADR 0016](decisions/0016-typed-domain-resource-messages.md) establishes named public message accessors. The raw resource-key lookup is internal to Domain; Application and Infrastructure must never refer to embedded `Argument_*` key strings. Diagnostic code values remain distinct machine-readable constants.
 
 ## Enforcement and review
 

@@ -38,6 +38,8 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 
 - [ADR 0010 — Core-owned resource messages](engineering/decisions/0010-domain-message-resources.md) — invariant diagnostic texts in embedded resources; stable codes and named defaults.
 - [Issue #89 — Message resources](https://github.com/infoconex/RecordSift/issues/89) — migration and regression validation.
+- [ADR 0016 — Typed Domain resource messages](engineering/decisions/0016-typed-domain-resource-messages.md) — replace public key lookup with named resource-backed Domain argument messages.
+- [Issue #101 — Typed message contract](https://github.com/infoconex/RecordSift/issues/101) — independent resource API refactoring and Red/Green contract checks.
 - [Issue #91 — Third-party-free unit testing](https://github.com/infoconex/RecordSift/issues/91) — separate independent core unit and real-adapter tests using reusable domain-owned reader conformance fixture.
 
 ## Microsoft C# naming enforcement

@@ -9,7 +9,7 @@ namespace RecordSift.Domain.Schema
         public ExpectedColumn(string name, bool isRequired)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException(DomainMessageResources.Get("Argument_ExpectedColumnName"), nameof(name));
+                throw new ArgumentException(DomainMessageResources.ExpectedColumnName, nameof(name));
             Name = name;
             IsRequired = isRequired;
         }

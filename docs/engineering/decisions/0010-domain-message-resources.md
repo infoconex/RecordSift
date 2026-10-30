@@ -15,6 +15,8 @@ The first RecordSift imports correctly translated CsvHelper faults into domain-o
 5. Resource keys are symbolic lookup identifiers and stable diagnostic codes, **not user-facing prose**. Protocol syntax characters and one-based/zero-based indices should be used clearly at their point of meaning; do not generate a meaningless constants abstraction for every literal.
 6. Use a dependency-free `scripts/validate_core_messages.py` validation check on CI, with NUnit regressions verifying resource embedding, complete registered codes, exact historical messages and invariant-culture behavior.
 
+The original `DomainMessageResources.Get(string)` public lookup was later deliberately restricted to internal use by [ADR 0016](0016-typed-domain-resource-messages.md). Domain/Application callers now use named, resource-backed properties rather than raw `Argument_*` identifiers. Diagnostic codes, resource text and manifest remain unchanged.
+
 ## Boundary and testing
 
 The **core unit-test contract must not require any third-party implementation**. Resource tests use the core assembly and NUnit only; adapter conformance is tested separately with real CsvHelper. At the time of the resource-message PR (#90), a single NUnit test assembly still referenced the adapter. [#91](https://github.com/infoconex/RecordSift/issues/91) subsequently split independent core and adapter test assemblies and introduced vendor-neutral reusable conformance cases; see [ADR 0011](0011-independent-core-contract-tests.md).

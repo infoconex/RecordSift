@@ -19,9 +19,9 @@ namespace RecordSift.Domain.Schema
             foreach (var column in columns)
             {
                 if (column == null)
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_ColumnDeclarationNull"), nameof(columns));
+                    throw new ArgumentException(DomainMessageResources.ColumnDeclarationNull, nameof(columns));
                 if (!names.Add(column.Name))
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_ColumnNamesDuplicate"),
+                    throw new ArgumentException(DomainMessageResources.ColumnNamesDuplicate,
                         nameof(columns));
                 snapshot.Add(column);
             }
@@ -57,12 +57,12 @@ namespace RecordSift.Domain.Schema
             foreach (var mapping in positions)
             {
                 if (mapping == null)
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_PositionMappingNull"), nameof(positions));
+                    throw new ArgumentException(DomainMessageResources.PositionMappingNull, nameof(positions));
                 if (!declarations.Contains(mapping.Name))
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_PositionMappingUndeclared"),
+                    throw new ArgumentException(DomainMessageResources.PositionMappingUndeclared,
                         nameof(positions));
                 if (mappings.ContainsKey(mapping.Name))
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_PositionMappingDuplicate"),
+                    throw new ArgumentException(DomainMessageResources.PositionMappingDuplicate,
                         nameof(positions));
                 mappings.Add(mapping.Name, mapping.SourceIndex);
 

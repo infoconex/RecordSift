@@ -34,6 +34,7 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] Physical assembly dependency graph is `Domain <- Application <- Infrastructure` (vendor adapter may also directly reference Domain), checked by `scripts/validate_architecture_layers.py` and project references; public API assembly moves reviewed.
 - [ ] Replaceable input/validation seams have fake-based unit tests **and** real-adapter component tests when adapters change (or explain why not applicable).
 - [ ] Domain-owned diagnostic codes, invariant resource-backed messages and configuration defaults preserved; no hardcoded production prose or vendor exception text leaks.
+- [ ] New argument messages use named Domain-owned `DomainMessageResources` accessors; no public `Get(string)` or raw `Argument_*` keys outside catalog (ADR 0016).
 - [ ] Core unit tests do not require parser vendors; adapter-specific tests independently prove the same RecordSift-owned behavioral contract (separate NUnit assemblies enforced under #91).
 - [ ] Microsoft C# naming is enforced by Roslyn IDE1006 and constant identifier guard in CI; do not use uppercase constant names even when external diagnostic string values are uppercase.
 - [ ] SOLID responsibilities, Microsoft C# naming/style (`.editorconfig`) and net48/C# 7.3 language compatibility reviewed.

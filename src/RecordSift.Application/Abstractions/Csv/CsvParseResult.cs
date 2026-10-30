@@ -36,7 +36,7 @@ namespace RecordSift.Application.Abstractions.Csv
         {
             if (diagnostic == null) throw new ArgumentNullException(nameof(diagnostic));
             if (diagnostic.Scope != DiagnosticScope.Source)
-                throw new ArgumentException(DomainMessageResources.Get("Argument_ParserErrorScope"), nameof(diagnostic));
+                throw new ArgumentException(DomainMessageResources.ParserErrorScope, nameof(diagnostic));
             return new CsvParseResult(
                 new ReadOnlyCollection<CsvRecord>(new List<CsvRecord>()),
                 new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic> { diagnostic }));
