@@ -1,7 +1,7 @@
-using RecordSift.Domain.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RecordSift.Domain.Diagnostics;
 
 namespace RecordSift.Domain.Results
 {

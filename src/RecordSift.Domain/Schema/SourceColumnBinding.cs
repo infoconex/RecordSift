@@ -1,5 +1,5 @@
-using RecordSift.Domain.Diagnostics;
 using System;
+using RecordSift.Domain.Diagnostics;
 
 namespace RecordSift.Domain.Schema
 {
