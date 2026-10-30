@@ -64,9 +64,15 @@ sources = [(str(path.relative_to(ROOT)), path.read_text(encoding="utf-8"))
            for path in root.rglob("*.cs")
            if path != CATALOG and path.name != "AssemblyInfo.cs"]
 errors.extend(validate_typed_message_contract(public_catalog, sources))
-# Negative self-test ensures relaxing public lookup and reintroducing literal keys fail.
-assert validate_typed_message_contract(
-    'public static string Get(string key) {}', [("invalid", 'DomainMessageResources.Get("Argument_DiagnosticNull")')])
+# Independent negative fixtures: each regression is rejected even when the
+# currently valid catalog and application sources are otherwise unchanged.
+assert not validate_typed_message_contract(public_catalog, []), "Valid typed catalog rejected"
+assert "Raw resource-key Get(string) must not be public" in validate_typed_message_contract(
+    public_catalog + "\npublic static string Get(string resourceKey) { }", [])
+assert any("literal resource lookup" in problem for problem in validate_typed_message_contract(
+    public_catalog, [("broken", 'DomainMessageResources.Get("Argument_DiagnosticNull")')]))
+assert any("raw Argument_" in problem for problem in validate_typed_message_contract(
+    public_catalog, [("broken", 'var key = "Argument_DiagnosticNull";')]))
 assert raw_argument_uses('DomainMessageResources.Get("Argument_DiagnosticNull")') == ["Argument_DiagnosticNull"]
 
 # Every explicit resource reference in the core must resolve.
@@ -93,4 +99,5 @@ if errors:
         print(" - " + error)
     sys.exit(1)
 print(f"Domain message guard passed: {len(defined_codes)} diagnostic codes, "
-      f"{len(entries)} resources, no inline production prose.")
+      f"{len(argument_keys)} typed argument message accessors, {len(entries)} resources, "
+      "no raw argument keys outside catalog and no inline production prose.")
