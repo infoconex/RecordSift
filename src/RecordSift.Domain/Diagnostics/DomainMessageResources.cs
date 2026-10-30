@@ -1,5 +1,5 @@
-using System.Resources;
 using System.Globalization;
+using System.Resources;
 
 namespace RecordSift.Domain.Diagnostics
 {
