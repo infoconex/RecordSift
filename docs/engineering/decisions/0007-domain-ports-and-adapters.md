@@ -1,10 +1,10 @@
 # ADR 0007 — Domain-centric ports, adapters and code standards
 
-**Status:** Accepted as engineering direction for issue [#84](https://github.com/infoconex/RecordSift/issues/84). Existing code does not yet comply completely; migration is separately tracked.
+**Status:** Accepted as engineering direction for issue [#84](https://github.com/infoconex/RecordSift/issues/84). The CsvHelper reader integration is addressed by ADR 0008 / issue #85; broader typed import architecture still evolves.
 
 ## Context
 
-The net48 baseline currently combines domain-facing source binding with `CsvTableReader` calling a hand-built static `CsvRecordReader`. This couples higher-level import code to a specific parser and makes adapter substitution and isolated unit testing difficult. Further CSV/XLSX support would amplify that risk. RecordSift also needs one clear, compatible C# coding style for human and AI contributions.
+The historical net48 baseline initially combined domain-facing source binding with `CsvTableReader` calling a hand-built static `CsvRecordReader`. This couples higher-level import code to a specific parser and makes adapter substitution and isolated unit testing difficult. Further CSV/XLSX support would amplify that risk. RecordSift also needs one clear, compatible C# coding style for human and AI contributions.
 
 ## Decision
 
@@ -24,4 +24,4 @@ The net48 baseline currently combines domain-facing source binding with `CsvTabl
 
 ## Migration and evidence
 
-[#85](https://github.com/infoconex/RecordSift/issues/85) owns implementation, explicit reader port, parser selection, ADR 0005 supersession and characterization/contract tests. It must preserve or explicitly document behavior. FR-001 #2 and FR-004 #14 remain independently traceable; this **architecture ADR does not establish implementation or passing tests**.
+[#85](https://github.com/infoconex/RecordSift/issues/85) owns the reader-port migration, parser selection, ADR 0005 supersession via ADR 0008 and characterization tests. It must preserve or explicitly document behavior. FR-001 #2 and FR-004 #14 remain independently traceable; this **architecture ADR does not establish implementation or passing tests**.

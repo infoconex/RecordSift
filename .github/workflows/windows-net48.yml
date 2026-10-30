@@ -76,13 +76,38 @@ jobs:
         run: |
           [xml]$config = Get-Content tests/RecordSift.Tests/packages.config -Raw
           $packages = @($config.packages.package)
-          if ($packages.Count -ne 2) { throw "Unexpected package count: $($packages.Count)" }
+          if ($packages.Count -ne 2) { throw "Unexpected test package count: $($packages.Count)" }
           $expected = @{ NUnit = '3.14.0'; 'NUnit.ConsoleRunner' = '3.17.0' }
           foreach ($package in $packages) {
             $id = [string]$package.id
             if (-not $expected.ContainsKey($id) -or $expected[$id] -ne [string]$package.version) {
               throw "Unexpected pinned dependency: $id $($package.version)"
             }
+          }
+          [xml]$adapterConfig = Get-Content src/RecordSift.CsvHelperAdapter/packages.config -Raw
+          $adapterPackages = @($adapterConfig.packages.package)
+          $adapterExpected = @{
+            CsvHelper = '33.1.0'
+            'Microsoft.Bcl.AsyncInterfaces' = '8.0.0'
+            'Microsoft.Bcl.HashCode' = '1.1.1'
+            'Microsoft.CSharp' = '4.7.0'
+            'System.Memory' = '4.5.5'
+            'System.Buffers' = '4.5.1'
+            'System.Numerics.Vectors' = '4.5.0'
+            'System.Runtime.CompilerServices.Unsafe' = '6.0.0'
+            'System.Threading.Tasks.Extensions' = '4.5.4'
+          }
+          if ($adapterPackages.Count -ne $adapterExpected.Count) {
+            throw "Unexpected CSV adapter package count: $($adapterPackages.Count)"
+          }
+          foreach ($package in $adapterPackages) {
+            $id = [string]$package.id
+            if (-not $adapterExpected.ContainsKey($id) -or $adapterExpected[$id] -ne [string]$package.version) {
+              throw "Unexpected CSV adapter dependency: $id $($package.version)"
+            }
+          }
+          if ((Get-Content src/RecordSift/RecordSift.csproj -Raw) -match 'CsvHelper|\\.\\.\\RecordSift.CsvHelperAdapter') {
+            throw "Domain core must not reference CSV parser vendor or adapter assemblies."
           }
           New-Item -ItemType Directory -Force -Path TestResults | Out-Null
           $lines = @(& nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config -Verbosity normal 2>&1)

@@ -1,6 +1,8 @@
 # ADR 0006 — Explicit CSV header policy over shared bindings
 
-**Decision:** FR-004 introduces an explicit `CsvHeaderPolicy` (`WithHeader` / `WithoutHeader`) and minimal raw `CsvTableReader` that composes the FR-001 text reader, FR-009 named schema binder and FR-013 positional binder.
+**Decision:** FR-004 introduces an explicit `CsvHeaderPolicy` (`WithHeader` / `WithoutHeader`) and minimal raw `CsvTableReader` that composes an FR-001 CSV record reader, FR-009 named schema binder and FR-013 positional binder.
+
+**Implementation note:** The original static reader was replaced in [issue #85](https://github.com/infoconex/RecordSift/issues/85) by an injectable `ICsvRecordReader` with a separate CsvHelper adapter; see [ADR 0008](0008-csvhelper-isolated-adapter.md). Header and schema rules below remain unchanged.
 
 ## Rules and behavior
 

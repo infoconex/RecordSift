@@ -1,6 +1,6 @@
 # RecordSift engineering documentation
 
-These pages specify the proposed product and engineering process for **release 0.1**; they do not imply an implementation exists.
+These pages specify the product and engineering process for **release 0.1**. Some in-memory and raw CSV components are implemented; the complete typed import API and all end-to-end acceptance scenarios are not yet implemented.
 
 ## Requirement catalogs
 
@@ -19,15 +19,16 @@ The FR-009 source-column schema binding contract is implemented and unit-tested 
 
 The FR-013 explicit positional binding contract is implemented and unit-tested without claiming typed-record or source-reader integration.
 
-The FR-001 reader now handles bounded raw CSV tokenization, including quoting and physical lines, without header interpretation or typed-record materialization. Issue #2 remains open for the full import API and acceptance scenarios.
+The FR-001 raw CSV reader now uses a separately packaged CsvHelper adapter behind `ICsvRecordReader`; the core keeps the parser-independent record and diagnostic contracts. It still does not map CLR types or complete public typed imports. Issue #2 remains open for the full import API and acceptance scenarios.
 
-The FR-004 header policy integrates the CSV parser with named/positional bindings and keeps logical data-row numbering independent of headers. Complete typed imports and final result reporting remain forthcoming.
+The FR-004 header policy integrates an injected CSV reader port with named/positional bindings and keeps logical data-row numbering independent of headers. Complete typed imports and final result reporting remain forthcoming.
 
 ## Architecture, code style and dependency isolation
 
 - [Domain-centric architecture and SOLID boundaries](engineering/architecture.md) — ports, adapters, direction of dependencies, mockable seams and security.
 - [Microsoft C# conventions](engineering/csharp-style.md) — .NET Framework 4.8 / C# 7.3 compatible code and editor settings.
-- [ADR 0007 — Domain-centric ports and adapters](engineering/decisions/0007-domain-ports-and-adapters.md) — accepted design direction; existing CSV parser migration is **pending**, not complete.
+- [ADR 0007 — Domain-centric ports and adapters](engineering/decisions/0007-domain-ports-and-adapters.md) — accepted design direction.
+- [ADR 0008 — Isolated CsvHelper adapter](engineering/decisions/0008-csvhelper-isolated-adapter.md) — RecordSift-owned port and pinned library integration.
 - [#84 — Engineering conventions](https://github.com/infoconex/RecordSift/issues/84) and [#85 — Third-party CSV adapter migration](https://github.com/infoconex/RecordSift/issues/85) are separately scoped implementation work.
 
 ## Independent engineering issues

@@ -10,7 +10,7 @@ namespace RecordSift
     /// </summary>
     public sealed class CsvRecord
     {
-        internal CsvRecord(int sourceRecordNumber, int physicalLine, IEnumerable<string> fields)
+        public CsvRecord(int sourceRecordNumber, int physicalLine, IEnumerable<string> fields)
         {
             if (sourceRecordNumber < 1)
                 throw new ArgumentOutOfRangeException(nameof(sourceRecordNumber));

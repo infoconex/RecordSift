@@ -45,12 +45,19 @@
     <Compile Include="PositionalBindingTests.cs" />
     <Compile Include="CsvRecordReaderTests.cs" />
     <Compile Include="CsvHeaderPolicyTests.cs" />
+    <Compile Include="CsvReaderPortTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\RecordSift\RecordSift.csproj">
       <Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project>
       <Name>RecordSift</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\\..\\src\\RecordSift.CsvHelperAdapter\\RecordSift.CsvHelperAdapter.csproj">
+      <Project>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</Project>
+      <Name>RecordSift.CsvHelperAdapter</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using RecordSift.Adapters.CsvHelper;
 
 namespace RecordSift.Tests
 {
@@ -11,7 +12,7 @@ namespace RecordSift.Tests
         private static CsvParseResult Parse(string text, int maxCharacters = 4096)
         {
             using (var reader = new StringReader(text))
-                return CsvRecordReader.Read(reader, maxCharacters);
+                return new CsvHelperRecordReader().Read(reader, maxCharacters);
         }
 
         [Test]
@@ -153,7 +154,7 @@ namespace RecordSift.Tests
         {
             using (var source = new ThrowingReader())
             {
-                var result = CsvRecordReader.Read(source, 20);
+                var result = new CsvHelperRecordReader().Read(source, 20);
                 Assert.That(result.IsSuccessful, Is.False);
                 Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceUnreadable));
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("/private/customer.csv"));
@@ -163,7 +164,7 @@ namespace RecordSift.Tests
         [Test]
         public void NullSourceAndInvalidBudgetAreRejected()
         {
-            Assert.Throws<ArgumentNullException>(() => CsvRecordReader.Read(null, 10));
+            Assert.Throws<ArgumentNullException>(() => new CsvHelperRecordReader().Read(null, 10));
             Assert.Throws<ArgumentOutOfRangeException>(() => Parse("data", 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => Parse("data", -1));
         }
@@ -182,7 +183,7 @@ namespace RecordSift.Tests
         {
             using (var text = new StringReader("a,b"))
             {
-                CsvRecordReader.Read(text, 10);
+                new CsvHelperRecordReader().Read(text, 10);
                 Assert.DoesNotThrow(() => text.Peek());
             }
         }
