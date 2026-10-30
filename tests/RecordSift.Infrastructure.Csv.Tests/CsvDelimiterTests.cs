@@ -3,6 +3,11 @@ using System.IO;
 using NUnit.Framework;
 using RecordSift;
 using RecordSift.Infrastructure.Csv;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Importing.Csv;
 
 namespace RecordSift.Infrastructure.Csv.Tests
 {
