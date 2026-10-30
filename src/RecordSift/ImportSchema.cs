@@ -34,6 +34,72 @@ namespace RecordSift
         /// order and zero-based source column indices. Invalid binding yields no partial
         /// mappings, only source-scope errors for declared columns.
         /// </summary>
+        /// <summary>
+        /// Bind explicit zero-based source field positions for a source with the supplied
+        /// field count. Reject ambiguous positions and all out-of-range declarations.
+        /// This does not access a CSV/XLSX reader or materialize typed objects.
+        /// </summary>
+        public SchemaBindingResult BindPositions(int sourceFieldCount,
+            IEnumerable<SourceColumnPosition> positions)
+        {
+            if (sourceFieldCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(sourceFieldCount));
+            if (positions == null)
+                throw new ArgumentNullException(nameof(positions));
+
+            var declarations = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var column in Columns)
+                declarations.Add(column.Name);
+
+            var mappings = new Dictionary<string, int>(StringComparer.Ordinal);
+            var usedIndexes = new Dictionary<int, int>();
+            foreach (var mapping in positions)
+            {
+                if (mapping == null)
+                    throw new ArgumentException("Position mappings cannot contain null.", nameof(positions));
+                if (!declarations.Contains(mapping.Name))
+                    throw new ArgumentException("Position mapping refers to an undeclared source column.",
+                        nameof(positions));
+                if (mappings.ContainsKey(mapping.Name))
+                    throw new ArgumentException("A declared source column cannot have multiple positions.",
+                        nameof(positions));
+                mappings.Add(mapping.Name, mapping.SourceIndex);
+
+                int count;
+                usedIndexes.TryGetValue(mapping.SourceIndex, out count);
+                usedIndexes[mapping.SourceIndex] = count + 1;
+            }
+
+            var foundBindings = new List<SourceColumnBinding>();
+            var errors = new List<ImportDiagnostic>();
+            foreach (var column in Columns)
+            {
+                int index;
+                if (!mappings.TryGetValue(column.Name, out index))
+                {
+                    if (column.IsRequired)
+                        errors.Add(ImportDiagnostic.ForSource(column.Name,
+                            DiagnosticCodes.RequiredColumnMissing));
+                }
+                else if (index >= sourceFieldCount)
+                {
+                    errors.Add(ImportDiagnostic.ForSource(column.Name,
+                        DiagnosticCodes.InvalidColumnPosition));
+                }
+                else if (usedIndexes[index] != 1)
+                {
+                    errors.Add(ImportDiagnostic.ForSource(column.Name,
+                        DiagnosticCodes.AmbiguousColumn));
+                }
+                else
+                {
+                    foundBindings.Add(new SourceColumnBinding(column.Name, index));
+                }
+            }
+
+            return new SchemaBindingResult(foundBindings, errors);
+        }
+
         public SchemaBindingResult BindHeaders(IEnumerable<string> sourceHeaders)
         {
             if (sourceHeaders == null) throw new ArgumentNullException(nameof(sourceHeaders));

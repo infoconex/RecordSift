@@ -40,8 +40,8 @@
 | FR-011-SC02 | FR-011 | Must | [#4](https://github.com/infoconex/RecordSift/issues/4) | [FR-011 scenarios](../scenarios/functional/FR-011.md) | — | Planned | — |
 | FR-012-SC01 | FR-012 | Must | [#8](https://github.com/infoconex/RecordSift/issues/8) | [FR-012 scenarios](../scenarios/functional/FR-012.md) | — | Planned | — |
 | FR-012-SC02 | FR-012 | Must | [#8](https://github.com/infoconex/RecordSift/issues/8) | [FR-012 scenarios](../scenarios/functional/FR-012.md) | — | Planned | — |
-| FR-013-SC01 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | — | Planned | — |
-| FR-013-SC02 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | — | Planned | — |
+| FR-013-SC01 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | `RecordSift.Tests.PositionalBindingTests.FR_013_SC01_NamedAndPositionalBindingsIdentifyEquivalentFields` | Planned | Unit-level explicit position binding; typed CSV/XLSX import integration pending (CI evidence to follow). |
+| FR-013-SC02 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | `RecordSift.Tests.PositionalBindingTests.FR_013_SC02_OutOfRangePositionIsAClassifiedSourceError` | Planned | Unit-level explicit position binding; typed CSV/XLSX import integration pending (CI evidence to follow). |
 | FR-014-SC01 | FR-014 | Should | [#16](https://github.com/infoconex/RecordSift/issues/16) | [FR-014 scenarios](../scenarios/functional/FR-014.md) | — | Planned | — |
 | FR-014-SC02 | FR-014 | Should | [#16](https://github.com/infoconex/RecordSift/issues/16) | [FR-014 scenarios](../scenarios/functional/FR-014.md) | — | Planned | — |
 | FR-015-SC01 | FR-015 | Should | [#20](https://github.com/infoconex/RecordSift/issues/20) | [FR-015 scenarios](../scenarios/functional/FR-015.md) | — | Planned | — |

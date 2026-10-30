@@ -42,6 +42,7 @@
     <Compile Include="ExpectedColumn.cs" />
     <Compile Include="ImportSchema.cs" />
     <Compile Include="SourceColumnBinding.cs" />
+    <Compile Include="SourceColumnPosition.cs" />
     <Compile Include="SchemaBindingResult.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
