@@ -1,6 +1,6 @@
 # ADR 0007 — Domain-centric ports, adapters and code standards
 
-**Status:** Accepted as engineering direction for issue [#84](https://github.com/infoconex/RecordSift/issues/84). The CsvHelper reader integration is addressed by ADR 0008 / issue #85; broader typed import architecture still evolves.
+**Status:** Historical accepted direction, superseded in physical project organization by [ADR 0013](0013-physical-domain-application-infrastructure-assemblies.md) / [#95](https://github.com/infoconex/RecordSift/issues/95). Originally accepted for issue [#84](https://github.com/infoconex/RecordSift/issues/84). The CsvHelper reader integration is addressed by ADR 0008 / issue #85; broader typed import architecture still evolves.
 
 ## Context
 
@@ -20,7 +20,7 @@ The historical net48 baseline initially combined domain-facing source binding wi
 - Keep calling a static home-grown CSV parser: rejected as a permanent architecture because syntax maintenance is unrelated to the RecordSift domain and prevents clean substitution.
 - Expose vendor models directly in the public import API: rejected because upgrades could break clients and domain rules.
 - Add a DI container or many speculative abstractions: rejected as unnecessary for a reusable library.
-- Immediately split every domain concern into its own project: deferred; create physical adapter assemblies when a third-party dependency is introduced, protecting the core assembly without churn.
+- Immediately split every domain concern into its own project: originally deferred in #84; **superseded** by the explicitly approved domain/application assembly split in ADR 0013 once physical boundaries became required.
 
 ## Verifying substitutability
 
