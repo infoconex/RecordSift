@@ -49,6 +49,8 @@ tests/
   RecordSift.Infrastructure.Csv.Tests/      -> Application.Tests (shared fixture) + Application + Domain + CSV adapter
 ```
 
+For core assemblies, [ADR 0019](decisions/0019-approved-core-framework-dependencies.md) explicitly allowlists only current framework assembly references (`System` and `System.Core`) and the traditional Microsoft C# MSBuild target. Any other assembly, package reference/download/version, explicit HintPath, analyzer or nonstandard build import is rejected by the architecture gate. This is intentionally conservative: new framework or third-party references require an independently reviewed policy change, not a silent package addition.
+
 The **Domain assembly does not reference `System.IO`, `TextReader`, the application assembly, or any third-party parser**. Application owns the reader port and may use framework IO types at an input boundary, but never a vendor parser type. Infrastructure translates parser exceptions into Domain-owned codes and resource-backed messages.
 
 `scripts/validate_architecture_layers.py` verifies source ownership, explicit traditional project `Compile` items, resource identity, legal `ProjectReference` edges, test assembly isolation and negative dependency test cases in CI. The validator also enforces exact responsibility-aligned namespaces and rejects flat declarations; independent NUnit reflection checks verify the public API namespace surface. The compiler enforces the same references. See [ADR 0013](decisions/0013-physical-domain-application-infrastructure-assemblies.md).

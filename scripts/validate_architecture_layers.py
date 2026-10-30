@@ -83,10 +83,48 @@ def verify_namespace(source, expected, location):
     ]
 
 
+CORE_FRAMEWORK_REFERENCES = {
+    "RecordSift.Domain": {"System", "System.Core"},
+    "RecordSift.Application": {"System", "System.Core"},
+}
+CORE_ALLOWED_IMPORT = r"$(MSBuildToolsPath)\Microsoft.CSharp.targets"
+
 def verify_core_dependency_metadata(root, project_name):
-    """Reject any non-framework dependency metadata in Domain/Application."""
-    # RED: acceptance guard is introduced before a working implementation.
-    return []
+    """Allow only approved .NET Framework assembly references and the MSBuild C# target.
+
+    ProjectReferences are independently checked by verify_dependency_graph.
+    Do not accept a vendor DLL under a System-prefixed assembly or a disguised
+    HintPath/Import/PackageReference/Analyzer.
+    """
+    errors = []
+    allowed = CORE_FRAMEWORK_REFERENCES[project_name]
+    for reference in items(root, "Reference"):
+        identity = reference.attrib.get("Include", "")
+        if identity not in allowed:
+            errors.append(f"{project_name}: unauthorized assembly reference {identity}")
+        if items(reference, "HintPath"):
+            errors.append(f"{project_name}: explicit assembly HintPath is forbidden")
+    for tag in ("PackageReference", "PackageDownload", "PackageVersion",
+                "Analyzer", "COMReference", "COMFileReference",
+                "ReferencePath", "UsingTask", "NuGetPackageImportStamp"):
+        if items(root, tag):
+            errors.append(f"{project_name}: forbidden dependency metadata {tag}")
+    for item in items(root, "Import"):
+        target = item.attrib.get("Project", "")
+        if target != CORE_ALLOWED_IMPORT:
+            errors.append(f"{project_name}: unauthorized build import {target}")
+    if root.attrib.get("Sdk"):
+        errors.append(f"{project_name}: unexpected SDK project import")
+    for tag in ("None", "Content", "EmbeddedResource"):
+        for item in items(root, tag):
+            if item.attrib.get("Include", "").replace("\\", "/").lower().endswith("packages.config"):
+                errors.append(f"{project_name}: package manifest is forbidden")
+    for tag in ("RestoreProjectStyle", "RestoreSources",
+                "RestoreAdditionalProjectSources", "RestorePackagesPath",
+                "RestoreAdditionalProjectFallbackFolders"):
+        if items(root, tag):
+            errors.append(f"{project_name}: forbidden package restore metadata {tag}")
+    return errors
 
 
 def verify_layout():
@@ -120,10 +158,9 @@ def verify_layout():
             errors.append(f"{name}: missing expected layer file {missing}")
         for path in sorted(actual - expected_files):
             errors.append(f"{name}: unexpected source file (assign explicit owner) {path}")
-        for element in items(root, "Reference"):
-            reference = element.attrib.get("Include", "")
-            if name == "RecordSift.Domain" and not reference.startswith("System"):
-                errors.append(f"Domain cannot reference an external package/assembly: {reference}")
+        errors.extend(verify_core_dependency_metadata(root, name))
+        for manifest in location.rglob("packages.config"):
+            errors.append(f"{name}: forbidden external package manifest {manifest.relative_to(ROOT)}")
         csproj_text = project_path.read_text(encoding="utf-8")
         if "CsvHelper" in csproj_text:
             errors.append(f"{name}: application/domain layer references CsvHelper")
