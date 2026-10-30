@@ -27,7 +27,15 @@ namespace RecordSift.Adapters.CsvHelper
                 Delimiter = ",",
                 HasHeaderRecord = false,
                 IgnoreBlankLines = false,
-                ExceptionMessagesContainRawData = false
+                ExceptionMessagesContainRawData = false,
+                BadDataFound = args =>
+                {
+                    // CsvHelper identifies the malformed raw field; count physical line
+                    // breaks within that field to locate its opening line without parsing CSV.
+                    var currentLine = args.Context.Parser.RawRow;
+                    var fieldLines = CountLineBreaks(args.Field);
+                    throw new MalformedCsvException(Math.Max(1, currentLine - fieldLines));
+                }
             };
 
             try
@@ -43,6 +51,11 @@ namespace RecordSift.Adapters.CsvHelper
                 }
 
                 return CsvParseResult.Success(records);
+            }
+            catch (MalformedCsvException error)
+            {
+                return CsvParseResult.Failure(ImportDiagnostic.ForSource(null,
+                    DiagnosticCodes.MalformedSource, null, null, error.PhysicalLine));
             }
             catch (CharacterLimitExceededException)
             {
@@ -64,6 +77,29 @@ namespace RecordSift.Adapters.CsvHelper
                 return CsvParseResult.Failure(ImportDiagnostic.ForSource(null,
                     DiagnosticCodes.SourceUnreadable));
             }
+        }
+
+        private static int CountLineBreaks(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return 0;
+
+            var lines = 0;
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (value[i] == '\\r')
+                {
+                    lines++;
+                    if (i + 1 < value.Length && value[i + 1] == '\\n')
+                        i++;
+                }
+                else if (value[i] == '\\n')
+                {
+                    lines++;
+                }
+            }
+
+            return lines;
         }
     }
 
@@ -111,6 +147,16 @@ namespace RecordSift.Adapters.CsvHelper
             // Explicitly do not dispose caller-owned TextReader.
             base.Dispose(disposing);
         }
+    }
+
+    internal sealed class MalformedCsvException : Exception
+    {
+        internal MalformedCsvException(int physicalLine)
+        {
+            PhysicalLine = physicalLine;
+        }
+
+        internal int PhysicalLine { get; private set; }
     }
 
     internal sealed class CharacterLimitExceededException : Exception
