@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 
-namespace RecordSift.Application.Abstractions.Csv
+namespace RecordSift.Application.Ports.Csv
 {
     /// <summary>
     /// Result of raw CSV tokenization only. This is not a typed ImportResult and

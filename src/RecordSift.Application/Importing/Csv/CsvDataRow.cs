@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Ports.Csv;
 
 namespace RecordSift.Application.Importing.Csv
 {

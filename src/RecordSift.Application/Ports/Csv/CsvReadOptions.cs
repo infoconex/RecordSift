@@ -1,4 +1,4 @@
-namespace RecordSift.Application.Abstractions.Csv
+namespace RecordSift.Application.Ports.Csv
 {
     /// <summary>
     /// Vendor-neutral CSV parser configuration for an already-decoded source.

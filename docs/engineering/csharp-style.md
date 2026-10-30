@@ -5,7 +5,7 @@
 ## Current target and compatibility
 
 - **Target:** .NET Framework 4.8, conventional non-SDK Visual Studio projects, `LangVersion` **7.3**. Do not use newer language features (file-scoped namespaces, nullable-reference annotations, records, primary constructors, global usings, newer pattern forms) merely because a recent SDK supports them.
-- Use block-scoped, assembly/responsibility-aligned namespaces (`RecordSift.Domain.Diagnostics`, `RecordSift.Domain.Schema`, `RecordSift.Domain.Results`, `RecordSift.Application.Abstractions.Csv`, `RecordSift.Application.Importing.Csv`, or `RecordSift.Infrastructure.Csv`), four-space indents, UTF-8, LF, one declaration per relevant file, and consistent braces for new/modified control-flow code.
+- Use block-scoped, assembly/responsibility-aligned namespaces (`RecordSift.Domain.Diagnostics`, `RecordSift.Domain.Schema`, `RecordSift.Domain.Results`, `RecordSift.Application.Ports.Csv`, `RecordSift.Application.Importing.Csv`, or `RecordSift.Infrastructure.Csv`), four-space indents, UTF-8, LF, one declaration per relevant file, and consistent braces for new/modified control-flow code.
 - Use `using` directives outside the namespace, sort `System` first, eliminate unused imports and avoid wildcard imports. Do not change legacy files solely to satisfy cosmetic preferences outside the issue scope.
 
 ## Names, APIs and safety
