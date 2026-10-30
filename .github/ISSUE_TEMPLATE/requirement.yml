@@ -1,0 +1,52 @@
+name: Individual requirement
+description: Track one independently verifiable FR, NFR, or engineering requirement.
+title: "FR-###: "
+body:
+  - type: markdown
+    attributes:
+      value: "Create one issue per distinct requirement. Check for existing IDs in docs/requirements/."
+  - type: input
+    id: requirement-id
+    attributes:
+      label: Stable requirement ID
+      description: "Use FR-### or NFR-###, or link an independently scoped engineering task."
+      placeholder: "FR-040"
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Must - release 0.1
+        - Should - backlog
+        - Future - deferred
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observable behavior or quality obligation
+      description: Describe one requirement without combining unrelated features.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance scenarios
+      description: Use stable scenario IDs, clear Given/When/Then expectations, and edge cases.
+      placeholder: "FR-040-SC01: Given ... When ... Then ..."
+    validations:
+      required: true
+  - type: textarea
+    id: testing
+    attributes:
+      label: Verification plan
+      description: State expected test level, fixture/data, and evidence. A plan is not a passing test.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and risks
+      description: Cross-reference related issues; avoid merging their implementation into this issue.
