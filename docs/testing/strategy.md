@@ -61,4 +61,4 @@ Use a maintained test framework and adapter compatible with the historical net48
 
 ## Current status
 
-**All 109 requirement scenarios remain Planned.** Initial .NET Framework 4.8 assembly smoke tests ran on Windows ([run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680): 3 passed, 0 failed). These are not requirement acceptance tests. Ongoing CI is implemented through issue #64.
+**FR-030-SC01–SC05 have observed in-memory unit evidence; the remaining 104 requirement scenarios remain Planned.** Initial .NET Framework 4.8 assembly smoke tests ran on Windows ([run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680): 3 passed, 0 failed). These are not requirement acceptance tests. Ongoing CI is implemented through issue #64.

@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 109 currently specified acceptance scenarios, all currently **Planned**. This table does not attest to functional implementation or any passing test.
+**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. This does not establish CSV/XLSX end-to-end behavior.
 
 ## Maintenance contract
 
@@ -75,11 +75,11 @@
 | FR-028-SC03 | FR-028 | Must | [#29](https://github.com/infoconex/RecordSift/issues/29) | [FR-028 scenarios](../scenarios/functional/FR-028.md) | — | Planned | — |
 | FR-029-SC01 | FR-029 | Must | [#30](https://github.com/infoconex/RecordSift/issues/30) | [FR-029 scenarios](../scenarios/functional/FR-029.md) | — | Planned | — |
 | FR-029-SC02 | FR-029 | Must | [#30](https://github.com/infoconex/RecordSift/issues/30) | [FR-029 scenarios](../scenarios/functional/FR-029.md) | — | Planned | — |
-| FR-030-SC01 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
-| FR-030-SC02 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
-| FR-030-SC03 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
-| FR-030-SC04 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
-| FR-030-SC05 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
+| FR-030-SC01 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | `RecordSift.Tests.ImportSummaryTests.FR_030_SC01_CompletedSummaryCountsDistinctRejectedRows` | Automated | [NUnit 16/16, Windows #41021017738](https://github.com/infoconex/RecordSift/actions/runs/41021017738) — in-memory summary unit; CSV integration pending |
+| FR-030-SC02 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | `RecordSift.Tests.ImportSummaryTests.FR_030_SC02_OptionalBlankFieldWithoutErrorsCountsAsAccepted` | Automated | [NUnit 16/16, Windows #41021017738](https://github.com/infoconex/RecordSift/actions/runs/41021017738) — in-memory summary unit; CSV integration pending |
+| FR-030-SC03 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | `RecordSift.Tests.ImportSummaryTests.FR_030_SC03_CompletedEmptyAndMissingHeaderFailureDifferByStatus` | Automated | [NUnit 16/16, Windows #41021017738](https://github.com/infoconex/RecordSift/actions/runs/41021017738) — in-memory summary unit; CSV integration pending |
+| FR-030-SC04 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | `RecordSift.Tests.ImportSummaryTests.FR_030_SC04_MultipleErrorsPerRowDoNotInflateRejectedCount` | Automated | [NUnit 16/16, Windows #41021017738](https://github.com/infoconex/RecordSift/actions/runs/41021017738) — in-memory summary unit; CSV integration pending |
+| FR-030-SC05 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | `RecordSift.Tests.ImportSummaryTests.FR_030_SC05_RejectedRowsStillCompleteImportProcessing` | Automated | [NUnit 16/16, Windows #41021017738](https://github.com/infoconex/RecordSift/actions/runs/41021017738) — in-memory summary unit; CSV integration pending |
 | FR-031-SC01 | FR-031 | Should | [#32](https://github.com/infoconex/RecordSift/issues/32) | [FR-031 scenarios](../scenarios/functional/FR-031.md) | — | Planned | — |
 | FR-031-SC02 | FR-031 | Should | [#32](https://github.com/infoconex/RecordSift/issues/32) | [FR-031 scenarios](../scenarios/functional/FR-031.md) | — | Planned | — |
 | FR-032-SC01 | FR-032 | Should | [#33](https://github.com/infoconex/RecordSift/issues/33) | [FR-032 scenarios](../scenarios/functional/FR-032.md) | — | Planned | — |

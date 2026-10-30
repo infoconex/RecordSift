@@ -9,7 +9,7 @@ These pages specify the proposed product and engineering process for **release 0
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 planned scenarios.
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (five FR-030 summary-unit scenarios automated, the remaining 104 planned).
 - [Draft import specification](specifications/record-import.md)
 - [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
 - [TDD and test types](testing/strategy.md)
@@ -30,7 +30,7 @@ These pages specify the proposed product and engineering process for **release 0
 - `FR-###` and `NFR-###` identify requirements permanently.
 - Each requirement has one independent issue, which links to its authoritative scenario Markdown file under `docs/scenarios/`.
 - Priority `Must` applies to the release 0.1 scope; `Should` and `Future` remain backlog items unless deliberately moved into the release by a documented change.
-- Every scenario is **Planned** until a linked test/check is implemented and execution evidence exists.
+- Scenarios remain **Planned** until a linked test/check has observed execution evidence; FR-030 summary-level unit tests now provide evidence for SC01–SC05, but do not verify end-to-end import behavior.
 - An issue may cross-reference other requirements without becoming responsible for implementing them.
 - Requirement, scenario, test, PR, and release evidence are linked in [the traceability matrix](testing/traceability.md).
 
