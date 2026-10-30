@@ -87,13 +87,13 @@ namespace RecordSift.Adapters.CsvHelper
             var lines = 0;
             for (var i = 0; i < value.Length; i++)
             {
-                if (value[i] == '\\r')
+                if (value[i] == '\r')
                 {
                     lines++;
-                    if (i + 1 < value.Length && value[i + 1] == '\\n')
+                    if (i + 1 < value.Length && value[i + 1] == '\n')
                         i++;
                 }
-                else if (value[i] == '\\n')
+                else if (value[i] == '\n')
                 {
                     lines++;
                 }
