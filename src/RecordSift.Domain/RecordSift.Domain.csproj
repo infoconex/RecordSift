@@ -45,6 +45,7 @@
     <Compile Include="Results\ImportResult.cs" />
     <Compile Include="Results\ImportStatus.cs" />
     <Compile Include="Results\ImportSummary.cs" />
+    <Compile Include="Results\TypedImportResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Diagnostics\Resources\DomainMessages.resx">

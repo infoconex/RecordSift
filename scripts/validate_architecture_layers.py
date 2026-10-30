@@ -19,11 +19,11 @@ EXPECTED = {
         "Diagnostics": ("DiagnosticCodes", "DiagnosticScope", "DomainMessageResources", "ImportDiagnostic"),
         "Schema": ("ExpectedColumn", "ImportSchema", "SchemaBindingResult",
                    "SourceColumnBinding", "SourceColumnPosition"),
-        "Results": ("ImportResult", "ImportStatus", "ImportSummary"),
+        "Results": ("ImportResult", "ImportStatus", "ImportSummary", "TypedImportResult"),
     },
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
-        "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult"),
+        "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Messages": ("CsvMessageResources",),
     },
 }

@@ -34,4 +34,7 @@
   <data name="Argument_SourcePositionName" xml:space="preserve"><value>Declared column name must be nonempty.</value></data>
   <data name="Argument_BoundColumnName" xml:space="preserve"><value>Bound column name must be nonempty.</value></data>
   <data name="Argument_UnknownDiagnosticCode" xml:space="preserve"><value>Unknown diagnostic code.</value></data>
+  <data name="Argument_AcceptedRecordCountMismatch" xml:space="preserve"><value>The accepted record count must match the import summary.</value></data>
+  <data name="Argument_ImportSourceIdBlank" xml:space="preserve"><value>The source identifier must be nonempty.</value></data>
+  <data name="Argument_ImportMessageBlank" xml:space="preserve"><value>The import outcome message must be nonempty.</value></data>
 </root>

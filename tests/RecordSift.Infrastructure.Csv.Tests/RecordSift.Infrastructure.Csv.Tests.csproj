@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="CsvAdapterContractConformanceTests.cs" />
     <Compile Include="CsvHeaderPolicyTests.cs" />
+    <Compile Include="CsvImporterIntegrationTests.cs" />
     <Compile Include="CsvDelimiterTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
