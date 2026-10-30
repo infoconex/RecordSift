@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using RecordSift.Application.Ports.Csv;
 using RecordSift.Application.Messages;
+using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Schema;
 
