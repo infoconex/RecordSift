@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Importing.Csv;
 
-namespace RecordSift
+namespace RecordSift.Application.Importing.Csv
 {
     /// <summary>
     /// Applies an explicit CSV header policy to raw logical source records, using

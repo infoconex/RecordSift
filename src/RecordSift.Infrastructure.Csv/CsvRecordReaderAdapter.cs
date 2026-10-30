@@ -4,6 +4,11 @@ using System.Globalization;
 using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Importing.Csv;
 
 namespace RecordSift.Infrastructure.Csv
 {

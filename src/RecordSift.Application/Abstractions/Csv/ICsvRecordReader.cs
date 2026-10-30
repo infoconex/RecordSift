@@ -1,6 +1,11 @@
 using System.IO;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Importing.Csv;
 
-namespace RecordSift
+namespace RecordSift.Application.Abstractions.Csv
 {
     /// <summary>
     /// RecordSift-owned input port: all CSV adapters implement this exact contract,

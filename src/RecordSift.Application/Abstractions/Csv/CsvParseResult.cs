@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Importing.Csv;
 
-namespace RecordSift
+namespace RecordSift.Application.Abstractions.Csv
 {
     /// <summary>
     /// Result of raw CSV tokenization only. This is not a typed ImportResult and
