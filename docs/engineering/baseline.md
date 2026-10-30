@@ -21,6 +21,10 @@ New-Item -ItemType Directory -Force -Path .\TestResults | Out-Null
 
 All commands must succeed; the resulting `TestResults/nunit-results.xml` must contain at least three tests and zero failures. Windows release-branch CI from issue #64 runs the same commands on PRs, release pushes and manual dispatch, and uploads NUnit XML evidence.
 
+## Current architecture (after engineering issues #95, #97 and #99)
+
+The original issue #57 `src/RecordSift` entry below is **historical**, not a current build path. The live historical-format solution now contains `src/RecordSift.Domain`, `src/RecordSift.Application` and `src/RecordSift.Infrastructure.Csv` as separate net48 assemblies. The tests are also separate: vendor-independent `tests/RecordSift.Tests` and real-adapter `tests/RecordSift.Infrastructure.Csv.Tests`. Follow the current Windows workflow for the complete two-suite NUnit and dependency-audit commands. The legacy flat `RecordSift` public namespace is superseded by [ADR 0015](decisions/0015-layer-aligned-public-namespaces.md).
+
 ## Project structure and versioned dependencies
 
 | Path | Purpose |

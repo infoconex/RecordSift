@@ -30,6 +30,7 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] Docs, specs and acceptance criteria updated if the contract changed.
 - [ ] Security/privacy implications of untrusted files considered.
 - [ ] Infrastructure projects use `RecordSift.Infrastructure.<Format>`; concrete implementations that bridge third-party APIs use `Adapter` suffix, while application interfaces remain vendor-neutral.
+- [ ] Public Domain/Application C# namespaces reflect their physical layer and responsibility; do not introduce `namespace RecordSift` flat type declarations. For breaking changes update ADR 0015 migration documentation and API tests.
 - [ ] Physical assembly dependency graph is `Domain <- Application <- Infrastructure` (vendor adapter may also directly reference Domain), checked by `scripts/validate_architecture_layers.py` and project references; public API assembly moves reviewed.
 - [ ] Replaceable input/validation seams have fake-based unit tests **and** real-adapter component tests when adapters change (or explain why not applicable).
 - [ ] Domain-owned diagnostic codes, invariant resource-backed messages and configuration defaults preserved; no hardcoded production prose or vendor exception text leaks.
