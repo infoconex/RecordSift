@@ -6,8 +6,8 @@
     <ProjectGuid>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RecordSift.Infrastructure.CsvHelper</RootNamespace>
-    <AssemblyName>RecordSift.Infrastructure.CsvHelper</AssemblyName>
+    <RootNamespace>RecordSift.Infrastructure.Csv</RootNamespace>
+    <AssemblyName>RecordSift.Infrastructure.Csv</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>7.3</LangVersion>
@@ -60,7 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CsvHelperRecordReader.cs" />
+    <Compile Include="CsvRecordReader.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
