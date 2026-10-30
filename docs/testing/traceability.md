@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028/009/013 unit contracts and FR-001 raw CSV parser component tests executed (79/79 total NUnit tests). Only the five FR-030 in-memory scenarios are Automated; 104 other acceptance scenarios remain Planned pending full import integration. This does not establish CSV/XLSX end-to-end behavior.
+**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028/009/013 contracts, FR-001 parser and FR-004 header-policy components have unit/component tests (94/94 NUnit). Only the five FR-030 in-memory scenarios are Automated; the remaining 104 acceptance scenarios remain Planned pending full import integration. This does not establish CSV/XLSX end-to-end behavior.
 
 ## Maintenance contract
 
@@ -22,8 +22,8 @@
 | FR-002-SC02 | FR-002 | Must | [#6](https://github.com/infoconex/RecordSift/issues/6) | [FR-002 scenarios](../scenarios/functional/FR-002.md) | — | Planned | — |
 | FR-003-SC01 | FR-003 | Must | [#10](https://github.com/infoconex/RecordSift/issues/10) | [FR-003 scenarios](../scenarios/functional/FR-003.md) | — | Planned | — |
 | FR-003-SC02 | FR-003 | Must | [#10](https://github.com/infoconex/RecordSift/issues/10) | [FR-003 scenarios](../scenarios/functional/FR-003.md) | — | Planned | — |
-| FR-004-SC01 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | `RecordSift.Tests.CsvHeaderPolicyTests.FR_004_SC01_HeadedAndHeaderlessCsvRetainIdenticalDataRows` | Planned | Real CSV text, component header-policy/schema binding; typed import acceptance pending (CI evidence to follow). |
-| FR-004-SC02 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | `RecordSift.Tests.CsvHeaderPolicyTests.FR_004_SC02_MissingRequiredCsvHeaderFailsWithoutBindingAnyData` | Planned | Real CSV text, component header-policy/schema binding; typed import acceptance pending (CI evidence to follow). |
+| FR-004-SC01 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | `RecordSift.Tests.CsvHeaderPolicyTests.FR_004_SC01_HeadedAndHeaderlessCsvRetainIdenticalDataRows` | Planned | [NUnit 94/94, Windows #41075489461](https://github.com/infoconex/RecordSift/actions/runs/41075489461) — real CSV raw-record/header binding component; typed import acceptance pending. |
+| FR-004-SC02 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | `RecordSift.Tests.CsvHeaderPolicyTests.FR_004_SC02_MissingRequiredCsvHeaderFailsWithoutBindingAnyData` | Planned | [NUnit 94/94, Windows #41075489461](https://github.com/infoconex/RecordSift/actions/runs/41075489461) — real CSV raw-record/header binding component; typed import acceptance pending. |
 | FR-005-SC01 | FR-005 | Must | [#18](https://github.com/infoconex/RecordSift/issues/18) | [FR-005 scenarios](../scenarios/functional/FR-005.md) | — | Planned | — |
 | FR-005-SC02 | FR-005 | Must | [#18](https://github.com/infoconex/RecordSift/issues/18) | [FR-005 scenarios](../scenarios/functional/FR-005.md) | — | Planned | — |
 | FR-006-SC01 | FR-006 | Must | [#3](https://github.com/infoconex/RecordSift/issues/3) | [FR-006 scenarios](../scenarios/functional/FR-006.md) | — | Planned | — |
