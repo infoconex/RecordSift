@@ -83,6 +83,12 @@ def verify_namespace(source, expected, location):
     ]
 
 
+def verify_core_dependency_metadata(root, project_name):
+    """Reject any non-framework dependency metadata in Domain/Application."""
+    # RED: acceptance guard is introduced before a working implementation.
+    return []
+
+
 def verify_layout():
     errors = []
     if (ROOT / "src" / "RecordSift" / "RecordSift.csproj").exists():
@@ -242,6 +248,27 @@ def self_test():
                             "RecordSift.Domain.Schema", "outward"), "Wrong layer namespace was accepted"
     assert verify_namespace("namespace RecordSift.Application.Abstractions.Csv\n{ }",
                             "RecordSift.Application.Ports.Csv", "legacy"), "Old port namespace was accepted"
+    clean_core = ET.fromstring(
+        '<Project><Reference Include="System" />'
+        '<Reference Include="System.Core" />'
+        '<Import Project="$(MSBuildToolsPath)\\Microsoft.CSharp.targets" /></Project>')
+    assert verify_core_dependency_metadata(clean_core, "RecordSift.Domain") == [], \
+        "Approved framework references rejected"
+    forbidden_core_inputs = {
+        "vendor reference": '<Reference Include="CsvVendor" />',
+        "fake framework reference": '<Reference Include="System.Fake" />',
+        "vendor hint path": '<Reference Include="System"><HintPath>packages/Vendor.dll</HintPath></Reference>',
+        "nuget package reference": '<PackageReference Include="Vendor" Version="1.0.0" />',
+        "nuget download": '<PackageDownload Include="Vendor" Version="[1.0.0]" />',
+        "vendor build import": '<Import Project="packages/Vendor/build.targets" />',
+        "package manifest": '<None Include="packages.config" />',
+        "vendor analyzer": '<Analyzer Include="packages/Vendor/analyzers/a.dll" />',
+    }
+    for label, markup in forbidden_core_inputs.items():
+        root = ET.fromstring("<Project>" + markup + "</Project>")
+        for owner in ("RecordSift.Domain", "RecordSift.Application"):
+            assert verify_core_dependency_metadata(root, owner), \
+                f"{owner} accepted {label}"
     legal_tests = {name: list(refs) for name, refs in TEST_PROJECT_REFERENCES.items()}
     assert verify_test_dependency_graph(legal_tests) == [], "Valid test graph rejected"
     broken_tests = {**legal_tests, "RecordSift.Domain.Tests": [
