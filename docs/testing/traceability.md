@@ -14,8 +14,8 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | FR-001-SC01 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
 | FR-001-SC02 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
-| FR-001-SC03 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
-| FR-001-SC04 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
+| FR-001-SC03 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | `RecordSift.Tests.CsvRecordReaderTests.FR_001_SC03_UnclosedQuotedFieldIsSourceFailureWithPhysicalLocation` | Planned | TextReader component-level parsing evidence; source import integration pending (CI link after run). |
+| FR-001-SC04 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | `RecordSift.Tests.CsvRecordReaderTests.FR_001_SC04_QuotedCommaNewlineAndEscapedQuoteStayInOneField` | Planned | TextReader component-level parsing evidence; source import integration pending (CI link after run). |
 | FR-001-SC05 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
 | FR-001-SC06 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
 | FR-002-SC01 | FR-002 | Must | [#6](https://github.com/infoconex/RecordSift/issues/6) | [FR-002 scenarios](../scenarios/functional/FR-002.md) | — | Planned | — |

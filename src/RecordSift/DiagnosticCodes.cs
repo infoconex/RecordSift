@@ -6,6 +6,7 @@ namespace RecordSift
     public static class DiagnosticCodes
     {
         public const string SourceUnreadable = "SOURCE_UNREADABLE";
+        public const string SourceLimitExceeded = "SOURCE_LIMIT_EXCEEDED";
         public const string RequiredHeaderMissing = "REQUIRED_HEADER_MISSING";
         public const string RequiredColumnMissing = "REQUIRED_COLUMN_MISSING";
         public const string AmbiguousColumn = "AMBIGUOUS_COLUMN";
@@ -22,7 +23,8 @@ namespace RecordSift
 
         public static bool IsSourceCode(string code)
         {
-            return code == SourceUnreadable || code == RequiredHeaderMissing ||
+            return code == SourceUnreadable || code == SourceLimitExceeded ||
+                   code == RequiredHeaderMissing ||
                    code == MalformedSource || code == RequiredColumnMissing ||
                    code == AmbiguousColumn || code == InvalidColumnPosition;
         }
@@ -38,6 +40,7 @@ namespace RecordSift
             switch (code)
             {
                 case SourceUnreadable: return "The source could not be read.";
+                case SourceLimitExceeded: return "The source exceeded the configured read limit.";
                 case RequiredHeaderMissing: return "A required source header is missing.";
                 case RequiredColumnMissing: return "A required source column is missing.";
                 case AmbiguousColumn: return "A declared source column is ambiguous.";

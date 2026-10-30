@@ -44,6 +44,9 @@
     <Compile Include="SourceColumnBinding.cs" />
     <Compile Include="SourceColumnPosition.cs" />
     <Compile Include="SchemaBindingResult.cs" />
+    <Compile Include="CsvRecordReader.cs" />
+    <Compile Include="CsvParseResult.cs" />
+    <Compile Include="CsvRecord.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
