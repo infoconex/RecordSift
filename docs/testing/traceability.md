@@ -32,8 +32,8 @@
 | FR-007-SC02 | FR-007 | Future | [#7](https://github.com/infoconex/RecordSift/issues/7) | [FR-007 scenarios](../scenarios/functional/FR-007.md) | — | Planned | — |
 | FR-008-SC01 | FR-008 | Future | [#11](https://github.com/infoconex/RecordSift/issues/11) | [FR-008 scenarios](../scenarios/functional/FR-008.md) | — | Planned | — |
 | FR-008-SC02 | FR-008 | Future | [#11](https://github.com/infoconex/RecordSift/issues/11) | [FR-008 scenarios](../scenarios/functional/FR-008.md) | — | Planned | — |
-| FR-009-SC01 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | — | Planned | — |
-| FR-009-SC02 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | — | Planned | — |
+| FR-009-SC01 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | `RecordSift.Tests.ImportSchemaTests.FR_009_SC01_RequiredColumnsBindToSourcePositionsRegardlessOfOrder` | Planned | Binding supplied headers exercised at unit level; CSV/XLSX reader acceptance pending (add observed CI link). |
+| FR-009-SC02 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | `RecordSift.Tests.ImportSchemaTests.FR_009_SC02_MissingRequiredSourceColumnReturnsSourceDiagnostic` | Planned | Binding supplied headers exercised at unit level; CSV/XLSX reader acceptance pending (add observed CI link). |
 | FR-010-SC01 | FR-010 | Must | [#19](https://github.com/infoconex/RecordSift/issues/19) | [FR-010 scenarios](../scenarios/functional/FR-010.md) | — | Planned | — |
 | FR-010-SC02 | FR-010 | Must | [#19](https://github.com/infoconex/RecordSift/issues/19) | [FR-010 scenarios](../scenarios/functional/FR-010.md) | — | Planned | — |
 | FR-011-SC01 | FR-011 | Must | [#4](https://github.com/infoconex/RecordSift/issues/4) | [FR-011 scenarios](../scenarios/functional/FR-011.md) | — | Planned | — |
