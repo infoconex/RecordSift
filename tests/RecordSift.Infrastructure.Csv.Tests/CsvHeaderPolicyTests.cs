@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using RecordSift.Infrastructure.Csv;
 using RecordSift;
+using RecordSift.Infrastructure.Csv;
 
 namespace RecordSift.Infrastructure.Csv.Tests
 {

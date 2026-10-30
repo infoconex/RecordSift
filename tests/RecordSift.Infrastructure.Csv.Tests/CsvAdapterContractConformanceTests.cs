@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using RecordSift.Infrastructure.Csv;
 using RecordSift;
+using RecordSift.Infrastructure.Csv;
 using RecordSift.Tests;
 
 namespace RecordSift.Infrastructure.Csv.Tests
