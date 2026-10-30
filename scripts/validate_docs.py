@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate the RecordSift requirements catalog and repository documentation.
+"""Validate RecordSift requirement catalog, scenario specifications, traceability and links.
 
-Uses Python's standard library only, so it runs before any .NET project exists.
-Run from any directory: python3 scripts/validate_docs.py
+No third-party dependencies or .NET SDK required.
+Usage: python3 scripts/validate_docs.py
 """
 from __future__ import annotations
 
@@ -13,137 +13,190 @@ from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent.parent
 ISSUE_RE = re.compile(r"https://github\.com/infoconex/RecordSift/issues/(\d+)")
-ROW_RE = re.compile(r"^\|\s*((?:FR|NFR)-\d{3})\s*\|", re.M)
+REQUIREMENT_ROW_RE = re.compile(r"^\|\s*((?:FR|NFR)-\d{3})\s*\|")
+TRACE_ROW_RE = re.compile(r"^\|\s*((?:FR|NFR)-\d{3}-SC\d{2})\s*\|")
+SCENARIO_HEADER_RE = re.compile(r"^##\s+((?:FR|NFR)-\d{3}-SC\d{2})\s+—\s+(.+)$", re.M)
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 PLACEHOLDERS = {"", "—", "-", "TBD", "Planned", "Not run"}
-
+STATUSES = {"Planned", "Automated", "Manual", "Blocked"}
 errors: list[str] = []
 
 
-def error(message: str) -> None:
+def report(message: str) -> None:
     errors.append(message)
 
 
 def read(relative: str) -> str:
     file = ROOT / relative
     if not file.is_file():
-        error("Missing required file: " + relative)
+        report(f"Missing required file: {relative}")
         return ""
     return file.read_text(encoding="utf-8")
 
 
-def parse_table(relative: str, prefix: str) -> dict[str, list[str]]:
-    content = read(relative)
-    entries: dict[str, list[str]] = {}
-    for line in content.splitlines():
-        match = ROW_RE.match(line)
-        if not match:
+def markdown_rows(relative: str, pattern: re.Pattern[str]) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
+    for line in read(relative).splitlines():
+        match = pattern.match(line)
+        if match is None:
             continue
-        requirement_id = match.group(1)
-        if not requirement_id.startswith(prefix + "-"):
-            continue
-        fields = [part.strip() for part in line.strip().strip("|").split("|")]
-        if requirement_id in entries:
-            error(f"{relative}: duplicated {requirement_id}")
-        entries[requirement_id] = fields
-    return entries
+        key = match.group(1)
+        if key in result:
+            report(f"{relative}: duplicate row {key}")
+        result[key] = [field.strip() for field in line.strip().strip("|").split("|")]
+    return result
 
 
-def check_expected(entries: dict[str, list[str]], prefix: str, count: int, source: str) -> None:
-    expected = {f"{prefix}-{number:03d}" for number in range(1, count + 1)}
-    found = {key for key in entries if key.startswith(prefix + "-")}
-    for missing in sorted(expected - found):
-        error(f"{source}: missing {missing}")
-    for unexpected in sorted(found - expected):
-        error(f"{source}: unexpected {unexpected}")
+def require_exact_ids(entries: dict[str, list[str]], prefix: str, count: int, label: str) -> None:
+    expected = {f"{prefix}-{i:03d}" for i in range(1, count + 1)}
+    actual = {item for item in entries if item.startswith(prefix + "-")}
+    for key in sorted(expected - actual):
+        report(f"{label}: missing {key}")
+    for key in sorted(actual - expected):
+        report(f"{label}: unexpected {key}")
 
 
-def check_document_links() -> None:
-    files = [ROOT / "README.md", ROOT / "AGENTS.md"]
-    files.extend((ROOT / "docs").rglob("*.md"))
-    files.extend((ROOT / ".github").rglob("*.md"))
-    for file in files:
+def scenario_specifications() -> dict[str, str]:
+    """Return scenario ID -> scenario Markdown file path and flag malformed files."""
+    scenarios: dict[str, str] = {}
+    for prefix, count, category in (("FR", 39, "functional"), ("NFR", 10, "non-functional")):
+        folder = ROOT / "docs" / "scenarios" / category
+        expected = {f"{prefix}-{i:03d}.md" for i in range(1, count + 1)}
+        actual = {f.name for f in folder.glob("*.md")} if folder.exists() else set()
+        for missing in sorted(expected - actual):
+            report(f"Scenario file missing: {folder.relative_to(ROOT)}/{missing}")
+        for unexpected in sorted(actual - expected):
+            report(f"Unexpected scenario file: {folder.relative_to(ROOT)}/{unexpected}")
+
+        for filename in sorted(expected & actual):
+            requirement = filename[:-3]
+            relative = f"docs/scenarios/{category}/{filename}"
+            content = read(relative)
+            if not content.startswith(f"# {requirement} — "):
+                report(f"{relative}: incorrect document title")
+            if not re.search(r"^\*\*Verification status:\*\* Planned\b", content, re.M):
+                # The documents are planning artifacts; test status is tracked in the matrix.
+                report(f"{relative}: document must declare planning-only status")
+
+            found: list[str] = []
+            headers = list(SCENARIO_HEADER_RE.finditer(content))
+            for i, header in enumerate(headers):
+                scenario = header.group(1)
+                block = content[header.end():headers[i + 1].start() if i + 1 < len(headers) else len(content)]
+                if not scenario.startswith(requirement + "-SC"):
+                    report(f"{relative}: foreign scenario {scenario}")
+                if scenario in scenarios:
+                    report(f"Duplicate scenario across files: {scenario}")
+                for keyword in ("**Given**", "**When**", "**Then**"):
+                    if keyword not in block:
+                        report(f"{relative}: {scenario} missing {keyword}")
+                found.append(scenario)
+                scenarios[scenario] = relative
+
+            expected_numbering = [f"{requirement}-SC{i:02d}" for i in range(1, len(found) + 1)]
+            if found != expected_numbering or len(found) < 2:
+                report(f"{relative}: scenarios must be unique, ordered SC01..SCnn, with at least two cases")
+            if len(ISSUE_RE.findall(content)) != 1:
+                report(f"{relative}: must link exactly one requirement issue")
+    return scenarios
+
+
+def check_links() -> None:
+    markdown = [ROOT / "README.md", ROOT / "AGENTS.md"]
+    markdown.extend((ROOT / "docs").rglob("*.md"))
+    markdown.extend((ROOT / ".github").rglob("*.md"))
+    for file in markdown:
         if not file.is_file():
             continue
-        for target in LINK_RE.findall(file.read_text(encoding="utf-8")):
-            raw = target.strip().split("#", 1)[0].split("?", 1)[0]
-            if not raw or re.match(r"^[a-z]+:", raw, re.I) or raw.startswith("/"):
+        for dest in LINK_RE.findall(file.read_text(encoding="utf-8")):
+            target = dest.strip().split("#", 1)[0].split("?", 1)[0]
+            if not target or re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I) or target.startswith("/"):
                 continue
-            relative = Path(unquote(raw))
-            if not (file.parent / relative).exists():
-                error(f"Broken link in {file.relative_to(ROOT)}: {target}")
+            if not (file.parent / Path(unquote(target))).exists():
+                report(f"Broken Markdown link in {file.relative_to(ROOT)}: {dest}")
 
 
 def validate() -> None:
     required_files = [
-        "README.md",
-        "AGENTS.md",
-        "docs/README.md",
-        "docs/requirements/functional.md",
-        "docs/requirements/non-functional.md",
-        "docs/specifications/record-import.md",
-        "docs/testing/strategy.md",
-        "docs/testing/traceability.md",
-        "docs/engineering/workflow.md",
-        ".github/copilot-instructions.md",
+        "README.md", "AGENTS.md", "docs/README.md",
+        "docs/requirements/functional.md", "docs/requirements/non-functional.md",
+        "docs/scenarios/README.md", "docs/specifications/record-import.md",
+        "docs/testing/strategy.md", "docs/testing/traceability.md",
+        "docs/engineering/workflow.md", ".github/copilot-instructions.md",
         ".github/agents/requirements-reviewer.agent.md",
         ".github/agents/tdd-coach.agent.md",
         ".github/ISSUE_TEMPLATE/requirement.yml",
-        ".github/ISSUE_TEMPLATE/bug_report.yml",
-        ".github/pull_request_template.md",
+        ".github/ISSUE_TEMPLATE/bug_report.yml", ".github/pull_request_template.md",
     ]
-    for name in required_files:
-        if not (ROOT / name).is_file():
-            error("Missing repository policy file: " + name)
+    for filename in required_files:
+        if not (ROOT / filename).is_file():
+            report(f"Missing engineering policy file: {filename}")
 
-    functional = parse_table("docs/requirements/functional.md", "FR")
-    quality = parse_table("docs/requirements/non-functional.md", "NFR")
-    trace = read("docs/testing/traceability.md")
-    traces = {
-        match.group(1): [part.strip() for part in line.strip().strip("|").split("|")]
-        for line in trace.splitlines()
-        if (match := ROW_RE.match(line))
-    }
+    functional = markdown_rows("docs/requirements/functional.md", REQUIREMENT_ROW_RE)
+    quality = markdown_rows("docs/requirements/non-functional.md", REQUIREMENT_ROW_RE)
+    require_exact_ids(functional, "FR", 39, "Functional requirements")
+    require_exact_ids(quality, "NFR", 10, "Nonfunctional requirements")
+    requirement_catalog = {**functional, **quality}
+    specs = scenario_specifications()
 
-    check_expected(functional, "FR", 39, "Functional requirements")
-    check_expected(quality, "NFR", 10, "Nonfunctional requirements")
-    check_expected(traces, "FR", 39, "Traceability")
-    check_expected(traces, "NFR", 10, "Traceability")
+    trace_rows = markdown_rows("docs/testing/traceability.md", TRACE_ROW_RE)
+    for scenario in sorted(set(specs) - set(trace_rows)):
+        report(f"Missing traceability row: {scenario}")
+    for scenario in sorted(set(trace_rows) - set(specs)):
+        report(f"Traceability row has no specification: {scenario}")
 
-    ids = set(functional) | set(quality)
-    for rid in sorted(ids):
-        catalog = functional.get(rid) or quality.get(rid)
-        trace_row = traces.get(rid)
-        catalog_issues = ISSUE_RE.findall(" ".join(catalog))
-        if len(catalog_issues) != 1:
-            error(f"{rid}: requirement catalog must link exactly one GitHub issue")
-        if not trace_row:
+    if len(specs) < 101:
+        report(f"Expected at least 101 initially specified scenarios; found {len(specs)}")
+
+    for requirement, catalog in sorted(requirement_catalog.items()):
+        if len(catalog) != 4:
+            report(f"{requirement}: expected four catalog columns")
             continue
-        if len(trace_row) != 7:
-            error(f"{rid}: traceability row must contain seven fields")
-            continue
-        if trace_row[3] != rid + "-SC01":
-            error(f"{rid}: incorrect primary acceptance scenario {trace_row[3]}")
-        trace_issues = ISSUE_RE.findall(trace_row[2])
-        if trace_issues != catalog_issues:
-            error(f"{rid}: issue link does not match requirement catalog")
-        priority = catalog[2] if rid.startswith("FR-") else "Must"
-        if trace_row[1] != priority:
-            error(f"{rid}: inconsistent priority in traceability")
-        status = trace_row[5]
-        if status not in {"Planned", "Automated", "Manual", "Blocked"}:
-            error(f"{rid}: unknown verification status {status}")
-        if status in {"Automated", "Manual"}:
-            if trace_row[4] in PLACEHOLDERS or trace_row[6] in PLACEHOLDERS:
-                error(f"{rid}: status {status} requires a test/check and execution evidence")
+        issues = ISSUE_RE.findall(catalog[3])
+        if len(issues) != 1:
+            report(f"{requirement}: expected one GitHub issue")
+        relative = (f"docs/scenarios/functional/{requirement}.md"
+                    if requirement.startswith("FR-")
+                    else f"docs/scenarios/non-functional/{requirement}.md")
+        spec_text = read(relative)
+        if issues and ISSUE_RE.findall(spec_text) != issues:
+            report(f"{requirement}: scenario document issue does not match requirement catalog")
+        if f"{requirement}.md" not in catalog[3]:
+            report(f"{requirement}: catalog must link to its authoritative scenario Markdown")
 
-    check_document_links()
+    for scenario, cells in sorted(trace_rows.items()):
+        if len(cells) != 8:
+            report(f"{scenario}: expected eight traceability columns, found {len(cells)}")
+            continue
+        requirement = scenario[:6] if scenario.startswith("FR-") else scenario[:7]
+        catalog = requirement_catalog.get(requirement)
+        if catalog is None:
+            report(f"{scenario}: requirement missing from catalog")
+            continue
+        priority = catalog[2] if requirement.startswith("FR-") else "Must"
+        if cells[1] != requirement or cells[2] != priority:
+            report(f"{scenario}: mismatched requirement or priority")
+        if ISSUE_RE.findall(cells[3]) != ISSUE_RE.findall(catalog[3]):
+            report(f"{scenario}: issue link differs from requirement catalog")
+        expected_file = specs.get(scenario)
+        if expected_file and f"{requirement}.md" not in cells[4]:
+            report(f"{scenario}: incorrect authoritative specification reference")
+        if cells[6] not in STATUSES:
+            report(f"{scenario}: invalid test status '{cells[6]}'")
+        if cells[6] in {"Automated", "Manual"}:
+            if cells[5] in PLACEHOLDERS or cells[7] in PLACEHOLDERS:
+                report(f"{scenario}: status {cells[6]} requires test/check and observed evidence")
+        if cells[6] == "Blocked" and cells[7] in PLACEHOLDERS:
+            report(f"{scenario}: Blocked requires an explanation")
+
+    check_links()
     if errors:
-        print("Documentation validation failed:")
+        print(f"Documentation validation failed ({len(errors)} findings):")
         for message in errors:
             print(" - " + message)
         sys.exit(1)
-    print("Documentation validation passed: 39 FR, 10 NFR, 49 traced scenarios; internal links resolved.")
+    print(f"Documentation validation passed: {len(requirement_catalog)} requirements, "
+          f"{len(specs)} scenarios, complete traceability, all links resolved.")
 
 
 if __name__ == "__main__":
