@@ -1,0 +1,60 @@
+# Testing strategy and TDD policy
+
+**Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
+**Status:** Engineering policy for release 0.1; executable tests have not been added yet.
+
+## Test-driven development
+
+For each independently tracked FR/NFR:
+
+1. **Red:** Add a small, observable acceptance or lower-level test that states the requirement and initially fails for the missing behavior.
+2. **Green:** Make the smallest useful production change to pass it.
+3. **Refactor:** Improve the design with the tests still green.
+4. **Review:** Add negative, boundary, malformed-input, and culture-sensitive cases as appropriate; keep tests deterministic.
+5. **Trace:** Reference `FR-###` or `NFR-###`, scenario `FR-###-SC01`/`NFR-###-SC01`, and the GitHub issue in test metadata or method names/comments where practical.
+6. **Demonstrate:** Document the exact command, target, test results, and CI run URL in the PR. A planned scenario is not evidence that a test ran.
+
+A requirement may need several tests, but a test should have one clear reason to fail. Maintain functional API behavior independently of package/project-format modernization.
+
+## Test levels
+
+| Level | Purpose | Evidence |
+| --- | --- | --- |
+| Unit | Schemas, mapping, conversion, validation, aggregate counts | Small tests with no real files when possible |
+| Component | Real parser adapter with in-memory input | Parser behavior and source location rules |
+| Integration | Real CSV and XLSX fixtures through public API | Records, errors, resource handling |
+| Characterization | Freeze pre-modernization observable behavior | Golden JSON reports and semantic comparisons |
+| Contract/API | Public API surface, output shape and package compatibility | Compile tests, snapshots/API comparison |
+| Negative/security | Malformed input, malicious content, size limits | Controlled fixtures with failure assertions |
+| Cross-framework | Same scenarios run on each supported target | Test matrix with exact TFM and SDK |
+| Performance | Import throughput, allocations, memory use | Repeated controlled benchmark; regression threshold before gate |
+
+Exploratory and manual tests may supplement automation, but must include a repeatable procedure and observed result. They do not replace automate-able acceptance tests.
+
+## Fixture policy
+
+- Store compact, non-sensitive sample files under `tests/**/Fixtures` when created.
+- Never use actual customer, employee, or production data in fixtures.
+- Include: valid CSV, quoted comma and newline, alternate delimiter, headerless data, alternate encoding, empty and malformed records, XLSX with multiple sheets, invalid workbook, oversized cases, and mixed valid/invalid rows.
+- Use invariant/culture-explicit expectations; never assume machine locale, file iteration order, or local time.
+- Avoid brittle snapshots of runtime-generated exception stack traces and absolute file paths.
+- Include anonymized expected JSON as versioned snapshots when snapshot testing is introduced.
+- Distinguish logical CSV record ordinal from physical line number in assertions.
+
+## Dependencies and test isolation
+
+Use a maintained test framework and adapter compatible with the historical net48 baseline. NUnit is the proposed default; **pin versions only after a successful clean Windows restore/build**. NSubstitute is optional where genuine collaborators need isolation; avoid gratuitous mocks of plain data and validators. Later test-framework upgrades are isolated from SDK and project-format experiments.
+
+## Pre-merge quality gate
+
+- A PR must reference one primary issue and exact requirement/scenario IDs.
+- New behavior has both success and relevant failure cases.
+- All affected tests pass on the supported environments and the PR contains evidence.
+- Report any skipped, flaky or platform-dependent tests; do not hide them.
+- Coverage is a diagnostic, not an alternative to strong assertions; establish a realistic threshold only after baseline tests exist.
+- Security-sensitive input parsing requires malformed-input tests and a dependency/license review.
+- No claimed benchmark improvement without reproducible measurements.
+
+## Current status
+
+**All requirement scenarios remain Planned until automated tests or manual verification records exist.** No .NET compilation or test execution has been conducted in this documentation task. First executable baseline: [issue #57](https://github.com/infoconex/RecordSift/issues/57).
