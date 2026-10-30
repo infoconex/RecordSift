@@ -38,7 +38,7 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 
 - [ADR 0010 — Core-owned resource messages](engineering/decisions/0010-domain-message-resources.md) — invariant diagnostic texts in embedded resources; stable codes and named defaults.
 - [Issue #89 — Message resources](https://github.com/infoconex/RecordSift/issues/89) — migration and regression validation.
-- [Issue #91 — Third-party-free unit testing](https://github.com/infoconex/RecordSift/issues/91) — physically separate core/adapter tests and reused conformance tests (pending).
+- [Issue #91 — Third-party-free unit testing](https://github.com/infoconex/RecordSift/issues/91) — separate independent core unit and real-adapter tests using reusable domain-owned reader conformance fixture.
 
 ## Independent engineering issues
 

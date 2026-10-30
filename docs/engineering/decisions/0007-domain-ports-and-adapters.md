@@ -22,6 +22,10 @@ The historical net48 baseline initially combined domain-facing source binding wi
 - Add a DI container or many speculative abstractions: rejected as unnecessary for a reusable library.
 - Immediately split every domain concern into its own project: deferred; create physical adapter assemblies when a third-party dependency is introduced, protecting the core assembly without churn.
 
+## Verifying substitutability
+
+The core owns the complete `ICsvRecordReader` behavioral contract (neutral types, header independence, provenance, bounded reads, safe diagnostics, caller ownership, deterministic failures). **Issue #91** physically separates core NUnit tests from adapter NUnit tests and defines a reusable vendor-neutral NUnit contract fixture. Adapter test assemblies derive from the fixture and must satisfy the same behavior with their real parser. The core test assembly must build/run with no vendor DLL; Windows CI checks the direction.
+
 ## Migration and evidence
 
 [#85](https://github.com/infoconex/RecordSift/issues/85) owns the reader-port migration, parser selection, ADR 0005 supersession via ADR 0008 and characterization tests. It must preserve or explicitly document behavior. FR-001 #2 and FR-004 #14 remain independently traceable; this **architecture ADR does not establish implementation or passing tests**.
