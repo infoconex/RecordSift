@@ -51,7 +51,7 @@ def parse_table(relative: str, prefix: str) -> dict[str, list[str]]:
 
 def check_expected(entries: dict[str, list[str]], prefix: str, count: int, source: str) -> None:
     expected = {f"{prefix}-{number:03d}" for number in range(1, count + 1)}
-    found = set(entries)
+    found = {key for key in entries if key.startswith(prefix + "-")}
     for missing in sorted(expected - found):
         error(f"{source}: missing {missing}")
     for unexpected in sorted(found - expected):
