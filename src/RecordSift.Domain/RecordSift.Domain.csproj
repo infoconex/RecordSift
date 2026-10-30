@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A1EC796C-6724-4195-BFAF-98326A5C1868}</ProjectGuid>
+    <ProjectGuid>{D107315D-E4EA-4C77-8A14-8F34F76B2100}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RecordSift</RootNamespace>
-    <AssemblyName>RecordSift</AssemblyName>
+    <AssemblyName>RecordSift.Domain</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>7.3</LangVersion>
@@ -33,29 +33,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Domain\Results\ImportStatus.cs" />
-    <Compile Include="Domain\Diagnostics\DiagnosticScope.cs" />
-    <Compile Include="Domain\Diagnostics\DiagnosticCodes.cs" />
-    <Compile Include="Domain\Diagnostics\DomainMessageResources.cs" />
-    <Compile Include="Domain\Diagnostics\ImportDiagnostic.cs" />
-    <Compile Include="Domain\Results\ImportSummary.cs" />
-    <Compile Include="Domain\Results\ImportResult.cs" />
-    <Compile Include="Domain\Schema\ExpectedColumn.cs" />
-    <Compile Include="Domain\Schema\ImportSchema.cs" />
-    <Compile Include="Domain\Schema\SourceColumnBinding.cs" />
-    <Compile Include="Domain\Schema\SourceColumnPosition.cs" />
-    <Compile Include="Domain\Schema\SchemaBindingResult.cs" />
-    <Compile Include="Application\Abstractions\Csv\ICsvRecordReader.cs" />
-    <Compile Include="Application\Abstractions\Csv\CsvReadOptions.cs" />
-    <Compile Include="Application\Abstractions\Csv\CsvParseResult.cs" />
-    <Compile Include="Application\Abstractions\Csv\CsvRecord.cs" />
-    <Compile Include="Application\Importing\Csv\CsvHeaderPolicy.cs" />
-    <Compile Include="Application\Importing\Csv\CsvDataRow.cs" />
-    <Compile Include="Application\Importing\Csv\CsvTableResult.cs" />
-    <Compile Include="Application\Importing\Csv\CsvTableReader.cs" />
+    <Compile Include="Diagnostics\DiagnosticCodes.cs" />
+    <Compile Include="Diagnostics\DiagnosticScope.cs" />
+    <Compile Include="Diagnostics\DomainMessageResources.cs" />
+    <Compile Include="Diagnostics\ImportDiagnostic.cs" />
+    <Compile Include="Schema\ExpectedColumn.cs" />
+    <Compile Include="Schema\ImportSchema.cs" />
+    <Compile Include="Schema\SchemaBindingResult.cs" />
+    <Compile Include="Schema\SourceColumnBinding.cs" />
+    <Compile Include="Schema\SourceColumnPosition.cs" />
+    <Compile Include="Results\ImportResult.cs" />
+    <Compile Include="Results\ImportStatus.cs" />
+    <Compile Include="Results\ImportSummary.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Domain\Diagnostics\Resources\DomainMessages.resx">
+    <EmbeddedResource Include="Diagnostics\Resources\DomainMessages.resx">
       <LogicalName>RecordSift.Resources.DomainMessages.resources</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

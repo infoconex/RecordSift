@@ -1,12 +1,12 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("RecordSift")]
-[assembly: AssemblyDescription("Constructed traditional .NET Framework 4.8 baseline for RecordSift.")]
+[assembly: AssemblyTitle("RecordSift.Domain")]
+[assembly: AssemblyDescription("RecordSift domain invariants and import contracts.")]
 [assembly: AssemblyCompany("Infoconex")]
 [assembly: AssemblyProduct("RecordSift")]
 [assembly: AssemblyCopyright("Copyright Infoconex")]
 [assembly: ComVisible(false)]
-[assembly: Guid("54deaa23-f9f3-4370-bca8-96e122cae591")]
+[assembly: Guid("b1540482-aa09-43ab-9414-b7f9dc1fc93b")]
 [assembly: AssemblyVersion("0.1.0.0")]
 [assembly: AssemblyFileVersion("0.1.0.0")]
