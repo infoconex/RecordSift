@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 ISSUE_RE = re.compile(r"https://github\.com/infoconex/RecordSift/issues/(\d+)")
 REQUIREMENT_ROW_RE = re.compile(r"^\|\s*((?:FR|NFR)-\d{3})\s*\|")
 TRACE_ROW_RE = re.compile(r"^\|\s*((?:FR|NFR)-\d{3}-SC\d{2})\s*\|")
-SCENARIO_HEADER_RE = re.compile(r"^##\s+((?:FR|NFR)-\d{3}-SC\d{2})\s+—\s+(.+)$", re.M)
+SCENARIO_HEADER_RE = re.compile(r"^#{2,3}\s+((?:FR|NFR)-\d{3}-SC\d{2})\s+—\s+(.+)$", re.M)
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 PLACEHOLDERS = {"", "—", "-", "TBD", "Planned", "Not run"}
 STATUSES = {"Planned", "Automated", "Manual", "Blocked"}
@@ -77,6 +77,38 @@ def scenario_specifications() -> dict[str, str]:
             if not re.search(r"^\*\*Verification status:\*\* Planned\b", content, re.M):
                 # The documents are planning artifacts; test status is tracked in the matrix.
                 report(f"{relative}: document must declare planning-only status")
+
+            if prefix == "FR":
+                required_sections = [
+                    "Purpose", "Functional requirement", "Inputs and outputs",
+                    "Functional rules", "Dependencies and scope",
+                    "Open design decisions", "Acceptance scenarios",
+                ]
+                headings = list(re.finditer(r"^## ([^\n]+)$", content, re.M))
+                heading_names = [h.group(1) for h in headings]
+                ordered = [x for x in heading_names if x in required_sections]
+                if ordered != required_sections:
+                    report(f"{relative}: incomplete or incorrectly ordered functional specification sections")
+                sections = {}
+                for i, heading in enumerate(headings):
+                    sections[heading.group(1)] = content[
+                        heading.end():headings[i + 1].start() if i + 1 < len(headings) else len(content)
+                    ]
+                for section in required_sections[:-1]:
+                    body = sections.get(section, "")
+                    if len(re.findall(r"\b\w+\b", body)) < 8:
+                        report(f"{relative}: missing or insufficient detail in section {section}")
+                if "**RecordSift shall:**" not in sections.get("Functional requirement", ""):
+                    report(f"{relative}: missing normative functional requirement statement")
+                for marker in ("- **Inputs:**", "- **Outputs:**"):
+                    if marker not in sections.get("Inputs and outputs", ""):
+                        report(f"{relative}: missing {marker}")
+                if len(re.findall(r"^- ", sections.get("Functional rules", ""), re.M)) < 3:
+                    report(f"{relative}: expected at least three explicit functional rules")
+                if "- **Related requirements:**" not in sections.get("Dependencies and scope", "") or "- **Boundary:**" not in sections.get("Dependencies and scope", ""):
+                    report(f"{relative}: related requirements and boundary must be documented")
+                if not re.search(r"^## Acceptance scenarios\s*$", content, re.M):
+                    report(f"{relative}: missing acceptance scenarios section")
 
             found: list[str] = []
             headers = list(SCENARIO_HEADER_RE.finditer(content))
