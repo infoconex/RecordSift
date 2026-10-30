@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System;
 using RecordSift.Domain.Diagnostics;
-using RecordSift.Domain.Schema;
-using RecordSift.Domain.Results;
 
 namespace RecordSift.Domain.Results
 {
