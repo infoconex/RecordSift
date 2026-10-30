@@ -39,6 +39,21 @@ No raw source value, credential, or full filesystem path is included in diagnost
 - Report generation consumes the completed result; it must not re-read input.
 - Identical input and explicit settings must give identically ordered diagnostics (NFR-004).
 
+## Empty-source outcomes and messages
+
+A zero-record outcome is **not** automatically a failed import. RecordSift must distinguish import completion from source/schema failure in structured result state, independently of message wording:
+
+| Source and configuration | Outcome | Counts | Result message |
+| --- | --- | --- | --- |
+| Valid required headers, no data rows | Completed | Processed = Accepted = Rejected = 0; zero validation errors | Informational: no data records found |
+| Zero bytes, explicitly headerless | Completed | Processed = Accepted = Rejected = 0; zero validation errors | Informational: source contains no records |
+| Zero bytes, required headers | Failed (source/schema) | Processed = Accepted = Rejected = 0; a source/schema error is present | Error: required CSV header row is missing |
+| Nonempty CSV missing a required column | Failed (schema binding) | Do not claim a successful import; counts reflect actual processed records | Error: identify the missing required column |
+
+The messages are intended for humans and may be revised or localized. **A caller must be able to determine completion/failure from machine-readable result state and coded diagnostics without parsing message text.** An informational zero-row summary must not contribute to error or warning counts. A source/schema error must not be represented as a rejected data record that was never processed.
+
+The exact public API member names, failure codes, and text localization policy are deferred to their implementation issues. The distinction and semantics above are requirements.
+
 ## Format-specific requirements
 
 | Input | Requirements |
