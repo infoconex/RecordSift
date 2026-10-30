@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 105 currently specified acceptance scenarios, all currently **Planned**. This table does not attest to functional implementation or any passing test.
+**Scope:** 49 requirements and 110 currently specified acceptance scenarios, all currently **Planned**. This table does not attest to functional implementation or any passing test.
 
 ## Maintenance contract
 
@@ -66,17 +66,21 @@
 | FR-024-SC02 | FR-024 | Should | [#25](https://github.com/infoconex/RecordSift/issues/25) | [FR-024 scenarios](../scenarios/functional/FR-024.md) | — | Planned | — |
 | FR-025-SC01 | FR-025 | Should | [#26](https://github.com/infoconex/RecordSift/issues/26) | [FR-025 scenarios](../scenarios/functional/FR-025.md) | — | Planned | — |
 | FR-025-SC02 | FR-025 | Should | [#26](https://github.com/infoconex/RecordSift/issues/26) | [FR-025 scenarios](../scenarios/functional/FR-025.md) | — | Planned | — |
+| FR-025-SC03 | FR-025 | Should | [#26](https://github.com/infoconex/RecordSift/issues/26) | [FR-025 scenarios](../scenarios/functional/FR-025.md) | — | Planned | — |
 | FR-026-SC01 | FR-026 | Must | [#27](https://github.com/infoconex/RecordSift/issues/27) | [FR-026 scenarios](../scenarios/functional/FR-026.md) | — | Planned | — |
 | FR-026-SC02 | FR-026 | Must | [#27](https://github.com/infoconex/RecordSift/issues/27) | [FR-026 scenarios](../scenarios/functional/FR-026.md) | — | Planned | — |
 | FR-027-SC01 | FR-027 | Must | [#28](https://github.com/infoconex/RecordSift/issues/28) | [FR-027 scenarios](../scenarios/functional/FR-027.md) | — | Planned | — |
 | FR-027-SC02 | FR-027 | Must | [#28](https://github.com/infoconex/RecordSift/issues/28) | [FR-027 scenarios](../scenarios/functional/FR-027.md) | — | Planned | — |
 | FR-028-SC01 | FR-028 | Must | [#29](https://github.com/infoconex/RecordSift/issues/29) | [FR-028 scenarios](../scenarios/functional/FR-028.md) | — | Planned | — |
 | FR-028-SC02 | FR-028 | Must | [#29](https://github.com/infoconex/RecordSift/issues/29) | [FR-028 scenarios](../scenarios/functional/FR-028.md) | — | Planned | — |
+| FR-028-SC03 | FR-028 | Must | [#29](https://github.com/infoconex/RecordSift/issues/29) | [FR-028 scenarios](../scenarios/functional/FR-028.md) | — | Planned | — |
 | FR-029-SC01 | FR-029 | Must | [#30](https://github.com/infoconex/RecordSift/issues/30) | [FR-029 scenarios](../scenarios/functional/FR-029.md) | — | Planned | — |
 | FR-029-SC02 | FR-029 | Must | [#30](https://github.com/infoconex/RecordSift/issues/30) | [FR-029 scenarios](../scenarios/functional/FR-029.md) | — | Planned | — |
 | FR-030-SC01 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
 | FR-030-SC02 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
 | FR-030-SC03 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
+| FR-030-SC04 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
+| FR-030-SC05 | FR-030 | Must | [#31](https://github.com/infoconex/RecordSift/issues/31) | [FR-030 scenarios](../scenarios/functional/FR-030.md) | — | Planned | — |
 | FR-031-SC01 | FR-031 | Should | [#32](https://github.com/infoconex/RecordSift/issues/32) | [FR-031 scenarios](../scenarios/functional/FR-031.md) | — | Planned | — |
 | FR-031-SC02 | FR-031 | Should | [#32](https://github.com/infoconex/RecordSift/issues/32) | [FR-031 scenarios](../scenarios/functional/FR-031.md) | — | Planned | — |
 | FR-032-SC01 | FR-032 | Should | [#33](https://github.com/infoconex/RecordSift/issues/33) | [FR-032 scenarios](../scenarios/functional/FR-032.md) | — | Planned | — |
@@ -88,6 +92,7 @@
 | FR-035-SC01 | FR-035 | Must | [#36](https://github.com/infoconex/RecordSift/issues/36) | [FR-035 scenarios](../scenarios/functional/FR-035.md) | — | Planned | — |
 | FR-035-SC02 | FR-035 | Must | [#36](https://github.com/infoconex/RecordSift/issues/36) | [FR-035 scenarios](../scenarios/functional/FR-035.md) | — | Planned | — |
 | FR-035-SC03 | FR-035 | Must | [#36](https://github.com/infoconex/RecordSift/issues/36) | [FR-035 scenarios](../scenarios/functional/FR-035.md) | — | Planned | — |
+| FR-035-SC04 | FR-035 | Must | [#36](https://github.com/infoconex/RecordSift/issues/36) | [FR-035 scenarios](../scenarios/functional/FR-035.md) | — | Planned | — |
 | FR-036-SC01 | FR-036 | Must | [#37](https://github.com/infoconex/RecordSift/issues/37) | [FR-036 scenarios](../scenarios/functional/FR-036.md) | — | Planned | — |
 | FR-036-SC02 | FR-036 | Must | [#37](https://github.com/infoconex/RecordSift/issues/37) | [FR-036 scenarios](../scenarios/functional/FR-036.md) | — | Planned | — |
 | FR-037-SC01 | FR-037 | Must | [#38](https://github.com/infoconex/RecordSift/issues/38) | [FR-037 scenarios](../scenarios/functional/FR-037.md) | — | Planned | — |

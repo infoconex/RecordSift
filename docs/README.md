@@ -9,7 +9,7 @@ These pages specify the proposed product and engineering process for **release 0
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 101 planned scenarios.
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 110 planned scenarios.
 - [Draft import specification](specifications/record-import.md)
 - [TDD and test types](testing/strategy.md)
 - [Requirement-to-scenario-to-test matrix](testing/traceability.md)

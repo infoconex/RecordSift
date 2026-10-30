@@ -4,7 +4,7 @@ This directory is the **authoritative source of expected behavior** for RecordSi
 
 - [Functional scenarios](functional/) — 39 Markdown files, one per `FR-001` through `FR-039`.
 - [Nonfunctional scenarios](non-functional/) — 10 Markdown files, one per `NFR-001` through `NFR-010`.
-- [Scenario-level traceability](../testing/traceability.md) — 105 currently specified scenarios, their GitHub issues, test mappings and observed execution evidence (currently all Planned).
+- [Scenario-level traceability](../testing/traceability.md) — 110 currently specified scenarios, their GitHub issues, test mappings and observed execution evidence (currently all Planned).
 - [Functional requirements](../requirements/functional.md) and [Nonfunctional requirements](../requirements/non-functional.md).
 - [TDD and testing strategy](../testing/strategy.md).
 
