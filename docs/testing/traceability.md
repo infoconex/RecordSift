@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028 diagnostic, FR-009 schema, and FR-013 positional binding unit tests executed (61/61 total NUnit tests); reader-integrated acceptance for these scenarios remains Planned. This does not establish CSV/XLSX end-to-end behavior.
+**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028/009/013 unit contracts and FR-001 raw CSV parser component tests executed (77/77 total NUnit tests). Only the five FR-030 in-memory scenarios are Automated; 104 other acceptance scenarios remain Planned pending full import integration. This does not establish CSV/XLSX end-to-end behavior.
 
 ## Maintenance contract
 
@@ -14,8 +14,8 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | FR-001-SC01 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
 | FR-001-SC02 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
-| FR-001-SC03 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | `RecordSift.Tests.CsvRecordReaderTests.FR_001_SC03_UnclosedQuotedFieldIsSourceFailureWithPhysicalLocation` | Planned | TextReader component-level parsing evidence; source import integration pending (CI link after run). |
-| FR-001-SC04 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | `RecordSift.Tests.CsvRecordReaderTests.FR_001_SC04_QuotedCommaNewlineAndEscapedQuoteStayInOneField` | Planned | TextReader component-level parsing evidence; source import integration pending (CI link after run). |
+| FR-001-SC03 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | `RecordSift.Tests.CsvRecordReaderTests.FR_001_SC03_UnclosedQuotedFieldIsSourceFailureWithPhysicalLocation` | Planned | [NUnit 77/77, Windows #41073984695](https://github.com/infoconex/RecordSift/actions/runs/41073984695) — raw TextReader component only; source/import result integration pending. |
+| FR-001-SC04 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | `RecordSift.Tests.CsvRecordReaderTests.FR_001_SC04_QuotedCommaNewlineAndEscapedQuoteStayInOneField` | Planned | [NUnit 77/77, Windows #41073984695](https://github.com/infoconex/RecordSift/actions/runs/41073984695) — raw TextReader component only; source/import result integration pending. |
 | FR-001-SC05 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
 | FR-001-SC06 | FR-001 | Must | [#2](https://github.com/infoconex/RecordSift/issues/2) | [FR-001 scenarios](../scenarios/functional/FR-001.md) | — | Planned | — |
 | FR-002-SC01 | FR-002 | Must | [#6](https://github.com/infoconex/RecordSift/issues/6) | [FR-002 scenarios](../scenarios/functional/FR-002.md) | — | Planned | — |

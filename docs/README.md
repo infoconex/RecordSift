@@ -9,7 +9,7 @@ These pages specify the proposed product and engineering process for **release 0
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (five FR-030 summary-unit scenarios automated, the remaining 104 planned; FR-028, FR-009 and FR-013 have additional unit tests but still need importer acceptance tests).
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (five FR-030 summary-unit scenarios automated, the remaining 104 planned; FR-028, FR-009 and FR-013 have additional unit tests, and FR-001 has raw CSV parser tests, but all still need importer acceptance tests).
 - [Draft import specification](specifications/record-import.md)
 - [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
 - [TDD and test types](testing/strategy.md)
@@ -18,6 +18,8 @@ These pages specify the proposed product and engineering process for **release 0
 The FR-009 source-column schema binding contract is implemented and unit-tested against supplied header metadata. Real CSV/XLSX reader integration remains an acceptance-test obligation.
 
 The FR-013 explicit positional binding contract is implemented and unit-tested without claiming typed-record or source-reader integration.
+
+The FR-001 reader now handles bounded raw CSV tokenization, including quoting and physical lines, without header interpretation or typed-record materialization. Issue #2 remains open for the full import API and acceptance scenarios.
 
 ## Independent engineering issues
 
