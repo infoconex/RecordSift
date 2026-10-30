@@ -40,6 +40,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaselineAssemblyTests.cs" />
     <Compile Include="ImportSummaryTests.cs" />
+    <Compile Include="ImportDiagnosticTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
