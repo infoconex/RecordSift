@@ -1,7 +1,7 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1. The historical net48 Windows suite observed 112/112 passing NUnit tests in [issue #10 FR-003](https://github.com/infoconex/RecordSift/issues/10), including the earlier 97 cases and 15 new CSV delimiter configuration/invalid-input cases. Full typed importer acceptance remains planned.
+**Status:** Engineering policy for release 0.1. In [issue #91](https://github.com/infoconex/RecordSift/issues/91), Windows [run #41085050502](https://github.com/infoconex/RecordSift/actions/runs/41085050502) observed **71/71 independent domain unit tests and 48/48 real-adapter contract/component tests** (119/119 total). Core test binary is checked for absence of adapter DLLs, and test project dependencies are inspected. Full typed importer acceptance remains planned.
 
 ## Test-driven development
 
