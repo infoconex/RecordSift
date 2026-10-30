@@ -22,7 +22,7 @@ namespace RecordSift
         public IReadOnlyList<CsvRecord> Records { get; private set; }
         public IReadOnlyList<ImportDiagnostic> Diagnostics { get; private set; }
 
-        internal static CsvParseResult Success(IEnumerable<CsvRecord> records)
+        public static CsvParseResult Success(IEnumerable<CsvRecord> records)
         {
             if (records == null) throw new ArgumentNullException(nameof(records));
             return new CsvParseResult(new ReadOnlyCollection<CsvRecord>(
@@ -30,7 +30,7 @@ namespace RecordSift
                 new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic>()));
         }
 
-        internal static CsvParseResult Failure(ImportDiagnostic diagnostic)
+        public static CsvParseResult Failure(ImportDiagnostic diagnostic)
         {
             if (diagnostic == null) throw new ArgumentNullException(nameof(diagnostic));
             if (diagnostic.Scope != DiagnosticScope.Source)
