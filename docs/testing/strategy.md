@@ -1,7 +1,7 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1; executable tests have not been added yet.
+**Status:** Engineering policy for release 0.1. Three baseline assembly smoke tests exist; FR/NFR acceptance tests have not been added yet.
 
 ## Test-driven development
 
@@ -61,4 +61,4 @@ Use a maintained test framework and adapter compatible with the historical net48
 
 ## Current status
 
-**All requirement scenarios remain Planned until automated tests or manual verification records exist.** No .NET compilation or test execution has been conducted in this documentation task. First executable baseline: [issue #57](https://github.com/infoconex/RecordSift/issues/57).
+**All 109 requirement scenarios remain Planned.** Initial .NET Framework 4.8 assembly smoke tests ran on Windows ([run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680): 3 passed, 0 failed). These are not requirement acceptance tests. Ongoing CI is implemented through issue #64.
