@@ -52,7 +52,7 @@ namespace RecordSift.Domain.Diagnostics
                 case RequiredFieldMissing: return DomainMessageResources.Get(RequiredFieldMissing);
                 case ConversionFailed: return DomainMessageResources.Get(ConversionFailed);
                 case ValidationFailed: return DomainMessageResources.Get(ValidationFailed);
-                default: throw new ArgumentException(DomainMessageResources.Get("Argument_UnknownDiagnosticCode"), nameof(code));
+                default: throw new ArgumentException(DomainMessageResources.UnknownDiagnosticCode, nameof(code));
             }
         }
     }

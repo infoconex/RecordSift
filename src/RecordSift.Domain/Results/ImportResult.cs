@@ -48,13 +48,13 @@ namespace RecordSift.Domain.Results
             foreach (var error in diagnostics)
             {
                 if (error == null)
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticNull"), nameof(diagnostics));
+                    throw new ArgumentException(DomainMessageResources.DiagnosticNull, nameof(diagnostics));
 
                 if (error.Scope == DiagnosticScope.Record)
                 {
                     if (!error.Row.HasValue || error.Row.Value > processedCount)
                         throw new ArgumentOutOfRangeException(nameof(diagnostics),
-                            DomainMessageResources.Get("Argument_DiagnosticRowOutOfRange"));
+                            DomainMessageResources.DiagnosticRowOutOfRange);
                     rejectedRows.Add(error.Row.Value);
                 }
                 else if (error.Scope == DiagnosticScope.Source)
@@ -63,16 +63,16 @@ namespace RecordSift.Domain.Results
                 }
                 else
                 {
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticScopeUnknown"), nameof(diagnostics));
+                    throw new ArgumentException(DomainMessageResources.DiagnosticScopeUnknown, nameof(diagnostics));
                 }
 
                 snapshot.Add(error);
             }
 
             if (status == ImportStatus.Completed && hasSourceError)
-                throw new ArgumentException(DomainMessageResources.Get("Argument_CompletedSourceError"), nameof(diagnostics));
+                throw new ArgumentException(DomainMessageResources.CompletedSourceError, nameof(diagnostics));
             if (status == ImportStatus.Failed && !hasSourceError)
-                throw new ArgumentException(DomainMessageResources.Get("Argument_FailedWithoutSourceError"), nameof(diagnostics));
+                throw new ArgumentException(DomainMessageResources.FailedWithoutSourceError, nameof(diagnostics));
 
             return new ImportResult(status,
                 new ImportSummary(processedCount, rejectedRows.Count),

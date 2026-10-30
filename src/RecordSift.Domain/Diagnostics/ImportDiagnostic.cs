@@ -13,9 +13,9 @@ namespace RecordSift.Domain.Diagnostics
             string code, string worksheet, int? physicalRow, int? physicalLine)
         {
             if (field != null && string.IsNullOrWhiteSpace(field))
-                throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticFieldBlank"), nameof(field));
+                throw new ArgumentException(DomainMessageResources.DiagnosticFieldBlank, nameof(field));
             if (worksheet != null && string.IsNullOrWhiteSpace(worksheet))
-                throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticWorksheetBlank"), nameof(worksheet));
+                throw new ArgumentException(DomainMessageResources.DiagnosticWorksheetBlank, nameof(worksheet));
             if (physicalRow.HasValue && physicalRow.Value < 1)
                 throw new ArgumentOutOfRangeException(nameof(physicalRow));
             if (physicalLine.HasValue && physicalLine.Value < 1)
@@ -25,14 +25,14 @@ namespace RecordSift.Domain.Diagnostics
                 if (!row.HasValue || row.Value < 1)
                     throw new ArgumentOutOfRangeException(nameof(row));
                 if (!DiagnosticCodes.IsRecordCode(code))
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticCodeNotRecord"), nameof(code));
+                    throw new ArgumentException(DomainMessageResources.DiagnosticCodeNotRecord, nameof(code));
             }
             else if (scope == DiagnosticScope.Source)
             {
                 if (row.HasValue)
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_SourceDiagnosticHasRow"), nameof(row));
+                    throw new ArgumentException(DomainMessageResources.SourceDiagnosticHasRow, nameof(row));
                 if (!DiagnosticCodes.IsSourceCode(code))
-                    throw new ArgumentException(DomainMessageResources.Get("Argument_DiagnosticCodeNotSource"), nameof(code));
+                    throw new ArgumentException(DomainMessageResources.DiagnosticCodeNotSource, nameof(code));
             }
             else
                 throw new ArgumentOutOfRangeException(nameof(scope));
