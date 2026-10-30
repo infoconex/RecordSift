@@ -17,6 +17,14 @@
 - Avoid hidden state, locale-dependent behavior, broad exception swallowing, and logging raw imported source values.
 - Favor focused, testable functions, dependency injection at third-party boundaries, and small interfaces with precisely specified semantics. Do not refactor working code into unnecessary abstractions.
 
+## Domain messages and meaningful constants
+
+- Stable diagnostic identifiers are **nonlocalized core constants**. Their invariant English text lives in `src/RecordSift/Resources/DomainMessages.resx` and is retrieved through a core-owned resource accessor. Never include source data, secrets, file paths or vendor exception messages.
+- Argument-validation strings are resource-backed; consumers should rely on exception types and parameter names, not the English text.
+- Keep options and defaults in the core, e.g. `CsvReadOptions.Default`. Third-party adapters must implement that contract.
+- Do not introduce constants for ordinary zero/one indices or CSV protocol syntax solely to eliminate literals; eliminate unexplained, duplicated, or variable business values.
+- `scripts/validate_core_messages.py` validates embedded resources and flags English prose in core C# source. Issue #91 separately enforces third-party-free domain unit tests.
+
 ## Enforcement strategy
 
 The root `.editorconfig` is editor-level guidance for baseline C# style and interface naming. The existing traditional projects do **not** yet run a mandatory Roslyn analyzer/format gate; do not claim style is automated or enforced in CI. Add analyzers and baseline-aware gate in a separately approved engineering change, after evaluating version compatibility and pre-existing violations. Current mandatory observed gates remain the Windows net48 build/NUnit suite and documentation validator.

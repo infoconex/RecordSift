@@ -22,3 +22,4 @@ namespace RecordSift
             return message;
         }
     }
+}
