@@ -15,6 +15,8 @@ These pages specify the proposed product and engineering process for **release 0
 - [TDD and test types](testing/strategy.md)
 - [Requirement-to-scenario-to-test matrix](testing/traceability.md)
 
+The FR-009 source-column schema binding contract is implemented and unit-tested against supplied header metadata. Real CSV/XLSX reader integration remains an acceptance-test obligation.
+
 ## Independent engineering issues
 
 - [#51 — Behavioral specification](https://github.com/infoconex/RecordSift/issues/51)
