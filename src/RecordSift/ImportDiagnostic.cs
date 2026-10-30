@@ -1,51 +1,89 @@
 using System;
-using System.Text.RegularExpressions;
 
 namespace RecordSift
 {
     /// <summary>
-    /// Immutable, supplied error information. Error detection, classification and
-    /// message sanitization are the responsibility of their owning requirements (FR-028).
+    /// Immutable structured error metadata. Messages are fixed templates selected by
+    /// a registered code; never constructed from untrusted source field values.
+    /// Field and worksheet identifiers are metadata provided by a caller, not redacted data.
     /// </summary>
     public sealed class ImportDiagnostic
     {
-        private static readonly Regex CodePattern =
-            new Regex(@"^[A-Z][A-Z0-9_]*$", RegexOptions.CultureInvariant);
-
         private ImportDiagnostic(DiagnosticScope scope, int? row, string field,
-            string code, string message)
+            string code, string worksheet, int? physicalRow, int? physicalLine)
         {
             if (field != null && string.IsNullOrWhiteSpace(field))
                 throw new ArgumentException("Field must be nonempty when supplied.", nameof(field));
-            if (string.IsNullOrEmpty(code) || !CodePattern.IsMatch(code))
-                throw new ArgumentException("Code must be an uppercase diagnostic identifier.", nameof(code));
-            if (string.IsNullOrWhiteSpace(message))
-                throw new ArgumentException("Message must be nonempty.", nameof(message));
+            if (worksheet != null && string.IsNullOrWhiteSpace(worksheet))
+                throw new ArgumentException("Worksheet must be nonempty when supplied.", nameof(worksheet));
+            if (physicalRow.HasValue && physicalRow.Value < 1)
+                throw new ArgumentOutOfRangeException(nameof(physicalRow));
+            if (physicalLine.HasValue && physicalLine.Value < 1)
+                throw new ArgumentOutOfRangeException(nameof(physicalLine));
+            if (scope == DiagnosticScope.Record)
+            {
+                if (!row.HasValue || row.Value < 1)
+                    throw new ArgumentOutOfRangeException(nameof(row));
+                if (!DiagnosticCodes.IsRecordCode(code))
+                    throw new ArgumentException("Code is not a registered record error.", nameof(code));
+            }
+            else if (scope == DiagnosticScope.Source)
+            {
+                if (row.HasValue)
+                    throw new ArgumentException("Source diagnostics cannot identify a logical data row.", nameof(row));
+                if (!DiagnosticCodes.IsSourceCode(code))
+                    throw new ArgumentException("Code is not a registered source error.", nameof(code));
+            }
+            else
+                throw new ArgumentOutOfRangeException(nameof(scope));
 
             Scope = scope;
             Row = row;
             Field = field;
             Code = code;
-            Message = message;
+            Message = DiagnosticCodes.GetSafeMessage(code);
+            Worksheet = worksheet;
+            PhysicalRow = physicalRow;
+            PhysicalLine = physicalLine;
         }
 
         public DiagnosticScope Scope { get; private set; }
+        /// <summary>One-based logical data-record ordinal, excluding headers; null for source errors.</summary>
         public int? Row { get; private set; }
+        /// <summary>Trusted source-column metadata when known (name or stable positional identifier).</summary>
         public string Field { get; private set; }
         public string Code { get; private set; }
         public string Message { get; private set; }
+        /// <summary>Optional worksheet name supplied by a source reader.</summary>
+        public string Worksheet { get; private set; }
+        /// <summary>Optional one-based physical row (e.g., XLSX row), when reliable.</summary>
+        public int? PhysicalRow { get; private set; }
+        /// <summary>Optional one-based physical CSV line, only when reliably known.</summary>
+        public int? PhysicalLine { get; private set; }
 
-        /// <summary>Create a supplied error associated with a one-based logical data row.</summary>
-        public static ImportDiagnostic ForRecord(int row, string field, string code, string message)
+        public static ImportDiagnostic ForRecord(int row, string field, string code)
         {
-            if (row < 1) throw new ArgumentOutOfRangeException(nameof(row));
-            return new ImportDiagnostic(DiagnosticScope.Record, row, field, code, message);
+            return ForRecord(row, field, code, null, null, null);
         }
 
-        /// <summary>Create a supplied source/schema error that does not reject a data row.</summary>
-        public static ImportDiagnostic ForSource(string field, string code, string message)
+        public static ImportDiagnostic ForRecord(int row, string field, string code,
+            string worksheet, int? physicalRow, int? physicalLine)
         {
-            return new ImportDiagnostic(DiagnosticScope.Source, null, field, code, message);
+            if (row < 1) throw new ArgumentOutOfRangeException(nameof(row));
+            return new ImportDiagnostic(DiagnosticScope.Record, row, field,
+                code, worksheet, physicalRow, physicalLine);
+        }
+
+        public static ImportDiagnostic ForSource(string field, string code)
+        {
+            return ForSource(field, code, null, null, null);
+        }
+
+        public static ImportDiagnostic ForSource(string field, string code,
+            string worksheet, int? physicalRow, int? physicalLine)
+        {
+            return new ImportDiagnostic(DiagnosticScope.Source, null, field,
+                code, worksheet, physicalRow, physicalLine);
         }
     }
 }

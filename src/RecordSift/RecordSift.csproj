@@ -35,6 +35,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ImportStatus.cs" />
     <Compile Include="DiagnosticScope.cs" />
+    <Compile Include="DiagnosticCodes.cs" />
     <Compile Include="ImportDiagnostic.cs" />
     <Compile Include="ImportSummary.cs" />
     <Compile Include="ImportResult.cs" />
