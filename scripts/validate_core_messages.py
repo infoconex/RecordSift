@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
 CORE = ROOT / "src" / "RecordSift"
-RESX = CORE / "Resources" / "DomainMessages.resx"
+RESX = CORE / "Domain" / "Diagnostics" / "Resources" / "DomainMessages.resx"
 
 errors = []
 root = ET.parse(RESX).getroot()
@@ -25,7 +25,7 @@ for item in root.findall("data"):
         errors.append("Empty resource: " + key)
     entries[key] = value
 
-codes = (CORE / "DiagnosticCodes.cs").read_text(encoding="utf-8")
+codes = (CORE / "Domain" / "Diagnostics" / "DiagnosticCodes.cs").read_text(encoding="utf-8")
 defined_codes = re.findall(r'public const string \w+ = "([A-Z_]+)";', codes)
 for code in defined_codes:
     if code not in entries:

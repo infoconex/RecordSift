@@ -60,7 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CsvHelperRecordReader.cs" />
+    <Compile Include="Infrastructure\CsvHelper\CsvHelperRecordReader.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

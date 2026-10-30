@@ -33,29 +33,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ImportStatus.cs" />
-    <Compile Include="DiagnosticScope.cs" />
-    <Compile Include="DiagnosticCodes.cs" />
-    <Compile Include="DomainMessageResources.cs" />
-    <Compile Include="ImportDiagnostic.cs" />
-    <Compile Include="ImportSummary.cs" />
-    <Compile Include="ImportResult.cs" />
-    <Compile Include="ExpectedColumn.cs" />
-    <Compile Include="ImportSchema.cs" />
-    <Compile Include="SourceColumnBinding.cs" />
-    <Compile Include="SourceColumnPosition.cs" />
-    <Compile Include="SchemaBindingResult.cs" />
-    <Compile Include="ICsvRecordReader.cs" />
-    <Compile Include="CsvReadOptions.cs" />
-    <Compile Include="CsvParseResult.cs" />
-    <Compile Include="CsvRecord.cs" />
-    <Compile Include="CsvHeaderPolicy.cs" />
-    <Compile Include="CsvDataRow.cs" />
-    <Compile Include="CsvTableResult.cs" />
-    <Compile Include="CsvTableReader.cs" />
+    <Compile Include="Domain\Results\ImportStatus.cs" />
+    <Compile Include="Domain\Diagnostics\DiagnosticScope.cs" />
+    <Compile Include="Domain\Diagnostics\DiagnosticCodes.cs" />
+    <Compile Include="Domain\Diagnostics\DomainMessageResources.cs" />
+    <Compile Include="Domain\Diagnostics\ImportDiagnostic.cs" />
+    <Compile Include="Domain\Results\ImportSummary.cs" />
+    <Compile Include="Domain\Results\ImportResult.cs" />
+    <Compile Include="Domain\Schema\ExpectedColumn.cs" />
+    <Compile Include="Domain\Schema\ImportSchema.cs" />
+    <Compile Include="Domain\Schema\SourceColumnBinding.cs" />
+    <Compile Include="Domain\Schema\SourceColumnPosition.cs" />
+    <Compile Include="Domain\Schema\SchemaBindingResult.cs" />
+    <Compile Include="Application\Abstractions\Csv\ICsvRecordReader.cs" />
+    <Compile Include="Application\Abstractions\Csv\CsvReadOptions.cs" />
+    <Compile Include="Application\Abstractions\Csv\CsvParseResult.cs" />
+    <Compile Include="Application\Abstractions\Csv\CsvRecord.cs" />
+    <Compile Include="Application\Importing\Csv\CsvHeaderPolicy.cs" />
+    <Compile Include="Application\Importing\Csv\CsvDataRow.cs" />
+    <Compile Include="Application\Importing\Csv\CsvTableResult.cs" />
+    <Compile Include="Application\Importing\Csv\CsvTableReader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\DomainMessages.resx">
+    <EmbeddedResource Include="Domain\Diagnostics\Resources\DomainMessages.resx">
       <LogicalName>RecordSift.Resources.DomainMessages.resources</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
