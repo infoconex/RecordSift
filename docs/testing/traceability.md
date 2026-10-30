@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028 diagnostic unit-contract tests and FR-009 schema-binding unit tests also executed (48/48 total NUnit tests), but FR-028 and FR-009 reader-integrated scenarios remain Planned. This does not establish CSV/XLSX end-to-end behavior.
+**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028 diagnostic, FR-009 schema, and FR-013 positional binding unit tests executed (61/61 total NUnit tests); reader-integrated acceptance for these scenarios remains Planned. This does not establish CSV/XLSX end-to-end behavior.
 
 ## Maintenance contract
 
@@ -40,8 +40,8 @@
 | FR-011-SC02 | FR-011 | Must | [#4](https://github.com/infoconex/RecordSift/issues/4) | [FR-011 scenarios](../scenarios/functional/FR-011.md) | — | Planned | — |
 | FR-012-SC01 | FR-012 | Must | [#8](https://github.com/infoconex/RecordSift/issues/8) | [FR-012 scenarios](../scenarios/functional/FR-012.md) | — | Planned | — |
 | FR-012-SC02 | FR-012 | Must | [#8](https://github.com/infoconex/RecordSift/issues/8) | [FR-012 scenarios](../scenarios/functional/FR-012.md) | — | Planned | — |
-| FR-013-SC01 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | — | Planned | — |
-| FR-013-SC02 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | — | Planned | — |
+| FR-013-SC01 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | `RecordSift.Tests.PositionalBindingTests.FR_013_SC01_NamedAndPositionalBindingsIdentifyEquivalentFields` | Planned | [NUnit 61/61, Windows #41072729348](https://github.com/infoconex/RecordSift/actions/runs/41072729348) — unit-level binding only; typed CSV/XLSX reader acceptance pending. |
+| FR-013-SC02 | FR-013 | Must | [#12](https://github.com/infoconex/RecordSift/issues/12) | [FR-013 scenarios](../scenarios/functional/FR-013.md) | `RecordSift.Tests.PositionalBindingTests.FR_013_SC02_OutOfRangePositionIsAClassifiedSourceError` | Planned | [NUnit 61/61, Windows #41072729348](https://github.com/infoconex/RecordSift/actions/runs/41072729348) — unit-level binding only; typed CSV/XLSX reader acceptance pending. |
 | FR-014-SC01 | FR-014 | Should | [#16](https://github.com/infoconex/RecordSift/issues/16) | [FR-014 scenarios](../scenarios/functional/FR-014.md) | — | Planned | — |
 | FR-014-SC02 | FR-014 | Should | [#16](https://github.com/infoconex/RecordSift/issues/16) | [FR-014 scenarios](../scenarios/functional/FR-014.md) | — | Planned | — |
 | FR-015-SC01 | FR-015 | Should | [#20](https://github.com/infoconex/RecordSift/issues/20) | [FR-015 scenarios](../scenarios/functional/FR-015.md) | — | Planned | — |

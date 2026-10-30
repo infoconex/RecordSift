@@ -9,6 +9,7 @@ namespace RecordSift
         public const string RequiredHeaderMissing = "REQUIRED_HEADER_MISSING";
         public const string RequiredColumnMissing = "REQUIRED_COLUMN_MISSING";
         public const string AmbiguousColumn = "AMBIGUOUS_COLUMN";
+        public const string InvalidColumnPosition = "INVALID_COLUMN_POSITION";
         public const string MalformedSource = "MALFORMED_SOURCE";
         public const string RequiredFieldMissing = "REQUIRED_FIELD_MISSING";
         public const string ConversionFailed = "CONVERSION_FAILED";
@@ -23,7 +24,7 @@ namespace RecordSift
         {
             return code == SourceUnreadable || code == RequiredHeaderMissing ||
                    code == MalformedSource || code == RequiredColumnMissing ||
-                   code == AmbiguousColumn;
+                   code == AmbiguousColumn || code == InvalidColumnPosition;
         }
 
         public static bool IsRecordCode(string code)
@@ -40,6 +41,7 @@ namespace RecordSift
                 case RequiredHeaderMissing: return "A required source header is missing.";
                 case RequiredColumnMissing: return "A required source column is missing.";
                 case AmbiguousColumn: return "A declared source column is ambiguous.";
+                case InvalidColumnPosition: return "A declared source column position is outside the available field range.";
                 case MalformedSource: return "The source structure is malformed.";
                 case RequiredFieldMissing: return "A required field is missing.";
                 case ConversionFailed: return "A field could not be converted.";
