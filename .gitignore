@@ -1,0 +1,9 @@
+# Legacy Visual Studio / MSBuild outputs
+.vs/
+[Bb]in/
+[Oo]bj/
+packages/
+TestResults/
+*.user
+*.suo
+*.nupkg
