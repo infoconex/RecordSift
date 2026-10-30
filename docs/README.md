@@ -50,6 +50,11 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 - [ADR 0013 — Independent Domain, Application and Infrastructure assemblies](engineering/decisions/0013-physical-domain-application-infrastructure-assemblies.md) — compiler-enforced inward dependencies and CI layout checks.
 - [Issue #95 — Correct the physical architecture](https://github.com/infoconex/RecordSift/issues/95) — new Domain/Application assemblies, isolated CsvHelper infrastructure and independent unit/contract tests.
 
+## Infrastructure naming and adapter contracts
+
+- [ADR 0014 — Infrastructure CSV adapter naming](engineering/decisions/0014-infrastructure-csv-adapter-naming.md) — name assemblies after their architectural role and source format; reserve `Adapter` for the concrete bridge to the third-party parser.
+- [Engineering issue #97](https://github.com/infoconex/RecordSift/issues/97) — consistent assembly, namespaces, tests and CI dependency enforcement.
+
 ## Independent engineering issues
 
 - [#51 — Behavioral specification](https://github.com/infoconex/RecordSift/issues/51)

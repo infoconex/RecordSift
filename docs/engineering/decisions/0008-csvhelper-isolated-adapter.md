@@ -11,7 +11,7 @@
 ## Architectural seam
 
 - **As implemented after ADR 0013:** `RecordSift.Application` defines `ICsvRecordReader` and parser-neutral records/options; `RecordSift.Domain` defines safe `ImportDiagnostic` codes/messages, schema and results. **Neither Domain nor Application references CsvHelper.** Both assemblies are compiled independently.
-- Infrastructure project `RecordSift.CsvHelperAdapter` references both the core project and CsvHelper. The caller composes `CsvTableReader.Read(recordReader, source, maxCharacters, schema, policy, positions)` using an injected reader.
+- Following [ADR 0014](0014-infrastructure-csv-adapter-naming.md), the infrastructure project is `RecordSift.Infrastructure.Csv` (historically `RecordSift.CsvHelperAdapter`); it references Application, Domain and CsvHelper. The caller composes `CsvTableReader.Read(recordReader, source, maxCharacters, schema, policy, positions)` using an injected reader.
 - The adapter reads **already-decoded** CSV text. It does not infer headers, convert types, interpret cultural formats or choose encodings. Delimiters were added independently through [ADR 0009](0009-configurable-csv-delimiters.md) / FR-003.
 - Malformed vendor parser exceptions are translated into `MALFORMED_SOURCE`; IO problems and budget overruns are source diagnostics. Raw values and vendor exception messages never escape.
 - A bounded `TextReader` wrapper enforces the existing **caller-supplied maximum decoded characters**, counting an exact-limit EOF as valid. It implements no CSV grammar and leaves the caller's reader open.
@@ -20,7 +20,7 @@
 
 ## Compatibility and limitations
 
-This change intentionally breaks the **pre-release** helper signatures `CsvRecordReader.Read(source, limit)` and `CsvTableReader.Read(source, limit, schema, policy, positions)`: former is removed with the handwritten parser; latter now requires an explicit reader as its first parameter. Callers must reference `RecordSift.CsvHelperAdapter`, instantiate `new CsvHelperRecordReader()`, and pass it to `CsvTableReader.Read(reader, ...)`. No stable release 0.1 has been published; this break is recorded rather than silently introduced. Typed `ImportResult` and JSON contracts do not change.
+The original migration intentionally changed the **pre-release** API signatures `CsvRecordReader.Read(source, limit)` and `CsvTableReader.Read(source, limit, schema, policy, positions)`: former is removed with the handwritten parser; latter now requires an explicit reader as its first parameter. After ADR 0014, callers reference `RecordSift.Infrastructure.Csv`, instantiate `new CsvRecordReaderAdapter()`, and pass it to `CsvTableReader.Read(reader, ...)`. No stable release 0.1 has been published; this break is recorded rather than silently introduced. Typed `ImportResult` and JSON contracts do not change.
 
 The library remains pinned to net48 / C# 7.3. The `packages.config` graph must be audited on Windows, tested with the real parser, and assessed for assembly copy/binding. Adapter substitution tests do not certify parsing; existing and additional malformed/quoted/empty/budget tests verify real behavior. The user-facing typed FR-001/FR-004 acceptance remains Planned until the actual importer is implemented.
 

@@ -12,9 +12,9 @@ Split source into distinct traditional .NET Framework 4.8 / C# 7.3 assemblies:
 
 - **`RecordSift.Domain`**: diagnostics and invariant resource-backed messages, import schema and column binding, immutable import result/status/summary. References only the .NET base class library; no reader, filesystem, CSV parser or application types.
 - **`RecordSift.Application`**: application-level `ICsvRecordReader` input port, neutral source records/options, CSV header/row coordination. Depends **only** on Domain and the base class library; never on a concrete infrastructure adapter.
-- **`RecordSift.CsvHelperAdapter`**: actual third-party parser integration in `Infrastructure/CsvHelper`, depends inward on Application/Domain and pinned CsvHelper packages. No parser types cross the RecordSift-owned interface.
+- **`RecordSift.Infrastructure.Csv`** (renamed from the earlier `RecordSift.CsvHelperAdapter` by [ADR 0014](0014-infrastructure-csv-adapter-naming.md)): actual third-party CSV parser integration, depends inward on Application/Domain and pinned CsvHelper packages. No parser types cross the RecordSift-owned interface.
 
-Two NUnit assemblies remain independent: `RecordSift.Tests` references only Application, Domain, NUnit and uses fakes; `RecordSift.CsvHelperAdapter.Tests` invokes the actual library against the same vendor-neutral contract fixture. CI runs both suites individually.
+Two NUnit assemblies remain independent: `RecordSift.Tests` references only Application, Domain, NUnit and uses fakes; `RecordSift.Infrastructure.Csv.Tests` invokes the actual library against the same vendor-neutral contract fixture. CI runs both suites individually.
 
 The original combined `RecordSift.dll` is **removed**, so this is a binary-breaking architectural correction, approved before shipping a typed import API. The public source namespace `RecordSift` is retained to avoid unrelated bulk renaming; the CLR project/assembly identity controls the physical layer. Any future namespace reorganization can be deliberate and separately tested.
 
