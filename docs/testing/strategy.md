@@ -33,6 +33,13 @@ A requirement may need several tests, but a test should have one clear reason to
 
 Exploratory and manual tests may supplement automation, but must include a repeatable procedure and observed result. They do not replace automate-able acceptance tests.
 
+## Ports, adapters and architecture tests
+
+- Use hand-written fakes or stubs for RecordSift-owned application input ports. Validate import orchestration, schema binding and diagnostic handling without importing parser vendor assemblies into core/unit tests.
+- Exercise the real third-party parser **only in adapter/component and end-to-end tests** for quoting, malformed input, newline/row provenance, resource budgets and source failure handling. Faking an adapter does not verify parsing.
+- Where a parser or library is swapped, retain characterization tests of the existing observable contract; document and approve intentional changes before asserting substitute implementations satisfy the same contract (Liskov substitution).
+- Keep domain and application compilation independent of third-party package references; architectural review and project reference checks are required until automated rules exist. See [architecture](../engineering/architecture.md) and [ADR 0007](../engineering/decisions/0007-domain-ports-and-adapters.md).
+
 ## Fixture policy
 
 - Store compact, non-sensitive sample files under `tests/**/Fixtures` when created.
