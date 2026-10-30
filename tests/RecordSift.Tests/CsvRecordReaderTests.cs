@@ -72,7 +72,7 @@ namespace RecordSift.Tests
         [Test]
         public void QuotedEmptyAndEscapedQuotesAreParsed()
         {
-            var result = Parse("\"\",\"\"\"\"\",end");
+            var result = Parse("\"\",\"\"\"\",end");
             Assert.That(result.IsSuccessful, Is.True);
             Assert.That(result.Records[0].Fields, Is.EqualTo(new[] { "", "\"", "end" }));
         }
