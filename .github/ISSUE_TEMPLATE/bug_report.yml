@@ -1,0 +1,34 @@
+name: Bug report
+description: Report observable incorrect behavior with a reproducible test case.
+title: "Bug: "
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps or minimal fixture
+      description: Use sanitized sample data; never include credentials or customer records.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Target framework, .NET SDK, operating system, and package versions
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized diagnostic output and failing test
+      description: Do not paste sensitive file contents, secrets, or identifiable data.
