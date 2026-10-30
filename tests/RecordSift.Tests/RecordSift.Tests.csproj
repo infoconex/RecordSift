@@ -46,6 +46,7 @@
     <Compile Include="CsvRecordReaderTests.cs" />
     <Compile Include="CsvHeaderPolicyTests.cs" />
     <Compile Include="CsvReaderPortTests.cs" />
+    <Compile Include="CsvDelimiterTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

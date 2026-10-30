@@ -12,7 +12,7 @@ namespace RecordSift
     {
         public static CsvTableResult Read(ICsvRecordReader reader, TextReader source, int maxCharacters,
             ImportSchema schema, CsvHeaderPolicy policy,
-            IEnumerable<SourceColumnPosition> positions = null)
+            IEnumerable<SourceColumnPosition> positions = null, CsvReadOptions options = null)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -23,7 +23,12 @@ namespace RecordSift
                 throw new ArgumentException("Headed sources use named header bindings, not positions.",
                     nameof(positions));
 
-            var raw = reader.Read(source, maxCharacters);
+            if (options != null && !options.IsValid)
+                return CsvTableResult.Failed(new[] {
+                    ImportDiagnostic.ForSource(null, DiagnosticCodes.InvalidCsvDelimiter)
+                });
+
+            var raw = reader.Read(source, maxCharacters, options);
             if (!raw.IsSuccessful)
                 return CsvTableResult.Failed(raw.Diagnostics);
 

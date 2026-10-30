@@ -11,7 +11,8 @@ namespace RecordSift
         /// <summary>
         /// Reads already-decoded CSV text with an explicit positive character budget.
         /// Returns ordered records with one-based source-record and physical-line positions.
+        /// A null options value selects the default comma delimiter.
         /// </summary>
-        CsvParseResult Read(TextReader source, int maxCharacters);
+        CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null);
     }
 }

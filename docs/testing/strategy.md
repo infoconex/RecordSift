@@ -1,7 +1,7 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1. The historical net48 Windows suite observed 97/97 passing NUnit tests in [issue #85](https://github.com/infoconex/RecordSift/issues/85), including 18 real CsvHelper adapter characterization cases, 15 headed/headerless table cases, and 3 fake reader-port contract cases. Full typed importer acceptance remains planned.
+**Status:** Engineering policy for release 0.1. The historical net48 Windows suite observed 112/112 passing NUnit tests in [issue #10 FR-003](https://github.com/infoconex/RecordSift/issues/10), including the earlier 97 cases and 15 new CSV delimiter configuration/invalid-input cases. Full typed importer acceptance remains planned.
 
 ## Test-driven development
 
