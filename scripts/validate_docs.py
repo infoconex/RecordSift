@@ -84,7 +84,7 @@ def scenario_specifications() -> dict[str, str]:
                     "Functional rules", "Dependencies and scope",
                     "Open design decisions", "Acceptance scenarios",
                 ]
-                headings = list(re.finditer(r"^## ([^\\n]+)$", content, re.M))
+                headings = list(re.finditer(r"^## ([^\n]+)$", content, re.M))
                 heading_names = [h.group(1) for h in headings]
                 ordered = [x for x in heading_names if x in required_sections]
                 if ordered != required_sections:
@@ -96,7 +96,7 @@ def scenario_specifications() -> dict[str, str]:
                     ]
                 for section in required_sections[:-1]:
                     body = sections.get(section, "")
-                    if len(re.findall(r"\\b\\w+\\b", body)) < 8:
+                    if len(re.findall(r"\b\w+\b", body)) < 8:
                         report(f"{relative}: missing or insufficient detail in section {section}")
                 if "**RecordSift shall:**" not in sections.get("Functional requirement", ""):
                     report(f"{relative}: missing normative functional requirement statement")
@@ -107,7 +107,7 @@ def scenario_specifications() -> dict[str, str]:
                     report(f"{relative}: expected at least three explicit functional rules")
                 if "- **Related requirements:**" not in sections.get("Dependencies and scope", "") or "- **Boundary:**" not in sections.get("Dependencies and scope", ""):
                     report(f"{relative}: related requirements and boundary must be documented")
-                if not re.search(r"^## Acceptance scenarios\\s*$", content, re.M):
+                if not re.search(r"^## Acceptance scenarios\s*$", content, re.M):
                     report(f"{relative}: missing acceptance scenarios section")
 
             found: list[str] = []
