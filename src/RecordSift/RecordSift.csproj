@@ -39,6 +39,10 @@
     <Compile Include="ImportDiagnostic.cs" />
     <Compile Include="ImportSummary.cs" />
     <Compile Include="ImportResult.cs" />
+    <Compile Include="ExpectedColumn.cs" />
+    <Compile Include="ImportSchema.cs" />
+    <Compile Include="SourceColumnBinding.cs" />
+    <Compile Include="SchemaBindingResult.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

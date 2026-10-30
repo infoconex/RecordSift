@@ -9,11 +9,13 @@ These pages specify the proposed product and engineering process for **release 0
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (five FR-030 summary-unit scenarios automated, the remaining 104 planned; FR-028 has additional unit-contract tests but still needs importer acceptance tests).
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (five FR-030 summary-unit scenarios automated, the remaining 104 planned; FR-028 and FR-009 have additional unit tests but still need importer acceptance tests).
 - [Draft import specification](specifications/record-import.md)
 - [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
 - [TDD and test types](testing/strategy.md)
 - [Requirement-to-scenario-to-test matrix](testing/traceability.md)
+
+The FR-009 source-column schema binding contract is implemented and unit-tested against supplied header metadata. Real CSV/XLSX reader integration remains an acceptance-test obligation.
 
 ## Independent engineering issues
 

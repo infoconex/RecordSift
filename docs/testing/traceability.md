@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028 diagnostic unit-contract tests also executed (35/35 total NUnit tests), but all three FR-028 scenarios remain Planned until reader/validation integration. This does not establish CSV/XLSX end-to-end behavior.
+**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028 diagnostic unit-contract tests and FR-009 schema-binding unit tests also executed (48/48 total NUnit tests), but FR-028 and FR-009 reader-integrated scenarios remain Planned. This does not establish CSV/XLSX end-to-end behavior.
 
 ## Maintenance contract
 
@@ -32,8 +32,8 @@
 | FR-007-SC02 | FR-007 | Future | [#7](https://github.com/infoconex/RecordSift/issues/7) | [FR-007 scenarios](../scenarios/functional/FR-007.md) | — | Planned | — |
 | FR-008-SC01 | FR-008 | Future | [#11](https://github.com/infoconex/RecordSift/issues/11) | [FR-008 scenarios](../scenarios/functional/FR-008.md) | — | Planned | — |
 | FR-008-SC02 | FR-008 | Future | [#11](https://github.com/infoconex/RecordSift/issues/11) | [FR-008 scenarios](../scenarios/functional/FR-008.md) | — | Planned | — |
-| FR-009-SC01 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | — | Planned | — |
-| FR-009-SC02 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | — | Planned | — |
+| FR-009-SC01 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | `RecordSift.Tests.ImportSchemaTests.FR_009_SC01_RequiredColumnsBindToSourcePositionsRegardlessOfOrder` | Planned | [NUnit 48/48, Windows #41071075426](https://github.com/infoconex/RecordSift/actions/runs/41071075426) — in-memory schema/header binding unit; CSV/XLSX reader acceptance pending. |
+| FR-009-SC02 | FR-009 | Must | [#15](https://github.com/infoconex/RecordSift/issues/15) | [FR-009 scenarios](../scenarios/functional/FR-009.md) | `RecordSift.Tests.ImportSchemaTests.FR_009_SC02_MissingRequiredSourceColumnReturnsSourceDiagnostic` | Planned | [NUnit 48/48, Windows #41071075426](https://github.com/infoconex/RecordSift/actions/runs/41071075426) — in-memory schema/header binding unit; CSV/XLSX reader acceptance pending. |
 | FR-010-SC01 | FR-010 | Must | [#19](https://github.com/infoconex/RecordSift/issues/19) | [FR-010 scenarios](../scenarios/functional/FR-010.md) | — | Planned | — |
 | FR-010-SC02 | FR-010 | Must | [#19](https://github.com/infoconex/RecordSift/issues/19) | [FR-010 scenarios](../scenarios/functional/FR-010.md) | — | Planned | — |
 | FR-011-SC01 | FR-011 | Must | [#4](https://github.com/infoconex/RecordSift/issues/4) | [FR-011 scenarios](../scenarios/functional/FR-011.md) | — | Planned | — |
