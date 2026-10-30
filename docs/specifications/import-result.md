@@ -1,103 +1,95 @@
 # Import result JSON contract — version 1.0 (proposed)
 
-**Status:** Specification only. The .NET import API, JSON serialization code, and executable contract tests have **not** been implemented.  
+**Status:** Specification only. The .NET import API, JSON serialization implementation and executable contract tests do **not** exist yet.  
 **Related requirements:** [FR-028](../scenarios/functional/FR-028.md), [FR-030](../scenarios/functional/FR-030.md), [FR-035](../scenarios/functional/FR-035.md), [FR-036](../scenarios/functional/FR-036.md), [FR-037](../scenarios/functional/FR-037.md), [NFR-010](../scenarios/non-functional/NFR-010.md).  
 **Machine-readable definition:** [`schemas/import-result.schema.json`](schemas/import-result.schema.json) (JSON Schema Draft 2020-12).
 
-## Purpose and boundaries
+## Purpose and scope
 
-This document specifies the **externally observable validation report JSON**, not the internal .NET record type, the list of accepted domain objects, a database model, or a .NET build artifact. A caller should be able to inspect completion status, data-row counts, and sanitized diagnostics without reopening a CSV or XLSX file.
+This document defines the externally observable **JSON import report** for a single CSV or XLSX source. It does not define the internal .NET result type, accepted domain-record serialization, or an API implementation.
 
-The initial contract describes **one source per report**. It is intentionally strict about property names and types. Expected result examples will be committed as **test fixtures** when executable contract tests are developed, rather than copied into this specification.
+**Release 0.1 has a deliberately simple model:** a processed data row is either **accepted** or **rejected because of one or more errors**. There is **no warning severity**, `warningRowCount`, optional-field advisory mechanism or configurable severity in JSON contract version 1.0. A missing optional field is accepted unless some independently specified error-level validation rule applies. Configurable severity (FR-025) is a deferred Future idea, not a release gate or part of this contract.
 
 ## Top-level JSON fields
 
 | Property | Type | Required | Meaning |
 | --- | --- | --- | --- |
-| `schemaVersion` | string, exactly `"1.0"` | Yes | JSON report contract version, independent of package or .NET version |
-| `sourceId` | nonempty string | Yes | Caller-controlled, non-sensitive source identifier; not an absolute file path |
-| `status` | `"Completed"` or `"Failed"` | Yes | Machine-readable import outcome |
-| `message` | nonempty string | Yes | Human-readable explanation, never a substitute for `status` or diagnostic codes |
-| `summary` | object | Yes | Distinct data-row counts |
-| `diagnostics` | array | Yes | Individual record-level or source-level findings, in deterministic order |
+| `schemaVersion` | string, exactly `"1.0"` | Yes | JSON report contract version, independent of the package version |
+| `sourceId` | nonempty string | Yes | Caller-provided opaque, non-sensitive source identifier; never a filesystem path or credential |
+| `status` | `"Completed"` or `"Failed"` | Yes | Import outcome, independent of whether records were rejected |
+| `message` | nonempty string | Yes | Human-readable success/failure summary; consumers must not parse its text for status |
+| `summary` | object | Yes | Counts of distinct data rows |
+| `diagnostics` | array | Yes | Individual error findings in deterministic order |
 
-`Completed` means import processing **finished**, not that every record was accepted. A completed import may have rejected rows and error-level *record diagnostics*. `Failed` means import was terminated by an unrecoverable source, configuration or schema failure. There must be at least one corresponding source-level error diagnostic for a Failed outcome.
-
-Cancellation (`FR-032`), streaming partial results, and other future states are not part of version 1.0; introducing them requires documented schema versioning and tests.
+`Completed` means the importer finished reading and processing the source. It **may include rejected rows**. `Failed` means an unrecoverable source/schema/import failure occurred; its diagnostics must explain the failure. Cancellation and partial-processing status extensions are out of scope for version 1.0.
 
 ## Summary fields (all required)
 
-| Field | Type | Semantics |
+| Field | Type | Meaning |
 | --- | --- | --- |
-| `processedCount` | nonnegative integer | Number of logical data records actually processed; header rows excluded |
-| `acceptedCount` | nonnegative integer | Distinct processed rows accepted, including warning-only rows |
-| `rejectedCount` | nonnegative integer | Distinct processed rows with one or more **error-level record diagnostics**, counted **once per row** |
-| `warningRowCount` | nonnegative integer | Distinct processed rows with one or more **warning-level record diagnostics**, counted **once per row** |
+| `processedCount` | nonnegative integer | Number of logical data records processed, excluding header rows |
+| `acceptedCount` | nonnegative integer | Number of processed records meeting the configured schema/validation rules |
+| `rejectedCount` | nonnegative integer | Number of distinct processed records with one or more error-level record diagnostics |
 
-For a `Completed` import, `processedCount = acceptedCount + rejectedCount`. Always `warningRowCount <= processedCount`; warning-bearing rows can also be rejected, so **do not** add `warningRowCount` to `acceptedCount + rejectedCount`. A row with multiple error-level diagnostics contributes only one to `rejectedCount`. A row with multiple warnings contributes only one to `warningRowCount`.
+For a `Completed` import: **`processedCount = acceptedCount + rejectedCount`**. A record containing three errors contributes **one** to `rejectedCount` while all three separate error diagnostics remain available in `diagnostics`.
 
-For `Failed` imports, the counters describe only rows actually processed; a failure before any data row can have all counters set to zero. A source error is not a rejected data row. The distinction between successful empty input and failed missing-header input must be visible in `status` and `diagnostics`.
-
-**No ambiguous `errorCount` or `warningCount` property is included in this contract.** The count of individual findings can be derived from `diagnostics` as needed; any future persisted aggregate needs an explicitly distinct name such as `errorDiagnosticCount`.
+No `errorCount`, `warningCount`, `warningRowCount` or warning diagnostics are included. Source/schema errors do not count as rejected rows because no logical data row was rejected on their account. For a `Failed` import, summary counters describe any records actually processed before the failure; `status` and source-level diagnostics carry the failure classification.
 
 ## Diagnostic fields
 
-Each item in `diagnostics` has the following required properties:
+Each element of `diagnostics` has these required properties:
 
 | Property | Type | Meaning |
 | --- | --- | --- |
-| `scope` | `"Record"` or `"Source"` | Classifies a data-row finding versus a source/schema/import failure |
-| `row` | positive integer or `null` | One-based **logical data-record** ordinal for `Record`; `null` for `Source` |
-| `field` | nonempty string or `null` | Failing field/column identifier if known; otherwise `null` |
-| `severity` | `"Error"` or `"Warning"` | Severity of this individual finding |
-| `code` | uppercase machine-readable code | Stable error category; the complete code registry will be established during implementation |
-| `message` | nonempty string | Human-readable, sanitized reason |
+| `scope` | `"Record"` or `"Source"` | A validation error on a data row, or a source/schema/import failure |
+| `row` | positive integer or `null` | One-based logical data-record ordinal for `Record`; `null` for `Source` |
+| `field` | nonempty string or `null` | Source field/column identifier if known |
+| `code` | nonempty uppercase identifier | Machine-readable error code; registry to be fixed during implementation |
+| `message` | nonempty string | Sanitized human-readable explanation |
 
-Optional diagnostic location fields are `worksheet` (nonempty string), `physicalRow` (positive integer) and `physicalLine` (positive integer). `physicalLine` may be supplied for CSV only when reliably reported by the parser; multiline quoted CSV records make physical line numbers different from logical record ordinals.
+Optional location fields: `worksheet` (nonempty name), `physicalRow` (positive XLSX row number), `physicalLine` (positive line number only when the CSV reader reliably provides it). Because quoted CSV fields can contain line breaks, logical data-record ordinal and physical line are different concepts.
 
-For a `Record` diagnostic, `row` is a positive integer. For a `Source` diagnostic, `row` is `null`; `field` may still name a missing required column. File/schema failures do not increment `rejectedCount` or `warningRowCount`.
+There is no `severity` field in version 1.0: all diagnostics represent **errors**. A `Record` diagnostic must have a positive `row`; a `Source` diagnostic must use `row: null`. A missing source column may still be identified by `field` on a source-level diagnostic.
 
-For example, a configured optional-phone warning may use code `OPTIONAL_VALUE_MISSING`; **missing optional values do not cause warnings automatically**. These example diagnostic codes are not yet a frozen registry.
+## Empty, completed-with-errors and failed imports
 
-## Zero-row and failed-import behavior
+| Input condition | `status` | Counters | Diagnostic/message policy |
+| --- | --- | --- | --- |
+| Valid header-only CSV with no data records | `Completed` | All three summary counts zero | Informational message; no error for emptiness |
+| Zero-byte CSV explicitly configured as headerless | `Completed` | All three summary counts zero | Informational message; no error for emptiness |
+| Zero-byte CSV where headers are required | `Failed` | All three summary counts zero | Source error identifying missing required header row |
+| Nonempty input missing required schema column | `Failed` | Counts of data rows actually processed, possibly zero | Source/schema error identifying missing required column |
+| Source is fully processed but some data records fail validation | `Completed` | Accepted and rejected rows counted once each | Keep individual record errors; summary explains rejections |
 
-| Input condition | `status` | Summary | Diagnostic policy | Message meaning |
-| --- | --- | --- | --- | --- |
-| CSV containing valid headers and zero data records | `Completed` | All counts zero | No error or warning for emptiness alone | No data records found |
-| Zero-byte CSV explicitly configured as headerless | `Completed` | All counts zero | No error or warning for emptiness alone | Source contains no records |
-| Zero-byte CSV when headers are required | `Failed` | All counts zero | Source-level error, `row: null` | Required header row is missing |
-| Nonempty input missing a required declared source column | `Failed` | Actual processed rows (possibly zero) | Source-level/schema diagnostic | Identifies missing column |
-| Mixed valid/invalid data rows, but source processing completes | `Completed` | Count each accepted/rejected row once | Retain each individual record diagnostic | Processing finished with rejected records |
+Human-readable `message` wording is **not** a substitute for machine-readable `status` and error codes.
 
-Human-readable `message` text is **not** an invariant snapshot contract by itself. Localized or improved copy must not change the meaning of `status`, the diagnostic codes or the counters. Tests should check meaning; exact text assertions should be limited to explicitly frozen messages, if any.
+## Privacy, versioning and compatibility
 
-## Privacy and compatibility
+- Never include raw source values, credentials, absolute file paths or stack traces by default.
+- The `sourceId` must be a caller-controlled opaque identifier.
+- The JSON Schema rejects unknown properties for contract version 1.0.
+- The `schemaVersion` version is independent of RecordSift package and target-framework versions; incompatible public changes require deliberate schema versioning.
+- Preserve deterministic diagnostics ordering for identical inputs and explicit settings.
+- Serialize from the completed in-memory result; do not reopen the source file.
+- Any future warnings or other severities require a separately approved contract evolution and tests. They must not silently enter version 1.0.
 
-- Do not serialize raw customer values, exception stack traces, absolute filesystem paths, credentials or other sensitive input by default.
-- Use a caller-controlled `sourceId` rather than leaking the real source path.
-- All JSON objects reject undocumented fields for version 1.0 (`additionalProperties: false`).
-- `schemaVersion` is mandatory; changing field names, status values, interpretation or allowed values must follow a deliberate compatible evolution or version bump.
-- All diagnostics retain deterministic order given identical input and explicit options.
-- JSON reporting operates on the **existing** result object, not a second pass over source data.
+## What JSON Schema cannot verify on its own
 
-## What JSON Schema does and does not guarantee
+[The JSON Schema](schemas/import-result.schema.json) expresses required properties, types, enums, integer bounds, the `Record`/ `Source` row convention and rejection of unknown fields. It **cannot** by itself prove `processedCount = acceptedCount + rejectedCount`, distinct-row accounting, consistency between rejected rows and error diagnostics, privacy redaction or stable ordering.
 
-The [JSON Schema](schemas/import-result.schema.json) validates structural constraints: required properties, data types, enum values, positive/zero bounds, record-versus-source row location, and unknown-property rejection.
+When executable contract tests exist, they must assert these semantic invariants independently, not merely validate the JSON shape.
 
-**Executable contract tests are still required** for relationships that ordinary JSON Schema cannot express portably: `processedCount = acceptedCount + rejectedCount`, uniqueness of counted rows, warning/rejected overlap, semantic source-level failure classification, sensitive-data redaction and deterministic output. A JSON document passing structural validation is not automatically semantically correct.
+## Planned version-controlled test fixtures — not yet created
 
-## Future version-controlled test fixtures (not yet created)
+The future `tests/RecordSift.ContractTests/Fixtures/` directory should contain expected JSON documents for:
 
-When the relevant .NET contract-test project is implemented, keep **expected JSON output files** alongside tests under `tests/RecordSift.ContractTests/Fixtures/`, using names such as:
+- `successful-import.json` — valid input with accepted records.
+- `completed-with-errors.json` — one or more rejected data rows, including multiple errors on one row.
+- `empty-import.json` — a successful zero-data-row import.
+- `failed-import.json` — a source/schema error with zero rejected data rows.
 
-- `successful-import.json`
-- `completed-with-errors.json`
-- `completed-with-warnings.json`
-- `empty-import.json`
-- `failed-import.json`
+These files are **test fixtures**, not part of the specification. They will be committed alongside actual contract tests and linked to the relevant `FR-###-SC##` acceptance scenarios. Generated reports, test results and coverage output are CI **execution artifacts**, not golden fixtures to commit.
 
-These are planned fixture paths, **not existing files or passing tests**. Each fixture should be linked to the relevant `FR-###-SC##` acceptance scenario. Contract tests must deserialize and validate generated JSON against the schema and these expectations; they must also verify row-count invariants directly. Actual test-run outputs, coverage results and temporary reports should remain CI execution artifacts, not committed golden fixtures.
+## Remaining implementation decisions
 
-## Deferred decisions
-
-Choose the initial public .NET result API, exact diagnostic code registry, test framework/JSON Schema validator compatible with the target frameworks, and API migration/versioning policy during their own implementation issues. Do not conflate the JSON report version (`schemaVersion`) with the application's release version.
+The public .NET API types, exact diagnostic-code registry, the compatible schema-validation test library, and JSON contract migration policy still need implementation-specific review. No executable contract tests or release-readiness claims are made by this document.
