@@ -4,7 +4,7 @@ using NUnit.Framework;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Schema;
 
-namespace RecordSift.Tests
+namespace RecordSift.Domain.Tests
 {
     [TestFixture]
     public sealed class PositionalBindingTests

@@ -64,6 +64,11 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 - [ADR 0017 — Application CSV input ports](engineering/decisions/0017-application-ports-namespace.md) — replace the generic `Abstractions/Csv` folder and namespace with role-specific `Ports/Csv` while preserving the vendor-independent port contract.
 - [Engineering issue #103](https://github.com/infoconex/RecordSift/issues/103) — dedicated pre-release namespace migration, structure checks and CI verification.
 
+## Isolated Domain, Application and adapter tests
+
+- [ADR 0018 — Separate unit-test assemblies](engineering/decisions/0018-independent-domain-application-tests.md) — compiler-enforced Domain-only and Application-only test dependencies; reusable vendor-neutral port conformance fixture lives with Application tests and runs against the real adapter.
+- [Issue #105](https://github.com/infoconex/RecordSift/issues/105) — three separately verified Windows .NET Framework 4.8 NUnit assemblies and architecture guard negative fixtures.
+
 ## Independent engineering issues
 
 - [#51 — Behavioral specification](https://github.com/infoconex/RecordSift/issues/51)

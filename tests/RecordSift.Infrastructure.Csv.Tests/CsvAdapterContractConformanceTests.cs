@@ -1,8 +1,8 @@
 using NUnit.Framework;
 using RecordSift;
 using RecordSift.Application.Ports.Csv;
+using RecordSift.Application.Tests;
 using RecordSift.Infrastructure.Csv;
-using RecordSift.Tests;
 
 namespace RecordSift.Infrastructure.Csv.Tests
 {

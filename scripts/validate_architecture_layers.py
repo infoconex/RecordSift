@@ -26,6 +26,23 @@ EXPECTED = {
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult"),
     },
 }
+TEST_PROJECT_REFERENCES = {
+    "RecordSift.Domain.Tests": ["RecordSift.Domain.csproj"],
+    "RecordSift.Application.Tests": [
+        "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
+    ],
+    "RecordSift.Infrastructure.Csv.Tests": [
+        "RecordSift.Application.Tests.csproj", "RecordSift.Domain.csproj",
+        "RecordSift.Application.csproj", "RecordSift.Infrastructure.Csv.csproj",
+    ],
+}
+
+def verify_test_dependency_graph(graph):
+    return [f"{name}: test dependencies {sorted(graph.get(name, []))} "
+            f"must be {sorted(expected)}"
+            for name, expected in TEST_PROJECT_REFERENCES.items()
+            if sorted(graph.get(name, [])) != sorted(expected)]
+
 DOMAIN_RESX = "Diagnostics/Resources/DomainMessages.resx"
 RESX_IDENTITY = "RecordSift.Resources.DomainMessages.resources"
 ADAPTER_SOURCE = "CsvRecordReaderAdapter.cs"
@@ -166,31 +183,46 @@ def verify_layout():
         elif [entry.text for entry in resources[0]
               if entry.tag.rsplit("}", 1)[-1] == "LogicalName"] != [RESX_IDENTITY]:
             errors.append("Domain diagnostic resource manifest identity changed")
-    # Check test project ownership at the assembly level too.
-    for project_name, expected_refs in {
-        "RecordSift.Tests": ["RecordSift.Domain.csproj", "RecordSift.Application.csproj"],
-        "RecordSift.Infrastructure.Csv.Tests": [
-            "RecordSift.Tests.csproj", "RecordSift.Domain.csproj",
-            "RecordSift.Application.csproj", "RecordSift.Infrastructure.Csv.csproj",
-        ],
-    }.items():
+    # Verify exact test boundaries, including source ownership and dependencies.
+    test_graph = {}
+    for project_name in TEST_PROJECT_REFERENCES:
         path = ROOT / "tests" / project_name / (project_name + ".csproj")
         if not path.is_file():
             errors.append(f"Missing test project {project_name}")
             continue
         root = project(path)
-        references = dependencies(root)
-        if project_name.startswith("RecordSift.Infrastructure."):
-            namespaces = [child.text for child in root.iter()
-                          if child.tag.rsplit("}", 1)[-1] == "RootNamespace"]
-            if namespaces != [project_name]:
-                errors.append("Infrastructure NUnit root namespace must identify the CSV layer")
-            for source in path.parent.glob("*.cs"):
-                if not re.search(r"namespace\s+RecordSift\.Infrastructure\.Csv\.Tests\s*\{",
-                                 source.read_text(encoding="utf-8")):
-                    errors.append(f"Real adapter test has unexpected namespace: {source.name}")
-        if sorted(references) != sorted(expected_refs):
-            errors.append(f"{project_name}: invalid test dependencies {references}")
+        test_graph[project_name] = dependencies(root)
+        root_namespaces = [child.text for child in items(root, "RootNamespace")]
+        assembly_names = [child.text for child in items(root, "AssemblyName")]
+        if root_namespaces != [project_name] or assembly_names != [project_name]:
+            errors.append(f"{project_name}: wrong root namespace or assembly identity")
+        actual = {p.relative_to(path.parent).as_posix() for p in path.parent.rglob("*.cs")}
+        declared = includes(root, "Compile")
+        if set(declared) != actual or len(declared) != len(set(declared)):
+            errors.append(f"{project_name}: test Compile entries must match physical sources")
+        for source in path.parent.rglob("*.cs"):
+            if source.name == "AssemblyInfo.cs":
+                continue
+            data = source.read_text(encoding="utf-8")
+            errors.extend(verify_namespace(data, project_name,
+                                           str(source.relative_to(ROOT))))
+            if project_name == "RecordSift.Domain.Tests" and re.search(
+                r"using\s+(?:RecordSift\.Application|RecordSift\.Infrastructure|CsvHelper)\b", data
+            ):
+                errors.append(f"{source.relative_to(ROOT)}: forbidden Domain test import")
+            if project_name == "RecordSift.Application.Tests" and re.search(
+                r"using\s+(?:RecordSift\.Infrastructure|CsvHelper)\b", data
+            ):
+                errors.append(f"{source.relative_to(ROOT)}: forbidden Application test import")
+        if project_name != "RecordSift.Infrastructure.Csv.Tests":
+            allowed = {"System", "System.Core", "nunit.framework"}
+            for item in items(root, "Reference"):
+                assembly = item.attrib.get("Include", "").split(",", 1)[0]
+                if assembly not in allowed:
+                    errors.append(f"{project_name}: forbidden test assembly reference {assembly}")
+    errors.extend(verify_test_dependency_graph(test_graph))
+    if (ROOT / "tests" / "RecordSift.Tests").exists():
+        errors.append("Legacy mixed Domain/Application test project must not exist")
     return errors
 
 def self_test():
@@ -210,6 +242,20 @@ def self_test():
                             "RecordSift.Domain.Schema", "outward"), "Wrong layer namespace was accepted"
     assert verify_namespace("namespace RecordSift.Application.Abstractions.Csv\n{ }",
                             "RecordSift.Application.Ports.Csv", "legacy"), "Old port namespace was accepted"
+    legal_tests = {name: list(refs) for name, refs in TEST_PROJECT_REFERENCES.items()}
+    assert verify_test_dependency_graph(legal_tests) == [], "Valid test graph rejected"
+    broken_tests = {**legal_tests, "RecordSift.Domain.Tests": [
+        "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+    ]}
+    assert verify_test_dependency_graph(broken_tests), "Domain test outward reference accepted"
+    broken_tests = {**legal_tests, "RecordSift.Application.Tests": [
+        "RecordSift.Domain.csproj", "RecordSift.Infrastructure.Csv.csproj",
+    ]}
+    assert verify_test_dependency_graph(broken_tests), "Application test infrastructure accepted"
+    broken_tests = {**legal_tests, "RecordSift.Infrastructure.Csv.Tests": [
+        "RecordSift.Domain.Tests.csproj",
+    ]}
+    assert verify_test_dependency_graph(broken_tests), "Adapter test depends on Domain tests"
     broken = {**valid, "RecordSift.Domain": ["RecordSift.Application.csproj"]}
     assert any("RecordSift.Domain" in error for error in verify_dependency_graph(broken)), \
         "Forbidden Domain->Application dependency was not detected"

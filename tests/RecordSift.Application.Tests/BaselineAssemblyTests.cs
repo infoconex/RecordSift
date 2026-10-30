@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using NUnit.Framework;
 
-namespace RecordSift.Tests
+namespace RecordSift.Application.Tests
 {
     [TestFixture]
     public sealed class BaselineAssemblyTests

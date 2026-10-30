@@ -5,7 +5,7 @@ using NUnit.Framework;
 using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
 
-namespace RecordSift.Tests
+namespace RecordSift.Application.Tests
 {
     [TestFixture]
     public abstract class CsvRecordReaderContractTests

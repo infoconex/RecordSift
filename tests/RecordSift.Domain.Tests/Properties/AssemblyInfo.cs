@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("RecordSift.Tests")]
+[assembly: AssemblyTitle("RecordSift.Domain.Tests")]
 [assembly: AssemblyDescription("Constructed traditional .NET Framework 4.8 baseline for RecordSift.")]
 [assembly: AssemblyCompany("Infoconex")]
 [assembly: AssemblyProduct("RecordSift")]

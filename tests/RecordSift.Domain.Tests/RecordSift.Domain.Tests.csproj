@@ -6,8 +6,8 @@
     <ProjectGuid>{63F4CF6E-47FC-4FFB-987F-095E81E0F3FD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RecordSift.Tests</RootNamespace>
-    <AssemblyName>RecordSift.Tests</AssemblyName>
+    <RootNamespace>RecordSift.Domain.Tests</RootNamespace>
+    <AssemblyName>RecordSift.Domain.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>7.3</LangVersion>
@@ -38,23 +38,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BaselineAssemblyTests.cs" />
     <Compile Include="ImportSummaryTests.cs" />
     <Compile Include="ImportDiagnosticTests.cs" />
     <Compile Include="ImportSchemaTests.cs" />
     <Compile Include="PositionalBindingTests.cs" />
-    <Compile Include="Contracts\CsvRecordReaderContractTests.cs" />
-    <Compile Include="CsvReaderPortTests.cs" />
     <Compile Include="DomainMessageResourceTests.cs" />
-    <Compile Include="DomainTestIsolationTests.cs" />
+    <Compile Include="AssemblyIsolationTests.cs" />
     <Compile Include="NamespaceOwnershipTests.cs" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\RecordSift.Application\RecordSift.Application.csproj">
-      <Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project>
-      <Name>RecordSift.Application</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\RecordSift.Domain\RecordSift.Domain.csproj">
