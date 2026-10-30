@@ -40,11 +40,12 @@ namespace RecordSift.Application.Tests
             var flags = BindingFlags.Public | BindingFlags.Static;
             Assert.That(typeof(CsvMessageResources).GetMethod("Get", flags), Is.Null);
             var properties = typeof(CsvMessageResources).GetProperties(flags);
-            Assert.That(properties, Has.Length.EqualTo(5));
+            Assert.That(properties, Has.Length.EqualTo(11));
             foreach (var property in properties)
             {
                 Assert.That(property.PropertyType, Is.EqualTo(typeof(string)));
-                var key = "Argument_" + property.Name;
+                var key = (property.Name.StartsWith("Import", StringComparison.Ordinal)
+                    ? "Outcome_" : "Argument_") + property.Name;
                 Assert.That(property.GetValue(null, null),
                     Is.EqualTo(Catalog().GetString(key, CultureInfo.InvariantCulture)),
                     "CSV resource contract for " + key);

@@ -37,11 +37,11 @@ src/
   RecordSift.Domain/                        (no ProjectReference)
     Diagnostics/                            diagnostic IDs, safe messages/resources
     Schema/                                 declarations, bindings and schema invariants
-    Results/                                import outcome and aggregate invariants
+    Results/                                import outcome, typed results and aggregate invariants
   RecordSift.Application/                   -> RecordSift.Domain
     Messages/                              Application-owned CSV validation resources
     Ports/Csv/                       owned ICsvRecordReader and neutral DTOs/options
-    Importing/Csv/                          table orchestration and header policy
+    Importing/Csv/                          table/header policy and typed CSV use case
   RecordSift.Infrastructure.Csv/            -> Application + Domain
     CsvRecordReaderAdapter.cs              real CSV adapter backed by CsvHelper
     CharacterLimitedTextReader.cs          internal bounded decoded-character source

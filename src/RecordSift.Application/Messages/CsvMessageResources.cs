@@ -12,6 +12,12 @@ namespace RecordSift.Application.Messages
         private static readonly ResourceManager s_catalog = new ResourceManager(
             "RecordSift.Resources.CsvMessages", typeof(CsvMessageResources).Assembly);
 
+        public static string ImportCompleted => Get("Outcome_ImportCompleted");
+        public static string ImportCompletedWithErrors => Get("Outcome_ImportCompletedWithErrors");
+        public static string ImportNoDataRecords => Get("Outcome_ImportNoDataRecords");
+        public static string ImportEmptySource => Get("Outcome_ImportEmptySource");
+        public static string ImportMissingHeader => Get("Outcome_ImportMissingHeader");
+        public static string ImportFailed => Get("Outcome_ImportFailed");
         public static string ReaderHeaderConflict => Get("Argument_ReaderHeaderConflict");
         public static string HeaderlessMissingPositions => Get("Argument_HeaderlessMissingPositions");
         public static string FailedTableNoError => Get("Argument_FailedTableNoError");

@@ -43,6 +43,14 @@ APPLICATION_CSV_ARGUMENT_KEYS = {
     "Argument_FailedTableNonSourceError",
     "Argument_ParserErrorScope",
 }
+APPLICATION_CSV_OUTCOME_KEYS = {
+    "Outcome_ImportCompleted",
+    "Outcome_ImportCompletedWithErrors",
+    "Outcome_ImportNoDataRecords",
+    "Outcome_ImportEmptySource",
+    "Outcome_ImportMissingHeader",
+    "Outcome_ImportFailed",
+}
 APPLICATION_CSV_RESX = APPLICATION / "Messages" / "Resources" / "CsvMessages.resx"
 if argument_keys.intersection(APPLICATION_CSV_ARGUMENT_KEYS):
     errors.append("Domain resources contain Application-owned CSV validation messages")
@@ -58,8 +66,8 @@ else:
         if key in application_entries or not value or not value.strip():
             errors.append("Duplicate or empty Application resource: " + key)
         application_entries[key] = value
-    if set(application_entries) != APPLICATION_CSV_ARGUMENT_KEYS:
-        errors.append("Application must own exactly the five CSV-only argument resources")
+    if set(application_entries) != APPLICATION_CSV_ARGUMENT_KEYS | APPLICATION_CSV_OUTCOME_KEYS:
+        errors.append("Application CSV argument and outcome resource inventory changed")
 if set(entries).intersection(application_entries):
     errors.append("Domain and Application resource catalogs must have disjoint keys")
 
@@ -99,12 +107,12 @@ else:
     if re.search(r'public\s+static\s+string\s+Get\s*\(\s*string', application_catalog):
         errors.append("Application CSV raw resource-key Get(string) must not be public")
     accessor_pairs = re.findall(
-        r'public\s+static\s+string\s+(\w+)\s*=>\s*Get\("(Argument_\w+)"\)\s*;',
+        r'public\s+static\s+string\s+(\w+)\s*=>\s*Get\("((?:Argument|Outcome)_\w+)"\)\s*;',
         application_catalog)
     mapping = {key: accessor for accessor, key in accessor_pairs}
-    if set(mapping) != APPLICATION_CSV_ARGUMENT_KEYS or len(accessor_pairs) != len(APPLICATION_CSV_ARGUMENT_KEYS):
+    if set(mapping) != APPLICATION_CSV_ARGUMENT_KEYS | APPLICATION_CSV_OUTCOME_KEYS or len(accessor_pairs) != len(APPLICATION_CSV_ARGUMENT_KEYS | APPLICATION_CSV_OUTCOME_KEYS):
         errors.append("Application CSV typed resource accessors must cover all five keys exactly")
-    if any(accessor != key[len("Argument_"):] for accessor, key in accessor_pairs):
+    if any(accessor != key.split("_", 1)[1] for accessor, key in accessor_pairs):
         errors.append("Application CSV typed resource accessor does not match its key")
 
 errors.extend(validate_typed_message_contract(public_catalog, sources))
@@ -119,7 +127,7 @@ assert any("raw Argument_" in problem for problem in validate_typed_message_cont
     public_catalog, [("broken", 'var key = "Argument_DiagnosticNull";')]))
 assert raw_argument_uses('DomainMessageResources.Get("Argument_DiagnosticNull")') == ["Argument_DiagnosticNull"]
 assert not APPLICATION_CSV_ARGUMENT_KEYS.intersection(argument_keys), "Domain still owns CSV messages"
-assert set(application_entries) == APPLICATION_CSV_ARGUMENT_KEYS, "Application CSV resource set changed"
+assert set(application_entries) == APPLICATION_CSV_ARGUMENT_KEYS | APPLICATION_CSV_OUTCOME_KEYS, "Application CSV resource set changed"
 assert not set(application_entries).intersection(entries), "Overlapping catalogs"
 
 

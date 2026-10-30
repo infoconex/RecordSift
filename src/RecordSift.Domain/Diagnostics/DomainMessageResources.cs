@@ -12,6 +12,9 @@ namespace RecordSift.Domain.Diagnostics
         private static readonly ResourceManager s_catalog = new ResourceManager(
             "RecordSift.Resources.DomainMessages", typeof(DomainMessageResources).Assembly);
 
+        public static string AcceptedRecordCountMismatch => Get("Argument_AcceptedRecordCountMismatch");
+        public static string ImportSourceIdBlank => Get("Argument_ImportSourceIdBlank");
+        public static string ImportMessageBlank => Get("Argument_ImportMessageBlank");
         public static string BoundColumnName => Get("Argument_BoundColumnName");
         public static string ColumnDeclarationNull => Get("Argument_ColumnDeclarationNull");
         public static string ColumnNamesDuplicate => Get("Argument_ColumnNamesDuplicate");
