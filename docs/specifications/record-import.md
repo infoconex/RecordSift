@@ -1,7 +1,7 @@
 # Record import behavioral specification (draft)
 
 **Issue:** [#51](https://github.com/infoconex/RecordSift/issues/51)  
-**Status:** Draft behavioral contract. An in-memory summary and supplied diagnostic carrier exist for FR-030. The raw CSV reader/table is implemented with a separately injected CsvHelper adapter and FR-003 delimiter options (component tests observed); no XLSX reader, typed CSV import API, or end-to-end import acceptance tests exist yet.  
+**Status:** Draft behavioral contract. An in-memory summary and supplied diagnostic carrier exist for FR-030. The raw CSV reader/table is implemented with a separately injected CsvHelper adapter and FR-003 delimiter options (component tests observed); issue #113 adds a narrowly scoped typed CSV API with caller-supplied conversion and real-adapter integration tests; generalized conversion/mapping/validation, XLSX and full FR-001 acceptance remain outstanding.  
 **Applies to:** Release 0.1 Must requirements.
 
 ## Intent and boundaries

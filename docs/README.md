@@ -1,6 +1,6 @@
 # RecordSift engineering documentation
 
-These pages specify the product and engineering process for **release 0.1**. Some in-memory and raw CSV components are implemented; the complete typed import API and all end-to-end acceptance scenarios are not yet implemented.
+These pages specify the product and engineering process for **release 0.1**. In-memory and raw CSV components are implemented. A narrowly scoped caller-mapped typed CSV import workflow has been added through issue #113; generalized property binding, validation and complete requirements-level acceptance remain outstanding.
 
 ## Requirement catalogs
 
@@ -19,7 +19,7 @@ The FR-009 source-column schema binding contract is implemented and unit-tested 
 
 The FR-013 explicit positional binding contract is implemented and unit-tested without claiming typed-record or source-reader integration.
 
-The FR-001 raw CSV reader now uses a separately packaged CsvHelper adapter behind `ICsvRecordReader`; the core keeps the parser-independent record and diagnostic contracts. It still does not map CLR types or complete public typed imports. Issue #2 remains open for the full import API and acceptance scenarios.
+The FR-001 raw CSV reader now uses a separately packaged CsvHelper adapter behind `ICsvRecordReader`; the core keeps the parser-independent record and diagnostic contracts. The Application now offers a caller-mapped typed import slice through `CsvImporter<T>` and Domain-owned `TypedImportResult<T>`, with real-adapter integration tests. Generalized conversion/property mapping, validation and complete FR-001 acceptance remain pending. Issue #2 remains open.
 
 The FR-003 delimiter policy uses core-owned `CsvReadOptions` and source-scoped configuration diagnostics, with real adapter component tests; the end-to-end typed import scenarios are still Planned. See [ADR 0009](engineering/decisions/0009-configurable-csv-delimiters.md).
 
@@ -53,6 +53,11 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 
 - [ADR 0013 — Independent Domain, Application and Infrastructure assemblies](engineering/decisions/0013-physical-domain-application-infrastructure-assemblies.md) — compiler-enforced inward dependencies and CI layout checks.
 - [Issue #95 — Correct the physical architecture](https://github.com/infoconex/RecordSift/issues/95) — new Domain/Application assemblies, isolated CsvHelper infrastructure and independent unit/contract tests.
+
+## First typed CSV import slice
+
+- [ADR 0022 — First caller-mapped typed CSV import](engineering/decisions/0022-first-typed-csv-import.md) — immutable Domain result, injected Application importer, invariant messages and real-adapter tests without claiming generalized mapping/validation completeness.
+- [Issue #113](https://github.com/infoconex/RecordSift/issues/113) — independently testable FR-001 implementation slice; [Windows #41145214018](https://github.com/infoconex/RecordSift/actions/runs/41145214018) verified 145 tests before documentation finalization.
 
 ## Focused CSV infrastructure implementation
 
