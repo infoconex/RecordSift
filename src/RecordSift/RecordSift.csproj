@@ -47,6 +47,10 @@
     <Compile Include="CsvRecordReader.cs" />
     <Compile Include="CsvParseResult.cs" />
     <Compile Include="CsvRecord.cs" />
+    <Compile Include="CsvHeaderPolicy.cs" />
+    <Compile Include="CsvDataRow.cs" />
+    <Compile Include="CsvTableResult.cs" />
+    <Compile Include="CsvTableReader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

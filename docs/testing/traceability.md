@@ -22,8 +22,8 @@
 | FR-002-SC02 | FR-002 | Must | [#6](https://github.com/infoconex/RecordSift/issues/6) | [FR-002 scenarios](../scenarios/functional/FR-002.md) | — | Planned | — |
 | FR-003-SC01 | FR-003 | Must | [#10](https://github.com/infoconex/RecordSift/issues/10) | [FR-003 scenarios](../scenarios/functional/FR-003.md) | — | Planned | — |
 | FR-003-SC02 | FR-003 | Must | [#10](https://github.com/infoconex/RecordSift/issues/10) | [FR-003 scenarios](../scenarios/functional/FR-003.md) | — | Planned | — |
-| FR-004-SC01 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | — | Planned | — |
-| FR-004-SC02 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | — | Planned | — |
+| FR-004-SC01 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | `RecordSift.Tests.CsvHeaderPolicyTests.FR_004_SC01_HeadedAndHeaderlessCsvRetainIdenticalDataRows` | Planned | Real CSV text, component header-policy/schema binding; typed import acceptance pending (CI evidence to follow). |
+| FR-004-SC02 | FR-004 | Must | [#14](https://github.com/infoconex/RecordSift/issues/14) | [FR-004 scenarios](../scenarios/functional/FR-004.md) | `RecordSift.Tests.CsvHeaderPolicyTests.FR_004_SC02_MissingRequiredCsvHeaderFailsWithoutBindingAnyData` | Planned | Real CSV text, component header-policy/schema binding; typed import acceptance pending (CI evidence to follow). |
 | FR-005-SC01 | FR-005 | Must | [#18](https://github.com/infoconex/RecordSift/issues/18) | [FR-005 scenarios](../scenarios/functional/FR-005.md) | — | Planned | — |
 | FR-005-SC02 | FR-005 | Must | [#18](https://github.com/infoconex/RecordSift/issues/18) | [FR-005 scenarios](../scenarios/functional/FR-005.md) | — | Planned | — |
 | FR-006-SC01 | FR-006 | Must | [#3](https://github.com/infoconex/RecordSift/issues/3) | [FR-006 scenarios](../scenarios/functional/FR-006.md) | — | Planned | — |
