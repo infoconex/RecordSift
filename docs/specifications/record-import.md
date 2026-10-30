@@ -1,7 +1,7 @@
 # Record import behavioral specification (draft)
 
 **Issue:** [#51](https://github.com/infoconex/RecordSift/issues/51)  
-**Status:** Proposed contract; no implementation or passing tests exist yet.  
+**Status:** Draft behavioral contract. An in-memory summary and supplied diagnostic carrier are implemented for FR-030 with observed NUnit unit tests; no CSV/XLSX reader or end-to-end import tests exist yet.  
 **Applies to:** Release 0.1 Must requirements.
 
 ## Intent and boundaries

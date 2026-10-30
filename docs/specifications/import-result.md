@@ -1,6 +1,6 @@
 # Import result JSON contract — version 1.0 (proposed)
 
-**Status:** Specification only. The .NET import API, JSON serialization implementation and executable contract tests do **not** exist yet.  
+**Status:** JSON report specification only. A minimal in-memory summary and status model exists for FR-030, but the import reader API, JSON serialization implementation and executable JSON Schema/contract tests do **not** exist yet.  
 **Related requirements:** [FR-028](../scenarios/functional/FR-028.md), [FR-030](../scenarios/functional/FR-030.md), [FR-035](../scenarios/functional/FR-035.md), [FR-036](../scenarios/functional/FR-036.md), [FR-037](../scenarios/functional/FR-037.md), [NFR-010](../scenarios/non-functional/NFR-010.md).  
 **Machine-readable definition:** [`schemas/import-result.schema.json`](schemas/import-result.schema.json) (JSON Schema Draft 2020-12).
 
