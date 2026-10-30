@@ -9,6 +9,7 @@ These pages specify the proposed product and engineering process for **release 0
 
 ## Specifications and verification
 
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 101 planned scenarios.
 - [Draft import specification](specifications/record-import.md)
 - [TDD and test types](testing/strategy.md)
 - [Requirement-to-scenario-to-test matrix](testing/traceability.md)
@@ -26,11 +27,11 @@ These pages specify the proposed product and engineering process for **release 0
 ## Identifiers and status
 
 - `FR-###` and `NFR-###` identify requirements permanently.
-- Each requirement has one independent issue, whose body includes `FR-###-SC01` or `NFR-###-SC01` as the first planned acceptance scenario.
+- Each requirement has one independent issue, which links to its authoritative scenario Markdown file under `docs/scenarios/`.
 - Priority `Must` applies to the release 0.1 scope; `Should` and `Future` remain backlog items unless deliberately moved into the release by a documented change.
 - Every scenario is **Planned** until a linked test/check is implemented and execution evidence exists.
 - An issue may cross-reference other requirements without becoming responsible for implementing them.
-- Requirement, scenario, test, PR, and release evidence should be linked by the future traceability matrix (#53).
+- Requirement, scenario, test, PR, and release evidence are linked in [the traceability matrix](testing/traceability.md).
 
 ## Delivery policy
 
