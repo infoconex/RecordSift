@@ -41,6 +41,7 @@
     <Compile Include="BaselineAssemblyTests.cs" />
     <Compile Include="ImportSummaryTests.cs" />
     <Compile Include="ImportDiagnosticTests.cs" />
+    <Compile Include="ImportSchemaTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
