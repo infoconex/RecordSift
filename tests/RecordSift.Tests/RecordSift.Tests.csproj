@@ -43,10 +43,8 @@
     <Compile Include="ImportDiagnosticTests.cs" />
     <Compile Include="ImportSchemaTests.cs" />
     <Compile Include="PositionalBindingTests.cs" />
-    <Compile Include="CsvRecordReaderTests.cs" />
-    <Compile Include="CsvHeaderPolicyTests.cs" />
+    <Compile Include="Contracts\CsvRecordReaderContractTests.cs" />
     <Compile Include="CsvReaderPortTests.cs" />
-    <Compile Include="CsvDelimiterTests.cs" />
     <Compile Include="DomainMessageResourceTests.cs" />
     <Compile Include="DomainTestIsolationTests.cs" />
     <None Include="packages.config" />
@@ -57,11 +55,5 @@
       <Name>RecordSift</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\\..\\src\\RecordSift.CsvHelperAdapter\\RecordSift.CsvHelperAdapter.csproj">
-      <Project>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</Project>
-      <Name>RecordSift.CsvHelperAdapter</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
