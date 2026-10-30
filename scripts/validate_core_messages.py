@@ -36,6 +36,19 @@ for code in defined_codes:
 CATALOG = CORE / "Diagnostics" / "DomainMessageResources.cs"
 APPLICATION = ROOT / "src" / "RecordSift.Application"
 argument_keys = {key for key in entries if key.startswith("Argument_")}
+APPLICATION_CSV_ARGUMENT_KEYS = {
+    "Argument_ReaderHeaderConflict",
+    "Argument_HeaderlessMissingPositions",
+    "Argument_FailedTableNoError",
+    "Argument_FailedTableNonSourceError",
+    "Argument_ParserErrorScope",
+}
+APPLICATION_CSV_RESX = APPLICATION / "Messages" / "Resources" / "CsvMessages.resx"
+if argument_keys.intersection(APPLICATION_CSV_ARGUMENT_KEYS):
+    errors.append("Domain resources contain Application-owned CSV validation messages")
+if not APPLICATION_CSV_RESX.is_file():
+    errors.append("Application-owned CSV message resource manifest is missing")
+
 public_catalog = CATALOG.read_text(encoding="utf-8")
 
 def raw_argument_uses(source):
