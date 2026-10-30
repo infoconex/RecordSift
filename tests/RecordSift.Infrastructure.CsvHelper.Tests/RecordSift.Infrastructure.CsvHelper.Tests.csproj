@@ -6,8 +6,8 @@
     <ProjectGuid>{B780A5E7-72C8-4679-8C3F-991838B811D8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RecordSift.Tests</RootNamespace>
-    <AssemblyName>RecordSift.CsvHelperAdapter.Tests</AssemblyName>
+    <RootNamespace>RecordSift.Infrastructure.CsvHelper.Tests</RootNamespace>
+    <AssemblyName>RecordSift.Infrastructure.CsvHelper.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>7.3</LangVersion>
@@ -47,9 +47,9 @@
       <Project>{63F4CF6E-47FC-4FFB-987F-095E81E0F3FD}</Project>
       <Name>RecordSift.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\RecordSift.CsvHelperAdapter\RecordSift.CsvHelperAdapter.csproj">
+    <ProjectReference Include="..\..\src\RecordSift.Infrastructure.CsvHelper\RecordSift.Infrastructure.CsvHelper.csproj">
       <Project>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</Project>
-      <Name>RecordSift.CsvHelperAdapter</Name>
+      <Name>RecordSift.Infrastructure.CsvHelper</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\RecordSift.Application\RecordSift.Application.csproj">
       <Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project>

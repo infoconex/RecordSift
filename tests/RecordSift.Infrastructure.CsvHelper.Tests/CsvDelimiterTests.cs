@@ -1,9 +1,10 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using RecordSift.Adapters.CsvHelper;
+using RecordSift.Infrastructure.CsvHelper;
+using RecordSift;
 
-namespace RecordSift.Tests
+namespace RecordSift.Infrastructure.CsvHelper.Tests
 {
     [TestFixture]
     public sealed class CsvDelimiterTests

@@ -6,9 +6,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.Application", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.Tests", "tests\RecordSift.Tests\RecordSift.Tests.csproj", "{63F4CF6E-47FC-4FFB-987F-095E81E0F3FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.CsvHelperAdapter", "src\RecordSift.CsvHelperAdapter\RecordSift.CsvHelperAdapter.csproj", "{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.Infrastructure.CsvHelper", "src\RecordSift.Infrastructure.CsvHelper\RecordSift.Infrastructure.CsvHelper.csproj", "{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.CsvHelperAdapter.Tests", "tests\RecordSift.CsvHelperAdapter.Tests\RecordSift.CsvHelperAdapter.Tests.csproj", "{B780A5E7-72C8-4679-8C3F-991838B811D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.Infrastructure.CsvHelper.Tests", "tests\RecordSift.Infrastructure.CsvHelper.Tests\RecordSift.Infrastructure.CsvHelper.Tests.csproj", "{B780A5E7-72C8-4679-8C3F-991838B811D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecordSift.Domain", "src\RecordSift.Domain\RecordSift.Domain.csproj", "{D107315D-E4EA-4C77-8A14-8F34F76B2100}"
 EndProject

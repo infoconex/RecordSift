@@ -5,7 +5,7 @@ using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-namespace RecordSift.Adapters.CsvHelper
+namespace RecordSift.Infrastructure.CsvHelper
 {
     /// <summary>
     /// CsvHelper-backed implementation of the RecordSift-owned CSV record port.

@@ -14,7 +14,7 @@ namespace RecordSift.Tests
                 .GetReferencedAssemblies().Select(assembly => assembly.Name).ToArray();
             Assert.That(names, Does.Contain("RecordSift.Application"));
             Assert.That(names, Does.Contain("RecordSift.Domain"));
-            Assert.That(names, Does.Not.Contain("RecordSift.CsvHelperAdapter"));
+            Assert.That(names, Does.Not.Contain("RecordSift.Infrastructure.CsvHelper"));
             Assert.That(names, Does.Not.Contain("CsvHelper"));
         }
 
@@ -26,7 +26,7 @@ namespace RecordSift.Tests
             Assert.That(typeof(ICsvRecordReader).Assembly.GetName().Name,
                 Is.EqualTo("RecordSift.Application"));
             Assert.That(names, Does.Contain("RecordSift.Domain"));
-            Assert.That(names, Does.Not.Contain("RecordSift.CsvHelperAdapter"));
+            Assert.That(names, Does.Not.Contain("RecordSift.Infrastructure.CsvHelper"));
             Assert.That(names, Does.Not.Contain("CsvHelper"));
         }
 
@@ -38,7 +38,7 @@ namespace RecordSift.Tests
             Assert.That(typeof(ImportDiagnostic).Assembly.GetName().Name, Is.EqualTo("RecordSift.Domain"));
             Assert.That(names, Does.Not.Contain("RecordSift.Application"));
             Assert.That(names, Does.Not.Contain("CsvHelper"));
-            Assert.That(names, Does.Not.Contain("RecordSift.CsvHelperAdapter"));
+            Assert.That(names, Does.Not.Contain("RecordSift.Infrastructure.CsvHelper"));
         }
     }
 }

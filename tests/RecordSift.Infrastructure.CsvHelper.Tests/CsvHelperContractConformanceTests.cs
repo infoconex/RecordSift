@@ -1,7 +1,9 @@
 using NUnit.Framework;
-using RecordSift.Adapters.CsvHelper;
+using RecordSift.Infrastructure.CsvHelper;
+using RecordSift;
+using RecordSift.Tests;
 
-namespace RecordSift.Tests
+namespace RecordSift.Infrastructure.CsvHelper.Tests
 {
     /// <summary>
     /// Real CsvHelper adapter must meet the core-owned, vendor-independent
