@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Verify physical RecordSift domain/application/adapter layers and project paths.
+"""Protect actual Domain -> Application -> Infrastructure assembly boundaries.
 
-Uses only Python's standard library; does not run or load third-party parsers.
+No third-party packages are needed for this CI verification. Check both
+file placement and actual traditional MSBuild ProjectReferences.
 """
 from pathlib import Path
 import re
@@ -9,143 +10,171 @@ import sys
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
-CORE = ROOT / "src" / "RecordSift"
-ADAPTER = ROOT / "src" / "RecordSift.CsvHelperAdapter"
+DOMAIN = ROOT / "src" / "RecordSift.Domain"
+APPLICATION = ROOT / "src" / "RecordSift.Application"
+INFRASTRUCTURE = ROOT / "src" / "RecordSift.CsvHelperAdapter"
 
-# Keep this existing-module location map under review when changing the public
-# architectural ownership. New source files must also go into an owned layer.
-LAYERS = {
-    "Domain/Diagnostics": (
-        "DiagnosticCodes", "DiagnosticScope", "DomainMessageResources",
-        "ImportDiagnostic",
-    ),
-    "Domain/Schema": (
-        "ExpectedColumn", "ImportSchema", "SchemaBindingResult",
-        "SourceColumnBinding", "SourceColumnPosition",
-    ),
-    "Domain/Results": (
-        "ImportResult", "ImportStatus", "ImportSummary",
-    ),
-    "Application/Abstractions/Csv": (
-        "ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord",
-    ),
-    "Application/Importing/Csv": (
-        "CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult",
-    ),
+EXPECTED = {
+    "RecordSift.Domain": {
+        "Diagnostics": ("DiagnosticCodes", "DiagnosticScope", "DomainMessageResources", "ImportDiagnostic"),
+        "Schema": ("ExpectedColumn", "ImportSchema", "SchemaBindingResult",
+                   "SourceColumnBinding", "SourceColumnPosition"),
+        "Results": ("ImportResult", "ImportStatus", "ImportSummary"),
+    },
+    "RecordSift.Application": {
+        "Abstractions/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
+        "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult"),
+    },
 }
-RESOURCE = "Domain/Diagnostics/Resources/DomainMessages.resx"
-RESOURCE_NAME = "RecordSift.Resources.DomainMessages.resources"
-ADAPTER_IMPLEMENTATION = "Infrastructure/CsvHelper/CsvHelperRecordReader.cs"
+DOMAIN_RESX = "Diagnostics/Resources/DomainMessages.resx"
+RESX_IDENTITY = "RecordSift.Resources.DomainMessages.resources"
+ADAPTER_SOURCE = "Infrastructure/CsvHelper/CsvHelperRecordReader.cs"
 
+def project(path):
+    return ET.parse(path).getroot()
 
-def project_items(project, local_tag):
-    root = ET.parse(project).getroot()
-    return [
-        element.attrib.get("Include", "").replace("\\", "/")
-        for element in root.iter()
-        if element.tag.rsplit("}", 1)[-1] == local_tag
-    ]
+def items(root, tag):
+    return [element for element in root.iter()
+            if element.tag.rsplit("}", 1)[-1] == tag]
 
+def includes(root, tag):
+    return [element.attrib["Include"].replace("\\", "/") for element in items(root, tag)]
 
-def check_layout():
-    failures = []
-    expected = {"Properties/AssemblyInfo.cs"}
-    for folder, filenames in LAYERS.items():
-        for filename in filenames:
-            expected.add(f"{folder}/{filename}.cs")
-    actual = {
-        str(path.relative_to(CORE)).replace("\\", "/")
-        for path in CORE.rglob("*.cs")
+def dependencies(root):
+    # A traditional project uses explicit ProjectReference, not NuGet package
+    # abstractions, so the direction can be enforced without compiling.
+    return [Path(item).name for item in includes(root, "ProjectReference")]
+
+def verify_dependency_graph(graph):
+    correct = {
+        "RecordSift.Domain": [],
+        "RecordSift.Application": ["RecordSift.Domain.csproj"],
+        "RecordSift.CsvHelperAdapter": [
+            "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
+        ],
     }
-    for missing in sorted(expected - actual):
-        failures.append(f"Missing core layer source: {missing}")
-    for extra in sorted(actual - expected):
-        # Future layer types may be added without extending the owned module map,
-        # but no C# source may remain loose at the core project root.
-        if not (extra.startswith("Domain/") or extra.startswith("Application/")):
-            failures.append(f"Core source outside owned layers: {extra}")
-    core_includes = project_items(CORE / "RecordSift.csproj", "Compile")
-    for missing in sorted(actual - set(core_includes)):
-        failures.append(f"Core C# not compiled by csproj: {missing}")
-    for missing in sorted(set(core_includes) - actual):
-        failures.append(f"Missing declared core Compile item: {missing}")
-    if len(core_includes) != len(set(core_includes)):
-        failures.append("Duplicate core Compile item")
+    return [f"{project}: dependencies {sorted(graph.get(project, []))} "
+            f"must be {sorted(expected)}"
+            for project, expected in correct.items()
+            if sorted(graph.get(project, [])) != sorted(expected)]
 
-    adapter_cs = project_items(ADAPTER / "RecordSift.CsvHelperAdapter.csproj", "Compile")
-    if adapter_cs != [ADAPTER_IMPLEMENTATION]:
-        failures.append("Vendor adapter implementation must be in Infrastructure/CsvHelper")
-    for item in adapter_cs:
-        if not (ADAPTER / item).is_file():
-            failures.append(f"Adapter missing declared source: {item}")
-
-    resources = project_items(CORE / "RecordSift.csproj", "EmbeddedResource")
-    if resources != [RESOURCE]:
-        failures.append("Domain messages .resx must live inside Domain/Diagnostics/Resources")
-    if not (CORE / RESOURCE).is_file():
-        failures.append("Domain messages resource missing")
-    root = ET.parse(CORE / "RecordSift.csproj").getroot()
-    resource_elements = [
-        element for element in root.iter()
-        if element.tag.rsplit("}", 1)[-1] == "EmbeddedResource"
-    ]
-    logical_names = [
-        child.text for element in resource_elements
-        for child in element
-        if child.tag.rsplit("}", 1)[-1] == "LogicalName"
-    ]
-    if logical_names != [RESOURCE_NAME]:
-        failures.append("Embedded manifest resource identity changed")
-
-    # Domain logic must not import physical IO, application policies or vendor
-    # packages; the application may depend on domain and owned abstractions only.
-    forbidden_domain = re.compile(
-        r"using\s+(?:System\.IO|CsvHelper|RecordSift\.Adapters)\b|"
-        r"\b(?:TextReader|StreamReader|ICsvRecordReader|CsvTableReader)\b"
-    )
-    forbidden_application = re.compile(
-        r"using\s+(?:CsvHelper|RecordSift\.Adapters)\b|"
-        r"\b(?:CsvHelperRecordReader|CsvConfiguration)\b"
-    )
-    for layer, pattern in (("Domain", forbidden_domain), ("Application", forbidden_application)):
-        for path in (CORE / layer).rglob("*.cs"):
-            source = path.read_text(encoding="utf-8")
-            if pattern.search(source):
-                failures.append(f"Forbidden outward dependency in {path.relative_to(ROOT)}")
+def verify_layout():
+    errors = []
+    if (ROOT / "src" / "RecordSift" / "RecordSift.csproj").exists():
+        errors.append("Legacy mixed domain/application project still exists")
+    graph = {}
+    for name in EXPECTED:
+        location = ROOT / "src" / name
+        project_path = location / (name + ".csproj")
+        if not project_path.is_file():
+            errors.append(f"Missing layer project: {project_path.relative_to(ROOT)}")
+            continue
+        root = project(project_path)
+        graph[name] = dependencies(root)
+        expected_files = {"Properties/AssemblyInfo.cs"}
+        for group, filenames in EXPECTED[name].items():
+            expected_files.update(f"{group}/{filename}.cs" for filename in filenames)
+        actual = {str(path.relative_to(location)).replace("\\", "/")
+                  for path in location.rglob("*.cs")}
+        declared = includes(root, "Compile")
+        if set(declared) != actual or len(declared) != len(set(declared)):
+            errors.append(f"{name}: MSBuild Compile entries must match physical C# files exactly")
+        for missing in sorted(expected_files - actual):
+            errors.append(f"{name}: missing expected layer file {missing}")
+        for path in sorted(actual - expected_files):
+            errors.append(f"{name}: unexpected source file (assign explicit owner) {path}")
+        for element in items(root, "Reference"):
+            reference = element.attrib.get("Include", "")
+            if name == "RecordSift.Domain" and not reference.startswith("System"):
+                errors.append(f"Domain cannot reference an external package/assembly: {reference}")
+        csproj_text = project_path.read_text(encoding="utf-8")
+        if "CsvHelper" in csproj_text:
+            errors.append(f"{name}: application/domain layer references CsvHelper")
+        # Legacy namespace is deliberately retained for source compatibility
+        # while CLR assembly/project ownership is strictly split.
+        for file in location.rglob("*.cs"):
+            if file.name == "AssemblyInfo.cs":
+                continue
+            source = file.read_text(encoding="utf-8")
             if not re.search(r"\bnamespace\s+RecordSift\s*\{", source):
-                failures.append(f"Existing public namespace changed in {path.relative_to(ROOT)}")
+                errors.append(f"{file.relative_to(ROOT)}: public namespace changed")
+            if name == "RecordSift.Domain" and re.search(
+                r"using\s+System\.IO\b|using\s+RecordSift\.Adapters\b|"
+                r"\b(?:TextReader|StreamReader|ICsvRecordReader|CsvTableReader)\b", source
+            ):
+                errors.append(f"{file.relative_to(ROOT)}: outward dependency in Domain")
+            if name == "RecordSift.Application" and re.search(
+                r"using\s+CsvHelper\b|using\s+RecordSift\.Adapters\b|"
+                r"\b(?:CsvConfiguration|CsvHelperRecordReader)\b", source
+            ):
+                errors.append(f"{file.relative_to(ROOT)}: infrastructure reference in Application")
+        assembly_names = re.findall(
+            r"<AssemblyName>([^<]+)</AssemblyName>", csproj_text
+        )
+        if assembly_names != [name]:
+            errors.append(f"{name}: wrong CLR assembly identity")
+    adapter_project = INFRASTRUCTURE / "RecordSift.CsvHelperAdapter.csproj"
+    if adapter_project.is_file():
+        root = project(adapter_project)
+        graph["RecordSift.CsvHelperAdapter"] = dependencies(root)
+        if includes(root, "Compile") != [ADAPTER_SOURCE]:
+            errors.append("CsvHelper implementation must live in Infrastructure/CsvHelper")
+        if not (INFRASTRUCTURE / ADAPTER_SOURCE).is_file():
+            errors.append("CsvHelper implementation source missing")
+    else:
+        errors.append("Infrastructure project missing")
+    errors.extend(verify_dependency_graph(graph))
 
-    adapter_project = (ADAPTER / "RecordSift.CsvHelperAdapter.csproj").read_text(
-        encoding="utf-8"
-    )
-    core_project = (CORE / "RecordSift.csproj").read_text(encoding="utf-8")
-    if "RecordSift.CsvHelperAdapter" in core_project or "CsvHelper" in core_project:
-        failures.append("Core cannot reference vendor adapter")
-    if "RecordSift.csproj" not in adapter_project:
-        failures.append("Adapter must reference inward core assembly")
-    return failures
-
+    resource_project = DOMAIN / "RecordSift.Domain.csproj"
+    if resource_project.is_file():
+        resources = items(project(resource_project), "EmbeddedResource")
+        if len(resources) != 1 or resources[0].attrib.get("Include", "").replace("\\", "/") != DOMAIN_RESX:
+            errors.append("Domain .resx must be embedded by its physical location")
+        elif not (DOMAIN / DOMAIN_RESX).is_file():
+            errors.append("Missing Domain .resx file")
+        elif [entry.text for entry in resources[0]
+              if entry.tag.rsplit("}", 1)[-1] == "LogicalName"] != [RESX_IDENTITY]:
+            errors.append("Domain diagnostic resource manifest identity changed")
+    # Check test project ownership at the assembly level too.
+    for project_name, expected_refs in {
+        "RecordSift.Tests": ["RecordSift.Domain.csproj", "RecordSift.Application.csproj"],
+        "RecordSift.CsvHelperAdapter.Tests": [
+            "RecordSift.Tests.csproj", "RecordSift.Domain.csproj",
+            "RecordSift.Application.csproj", "RecordSift.CsvHelperAdapter.csproj",
+        ],
+    }.items():
+        path = ROOT / "tests" / project_name / (project_name + ".csproj")
+        if not path.is_file():
+            errors.append(f"Missing test project {project_name}")
+            continue
+        references = dependencies(project(path))
+        if sorted(references) != sorted(expected_refs):
+            errors.append(f"{project_name}: invalid test dependencies {references}")
+    return errors
 
 def self_test():
-    assert re.search(r"\bTextReader\b", "public void Read(TextReader source)")
-    assert not re.search(r"\bTextReader\b", "public class ImportSchema")
-    assert "Domain/Schema/ImportSchema.cs".startswith("Domain/")
-    assert not "ImportSchema.cs".startswith("Domain/")
-
-
-def main():
-    self_test()
-    failures = check_layout()
-    if failures:
-        print("Layer boundary verification failed:")
-        for failure in failures:
-            print(" - " + failure)
-        return 1
-    print("Layer boundary verification passed: core domain/application owners, "
-          "reader ports, isolated infrastructure, explicit project Compile items "
-          "and stable resource manifest identity.")
-    return 0
-
+    valid = {
+        "RecordSift.Domain": [],
+        "RecordSift.Application": ["RecordSift.Domain.csproj"],
+        "RecordSift.CsvHelperAdapter": [
+            "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        ],
+    }
+    assert verify_dependency_graph(valid) == [], "Valid graph rejected"
+    broken = {**valid, "RecordSift.Domain": ["RecordSift.Application.csproj"]}
+    assert any("RecordSift.Domain" in error for error in verify_dependency_graph(broken)), \
+        "Forbidden Domain->Application dependency was not detected"
+    broken = {**valid, "RecordSift.Application": ["RecordSift.CsvHelperAdapter.csproj"]}
+    assert any("RecordSift.Application" in error for error in verify_dependency_graph(broken)), \
+        "Forbidden Application->Infrastructure dependency was not detected"
 
 if __name__ == "__main__":
-    sys.exit(main())
+    self_test()
+    violations = verify_layout()
+    if violations:
+        print("Architecture boundaries FAILED:")
+        for problem in violations:
+            print(" - " + problem)
+        sys.exit(1)
+    print("Domain -> Application -> CsvHelper infrastructure boundaries verified; "
+          "traditional project references, resources, test isolation and file ownership pass.")
