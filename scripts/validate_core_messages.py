@@ -31,6 +31,42 @@ for code in defined_codes:
     if code not in entries:
         errors.append("Missing diagnostic resource: " + code)
 
+# Typed contract policy: the public catalog exposes domain-owned named accessors;
+# raw .resx keys remain implementation details of DomainMessageResources.
+CATALOG = CORE / "Diagnostics" / "DomainMessageResources.cs"
+APPLICATION = ROOT / "src" / "RecordSift.Application"
+argument_keys = {key for key in entries if key.startswith("Argument_")}
+public_catalog = CATALOG.read_text(encoding="utf-8")
+
+def raw_argument_uses(source):
+    return re.findall(r'DomainMessageResources\\.Get\\("?(Argument_\\w+)"?\\)', source)
+
+def validate_typed_message_contract(catalog, sources):
+    violations = []
+    if re.search(r'public\\s+static\\s+string\\s+Get\\s*\\(\\s*string', catalog):
+        violations.append("Raw resource-key Get(string) must not be public")
+    properties = dict(re.findall(
+        r'public\\s+static\\s+string\\s+(\\w+)\\s*=>\\s*Get\\("([^"]+)"\\)\\s*;', catalog))
+    declared = set(properties.values())
+    if declared != argument_keys or len(properties) != len(argument_keys):
+        violations.append("Named argument accessors must cover each Argument_ resource exactly once")
+    for where, source in sources:
+        if raw_argument_uses(source):
+            violations.append(f"{where}: literal resource lookup outside the catalog")
+        if re.search(r'"Argument_\\w+"', source):
+            violations.append(f"{where}: raw Argument_ resource key outside the catalog")
+    return violations
+
+sources = [(str(path.relative_to(ROOT)), path.read_text(encoding="utf-8"))
+           for root in (CORE, APPLICATION)
+           for path in root.rglob("*.cs")
+           if path != CATALOG and path.name != "AssemblyInfo.cs"]
+errors.extend(validate_typed_message_contract(public_catalog, sources))
+# Negative self-test ensures relaxing public lookup and reintroducing literal keys fail.
+assert validate_typed_message_contract(
+    'public static string Get(string key) {}', [("invalid", 'DomainMessageResources.Get("Argument_DiagnosticNull")')])
+assert raw_argument_uses('DomainMessageResources.Get("Argument_DiagnosticNull")') == ["Argument_DiagnosticNull"]
+
 # Every explicit resource reference in the core must resolve.
 resource_key_re = re.compile(r'DomainMessageResources\.Get\("([^"]+)"\)')
 string_re = re.compile(r'"((?:\\.|[^"\\])*)"')
