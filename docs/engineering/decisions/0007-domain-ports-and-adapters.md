@@ -1,0 +1,27 @@
+# ADR 0007 — Domain-centric ports, adapters and code standards
+
+**Status:** Accepted as engineering direction for issue [#84](https://github.com/infoconex/RecordSift/issues/84). Existing code does not yet comply completely; migration is separately tracked.
+
+## Context
+
+The net48 baseline currently combines domain-facing source binding with `CsvTableReader` calling a hand-built static `CsvRecordReader`. This couples higher-level import code to a specific parser and makes adapter substitution and isolated unit testing difficult. Further CSV/XLSX support would amplify that risk. RecordSift also needs one clear, compatible C# coding style for human and AI contributions.
+
+## Decision
+
+- Organize the library around domain concepts and application use cases, with inward dependencies and **RecordSift-owned interfaces at external boundaries**.
+- Put all third-party CSV/XLSX implementations behind input ports; isolate their package dependencies in adapter assemblies. Only neutral RecordSift types cross these boundaries.
+- Supply the adapter through constructor/explicit dependency injection. Keep vendor construction and integration choices outside domain code. Preserve compatibility of existing entry points where feasible.
+- Use SOLID principles pragmatically. Introduce interfaces at independently replaceable/testable boundaries, not for all domain models.
+- Use the Microsoft .NET/C# coding conventions and Framework Design Guidelines, captured in [C# style](../csharp-style.md) and the root `.editorconfig`. Current C# language version **7.3**, traditional `.csproj`, and .NET Framework **4.8** remain authoritative until a separately approved modernization.
+- Use Red → Green → Refactor with unit fakes, real-adapter component tests, API regression tests and observed Windows CI.
+
+## Alternatives
+
+- Keep calling a static home-grown CSV parser: rejected as a permanent architecture because syntax maintenance is unrelated to the RecordSift domain and prevents clean substitution.
+- Expose vendor models directly in the public import API: rejected because upgrades could break clients and domain rules.
+- Add a DI container or many speculative abstractions: rejected as unnecessary for a reusable library.
+- Immediately split every domain concern into its own project: deferred; create physical adapter assemblies when a third-party dependency is introduced, protecting the core assembly without churn.
+
+## Migration and evidence
+
+[#85](https://github.com/infoconex/RecordSift/issues/85) owns implementation, explicit reader port, parser selection, ADR 0005 supersession and characterization/contract tests. It must preserve or explicitly document behavior. FR-001 #2 and FR-004 #14 remain independently traceable; this **architecture ADR does not establish implementation or passing tests**.

@@ -23,6 +23,13 @@ The FR-001 reader now handles bounded raw CSV tokenization, including quoting an
 
 The FR-004 header policy integrates the CSV parser with named/positional bindings and keeps logical data-row numbering independent of headers. Complete typed imports and final result reporting remain forthcoming.
 
+## Architecture, code style and dependency isolation
+
+- [Domain-centric architecture and SOLID boundaries](engineering/architecture.md) — ports, adapters, direction of dependencies, mockable seams and security.
+- [Microsoft C# conventions](engineering/csharp-style.md) — .NET Framework 4.8 / C# 7.3 compatible code and editor settings.
+- [ADR 0007 — Domain-centric ports and adapters](engineering/decisions/0007-domain-ports-and-adapters.md) — accepted design direction; existing CSV parser migration is **pending**, not complete.
+- [#84 — Engineering conventions](https://github.com/infoconex/RecordSift/issues/84) and [#85 — Third-party CSV adapter migration](https://github.com/infoconex/RecordSift/issues/85) are separately scoped implementation work.
+
 ## Independent engineering issues
 
 - [#51 — Behavioral specification](https://github.com/infoconex/RecordSift/issues/51)

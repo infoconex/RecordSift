@@ -29,5 +29,9 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] Public API and report format compatibility reviewed.
 - [ ] Docs, specs and acceptance criteria updated if the contract changed.
 - [ ] Security/privacy implications of untrusted files considered.
+- [ ] Domain/application code depends inward on RecordSift-owned contracts; no parser-vendor types or constructors leaked across boundaries.
+- [ ] Replaceable input/validation seams have fake-based unit tests **and** real-adapter component tests when adapters change (or explain why not applicable).
+- [ ] SOLID responsibilities, Microsoft C# naming/style (`.editorconfig`) and net48/C# 7.3 language compatibility reviewed.
+- [ ] Any third-party dependency is confined to an adapter/test assembly; exact version, license, framework compatibility, audit/CI inventory and ADR reviewed.
 
 **Merge policy:** squash merge issue PRs into `release/0.1`. Do not merge incomplete releases into `main`.
