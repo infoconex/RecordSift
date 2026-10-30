@@ -1,6 +1,9 @@
 using System;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
 
-namespace RecordSift
+namespace RecordSift.Domain.Diagnostics
 {
     /// <summary>Stable release 0.1 diagnostic identifiers and trusted default messages.</summary>
     public static class DiagnosticCodes

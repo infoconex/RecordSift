@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Schema;
+using RecordSift.Domain.Results;
 
-namespace RecordSift
+namespace RecordSift.Domain.Results
 {
     /// <summary>
     /// In-memory status, row summary and supplied error diagnostics.
