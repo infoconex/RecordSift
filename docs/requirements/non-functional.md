@@ -1,6 +1,6 @@
 # Nonfunctional requirements — RecordSift
 
-**Baseline:** Draft for release 0.1. No build, tests, cross-platform support, or NuGet artifact is claimed yet.
+**Baseline:** Draft for release 0.1. The constructed net48 baseline has three verified assembly smoke tests; NFR acceptance, cross-platform support and published packages remain unverified.
 
 | Requirement | Quality attribute | Intent | GitHub issue / acceptance |
 | --- | --- | --- | --- |

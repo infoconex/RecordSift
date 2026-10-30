@@ -1,0 +1,103 @@
+name: Windows .NET Framework 4.8 build and test
+on:
+  pull_request:
+    branches:
+      - 'release/**'
+  push:
+    branches:
+      - 'release/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: net48-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Windows restore, MSBuild and NUnit
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Restore packages.config dependencies
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+      - name: Build both legacy projects with Visual Studio MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw "MSBuild not found." }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+      - name: Run NUnit smoke tests and assert discovery
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          if (-not (Test-Path $runner)) { throw "NUnit runner is missing: $runner" }
+          $assembly = 'tests\RecordSift.Tests\bin\Release\RecordSift.Tests.dll'
+          if (-not (Test-Path $assembly)) { throw "Test assembly is missing: $assembly" }
+          & $runner $assembly '--result=TestResults/nunit-results.xml;format=nunit3' --noheader
+          if ($LASTEXITCODE -ne 0) { throw "NUnit reported failures: $LASTEXITCODE" }
+          [xml]$result = Get-Content TestResults/nunit-results.xml
+          $count = [int]$result.'test-run'.total
+          $failed = [int]$result.'test-run'.failed
+          if ($count -lt 3 -or $failed -ne 0) { throw "Expected at least 3 passing discovered tests; found $count, failed $failed." }
+          Write-Host "Verified NUnit test count=$count failed=$failed."
+      - name: Upload NUnit XML evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nunit-net48-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/nunit-results.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  dependency-audit:
+    name: Verify pinned packages and audit vulnerabilities
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Validate pinned dependency inventory and NuGet audit
+        shell: pwsh
+        run: |
+          [xml]$config = Get-Content tests/RecordSift.Tests/packages.config -Raw
+          $packages = @($config.packages.package)
+          if ($packages.Count -ne 2) { throw "Unexpected package count: $($packages.Count)" }
+          $expected = @{ NUnit = '3.14.0'; 'NUnit.ConsoleRunner' = '3.17.0' }
+          foreach ($package in $packages) {
+            $id = [string]$package.id
+            if (-not $expected.ContainsKey($id) -or $expected[$id] -ne [string]$package.version) {
+              throw "Unexpected pinned dependency: $id $($package.version)"
+            }
+          }
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          $lines = @(& nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config -Verbosity normal 2>&1)
+          $exit = $LASTEXITCODE
+          $lines | ForEach-Object { Write-Host "$_" }
+          $lines | Set-Content TestResults/nuget-audit.log
+          if ($exit -ne 0) { throw "NuGet audit restore failed with exit code $exit" }
+          $findings = @($lines | Where-Object { "$_" -match '\bNU190[0-5]\b' })
+          if ($findings.Count -gt 0) { throw "NuGet audit reported $($findings.Count) warning(s), see nuget-audit.log" }
+          Write-Host 'Expected packages pinned; NuGet audit reported no NU1900-NU1905 warnings.'
+      - name: Upload NuGet audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nuget-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/nuget-audit.log
+          if-no-files-found: warn
+          retention-days: 14

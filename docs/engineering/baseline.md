@@ -19,7 +19,7 @@ New-Item -ItemType Directory -Force -Path .\TestResults | Out-Null
 .\packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe .\tests\RecordSift.Tests\bin\Release\RecordSift.Tests.dll '--result=TestResults/nunit-results.xml;format=nunit3'
 ```
 
-All commands must succeed; the resulting `TestResults/nunit-results.xml` must contain at least three tests and zero failures. Tests are also runnable in the included issue-57 Windows PR smoke workflow.
+All commands must succeed; the resulting `TestResults/nunit-results.xml` must contain at least three tests and zero failures. Windows release-branch CI from issue #64 runs the same commands on PRs, release pushes and manual dispatch, and uploads NUnit XML evidence.
 
 ## Project structure and versioned dependencies
 
@@ -37,4 +37,8 @@ The NUnit tests verify only that the historical executable baseline is properly 
 
 ## Evidence and limitations
 
-The PR for issue #57 must link an observed Windows workflow run and report actual restore/build/test results before merge. The issue-57 PR smoke workflow checks that tests are **discovered** (at least three) and have no failures, rather than silently treating an empty test assembly as success. Issue #64 separately owns the maintained release-branch Windows CI gate, publishing test artifacts and dependency/security hardening.
+The PR for issue #57 must link an observed Windows workflow run and report actual restore/build/test results before merge. The issue-57 PR smoke workflow checks that tests are **discovered** (at least three) and have no failures, rather than silently treating an empty test assembly as success. Issue #64 implements maintained release-branch Windows CI, publishing NUnit XML and NuGet audit logs as artifacts. The independent dependency-audit job checks exact pinned packages and fails on NuGet audit warnings NU1900–NU1905; a passing audit means no warnings were reported on that run, not that future vulnerabilities are impossible.
+
+## Observed initial baseline evidence
+
+Issue #57 was squash-merged after a successful Windows build and **3 of 3** NUnit baseline tests in [Actions run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680). The requirement scenarios are still Planned; assembly smoke tests cannot certify CSV/XLSX behavior.
