@@ -43,6 +43,7 @@
     <Compile Include="ImportDiagnosticTests.cs" />
     <Compile Include="ImportSchemaTests.cs" />
     <Compile Include="PositionalBindingTests.cs" />
+    <Compile Include="CsvRecordReaderTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
