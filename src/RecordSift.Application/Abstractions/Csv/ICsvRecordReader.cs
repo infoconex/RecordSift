@@ -1,9 +1,4 @@
 using System.IO;
-using RecordSift.Domain.Diagnostics;
-using RecordSift.Domain.Schema;
-using RecordSift.Domain.Results;
-using RecordSift.Application.Abstractions.Csv;
-using RecordSift.Application.Importing.Csv;
 
 namespace RecordSift.Application.Abstractions.Csv
 {
