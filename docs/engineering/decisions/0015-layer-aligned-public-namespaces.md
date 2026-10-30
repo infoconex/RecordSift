@@ -1,5 +1,7 @@
 # ADR 0015 — Layer-aligned Domain and Application public namespaces
 
+**Historical note:** The Application CSV port namespace documented below was subsequently renamed to `RecordSift.Application.Ports.Csv` by [ADR 0017](0017-application-ports-namespace.md). This ADR retains the original migration table as historical evidence.
+
 **Status:** Accepted through [engineering issue #99](https://github.com/infoconex/RecordSift/issues/99). Supersedes the temporary flat-namespace exception recorded in [ADR 0013](0013-physical-domain-application-infrastructure-assemblies.md); builds on [ADR 0014](0014-infrastructure-csv-adapter-naming.md).
 
 ## Context and pre-migration characterization

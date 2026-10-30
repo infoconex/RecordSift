@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Schema;
 

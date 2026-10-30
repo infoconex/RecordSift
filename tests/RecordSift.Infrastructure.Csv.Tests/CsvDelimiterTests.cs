@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using RecordSift;
-using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Ports.Csv;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;

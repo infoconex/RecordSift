@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Application.Ports.Csv;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
@@ -31,14 +31,22 @@ namespace RecordSift.Tests
         [Test]
         public void ApplicationContracts_UseDeclaredResponsibilityNamespaces()
         {
-            AssertNamespace(typeof(ICsvRecordReader), "RecordSift.Application.Abstractions.Csv");
-            AssertNamespace(typeof(CsvReadOptions), "RecordSift.Application.Abstractions.Csv");
-            AssertNamespace(typeof(CsvParseResult), "RecordSift.Application.Abstractions.Csv");
-            AssertNamespace(typeof(CsvRecord), "RecordSift.Application.Abstractions.Csv");
+            AssertNamespace(typeof(ICsvRecordReader), "RecordSift.Application.Ports.Csv");
+            AssertNamespace(typeof(CsvReadOptions), "RecordSift.Application.Ports.Csv");
+            AssertNamespace(typeof(CsvParseResult), "RecordSift.Application.Ports.Csv");
+            AssertNamespace(typeof(CsvRecord), "RecordSift.Application.Ports.Csv");
             AssertNamespace(typeof(CsvDataRow), "RecordSift.Application.Importing.Csv");
             AssertNamespace(typeof(CsvHeaderPolicy), "RecordSift.Application.Importing.Csv");
             AssertNamespace(typeof(CsvTableReader), "RecordSift.Application.Importing.Csv");
             AssertNamespace(typeof(CsvTableResult), "RecordSift.Application.Importing.Csv");
+        }
+
+        [Test]
+        public void ApplicationPublicContracts_DoNotUseGenericAbstractionsNamespace()
+        {
+            foreach (var exportedType in typeof(ICsvRecordReader).Assembly.GetExportedTypes())
+                Assert.That(exportedType.Namespace, Does.Not.Contain(".Abstractions."),
+                    exportedType.FullName + " must expose its Application port or use-case responsibility.");
         }
 
         [Test]

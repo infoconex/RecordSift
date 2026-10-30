@@ -61,6 +61,8 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 
 - [ADR 0015 — Layer-aligned public namespaces](engineering/decisions/0015-layer-aligned-public-namespaces.md) — explicit source/binary breaking migration table for domain diagnostics, schemas/results and application CSV contracts, with runtime public-type checks and architecture enforcement.
 - [Engineering issue #99](https://github.com/infoconex/RecordSift/issues/99) — namespace migration after the separate assembly and infrastructure naming corrections.
+- [ADR 0017 — Application CSV input ports](engineering/decisions/0017-application-ports-namespace.md) — replace the generic `Abstractions/Csv` folder and namespace with role-specific `Ports/Csv` while preserving the vendor-independent port contract.
+- [Engineering issue #103](https://github.com/infoconex/RecordSift/issues/103) — dedicated pre-release namespace migration, structure checks and CI verification.
 
 ## Independent engineering issues
 

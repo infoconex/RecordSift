@@ -39,7 +39,7 @@ src/
     Schema/                                 declarations, bindings and schema invariants
     Results/                                import outcome and aggregate invariants
   RecordSift.Application/                   -> RecordSift.Domain
-    Abstractions/Csv/                       owned ICsvRecordReader and neutral DTOs/options
+    Ports/Csv/                       owned ICsvRecordReader and neutral DTOs/options
     Importing/Csv/                          table orchestration and header policy
   RecordSift.Infrastructure.Csv/            -> Application + Domain
     CsvRecordReaderAdapter.cs              real CSV adapter backed by CsvHelper
@@ -52,7 +52,7 @@ The **Domain assembly does not reference `System.IO`, `TextReader`, the applicat
 
 `scripts/validate_architecture_layers.py` verifies source ownership, explicit traditional project `Compile` items, resource identity, legal `ProjectReference` edges, test assembly isolation and negative dependency test cases in CI. The validator also enforces exact responsibility-aligned namespaces and rejects flat declarations; independent NUnit reflection checks verify the public API namespace surface. The compiler enforces the same references. See [ADR 0013](decisions/0013-physical-domain-application-infrastructure-assemblies.md).
 
-The concrete `RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : RecordSift.Application.Abstractions.Csv.ICsvRecordReader` translates the third-party CsvHelper parser into our Application-owned contract. We reserve the suffix `Adapter` for such concrete implementations; it is **not** part of the application port's name. The project is named after the source format rather than the vendor package, so a future parser swap does not change our architectural vocabulary. See [ADR 0014](decisions/0014-infrastructure-csv-adapter-naming.md).
+The concrete `RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : RecordSift.Application.Ports.Csv.ICsvRecordReader` translates the third-party CsvHelper parser into our Application-owned contract. We reserve the suffix `Adapter` for such concrete implementations; it is **not** part of the application port's name. The project is named after the source format rather than the vendor package, so a future parser swap does not change our architectural vocabulary. The Application's CSV input port and neutral contract types live in `Ports/Csv`, as decided in [ADR 0017](decisions/0017-application-ports-namespace.md). See [ADR 0014](decisions/0014-infrastructure-csv-adapter-naming.md).
 
 ## Replaceable source-reader contracts
 

@@ -22,7 +22,7 @@ EXPECTED = {
         "Results": ("ImportResult", "ImportStatus", "ImportSummary"),
     },
     "RecordSift.Application": {
-        "Abstractions/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
+        "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult"),
     },
 }
@@ -74,6 +74,8 @@ def verify_layout():
         errors.append("Legacy vendor project does not identify the Infrastructure layer")
     if (ROOT / "tests" / "RecordSift.CsvHelperAdapter.Tests").exists():
         errors.append("Legacy vendor test project does not identify the Infrastructure layer")
+    if (APPLICATION / "Abstractions").exists():
+        errors.append("Legacy generic Application Abstractions folder must be named Ports")
     graph = {}
     for name in EXPECTED:
         location = ROOT / "src" / name
@@ -206,6 +208,8 @@ def self_test():
                             "RecordSift.Domain.Schema", "invalid"), "Flat namespace was accepted"
     assert verify_namespace("namespace RecordSift.Application.Importing.Csv\n{ }",
                             "RecordSift.Domain.Schema", "outward"), "Wrong layer namespace was accepted"
+    assert verify_namespace("namespace RecordSift.Application.Abstractions.Csv\n{ }",
+                            "RecordSift.Application.Ports.Csv", "legacy"), "Old port namespace was accepted"
     broken = {**valid, "RecordSift.Domain": ["RecordSift.Application.csproj"]}
     assert any("RecordSift.Domain" in error for error in verify_dependency_graph(broken)), \
         "Forbidden Domain->Application dependency was not detected"

@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace RecordSift.Application.Abstractions.Csv
+namespace RecordSift.Application.Ports.Csv
 {
     /// <summary>
     /// RecordSift-owned input port: all CSV adapters implement this exact contract,
