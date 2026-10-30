@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B780A5E7-72C8-4679-8C3F-991838B811D8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RecordSift.Tests</RootNamespace>
+    <AssemblyName>RecordSift.CsvHelperAdapter.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <LangVersion>7.3</LangVersion>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\packages\NUnit.3.14.0\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CsvHelperContractConformanceTests.cs" />
+    <Compile Include="CsvHeaderPolicyTests.cs" />
+    <Compile Include="CsvDelimiterTests.cs" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecordSift.Tests\RecordSift.Tests.csproj">
+      <Project>{63F4CF6E-47FC-4FFB-987F-095E81E0F3FD}</Project>
+      <Name>RecordSift.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\RecordSift.CsvHelperAdapter\RecordSift.CsvHelperAdapter.csproj">
+      <Project>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</Project>
+      <Name>RecordSift.CsvHelperAdapter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\RecordSift\RecordSift.csproj">
+      <Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project>
+      <Name>RecordSift</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

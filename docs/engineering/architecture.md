@@ -52,7 +52,7 @@ Apply these principles to **real seams**. Do not create interfaces for every DTO
 
 ## Domain contract and test ownership
 
-RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. Current tests still share one adapter-referencing assembly: [#91](https://github.com/infoconex/RecordSift/issues/91) tracks the required physical separation.
+RecordSift core owns **all observable import behavior**: neutral input/output records, provenance, stable diagnostic codes/scopes and resource-backed messages, default options, statuses and safe limits. Infrastructure adapters may use vendor exceptions internally but must return those exact core contracts. Domain unit tests use fakes and core types only; real-adapter conformance tests verify the same observable output. The issue #91 change splits core and real-adapter NUnit assemblies and runs a core-owned behavioral contract fixture against the real CsvHelper adapter. The core test DLL has no parser dependency.
 
 Core messages and defaults are defined by [ADR 0010](decisions/0010-domain-message-resources.md).
 

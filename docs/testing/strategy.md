@@ -1,7 +1,7 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1. The historical net48 Windows suite observed 112/112 passing NUnit tests in [issue #10 FR-003](https://github.com/infoconex/RecordSift/issues/10), including the earlier 97 cases and 15 new CSV delimiter configuration/invalid-input cases. Full typed importer acceptance remains planned.
+**Status:** Engineering policy for release 0.1. In [issue #91](https://github.com/infoconex/RecordSift/issues/91), Windows [run #41085050502](https://github.com/infoconex/RecordSift/actions/runs/41085050502) observed **71/71 independent domain unit tests and 48/48 real-adapter contract/component tests** (119/119 total). Core test binary is checked for absence of adapter DLLs, and test project dependencies are inspected. Full typed importer acceptance remains planned.
 
 ## Test-driven development
 
@@ -32,6 +32,16 @@ A requirement may need several tests, but a test should have one clear reason to
 | Performance | Import throughput, allocations, memory use | Repeated controlled benchmark; regression threshold before gate |
 
 Exploratory and manual tests may supplement automation, but must include a repeatable procedure and observed result. They do not replace automate-able acceptance tests.
+
+## Independent core unit tests and executable adapter contracts
+
+The architecture test-project split in [#91](https://github.com/infoconex/RecordSift/issues/91) makes dependency direction testable, not merely a contributor guideline:
+
+- `tests/RecordSift.Tests` references **only the RecordSift core and NUnit**, with **no CsvHelper or other third-party import parser**. Hand-written fakes test consumer policy, result/domain invariants, message resources and configuration. The test assembly must run independently with no adapter DLL in its output.
+- `tests/RecordSift.Tests/Contracts/CsvRecordReaderContractTests.cs` declares **vendor-independent shared behavioral assertions** for the core `ICsvRecordReader` contract: raw records, quoting, line/provenance, invalid source, bounded reads, security, caller ownership and immutable results.
+- `tests/RecordSift.CsvHelperAdapter.Tests` references the real infrastructure adapter and **inherits the shared contract suite** through its own `CsvHelperContractConformanceTests` fixture, alongside additional real-parser CSV header and delimiter integration tests. All future adapters must execute an equivalent inherited contract suite against the real implementation.
+- Windows CI builds both test assemblies, runs them **separately** via NUnit and publishes individual NUnit XML results. A dependency-audit guard checks project references and forbidden adapter imports in core tests.
+- NUnit itself is a development-only test framework, not an import processing dependency. The requirement is to eliminate **third-party import libraries** from core unit-test authoring, compilation and execution.
 
 ## Ports, adapters and architecture tests
 

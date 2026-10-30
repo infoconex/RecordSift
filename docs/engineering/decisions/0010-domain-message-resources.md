@@ -17,7 +17,7 @@ The first RecordSift imports correctly translated CsvHelper faults into domain-o
 
 ## Boundary and testing
 
-The **core unit-test contract must not require any third-party implementation**. Resource tests use the core assembly and NUnit only; adapter conformance is tested separately with real CsvHelper. The current single NUnit test project still references the adapter: [#91](https://github.com/infoconex/RecordSift/issues/91) owns physically splitting unit from adapter tests and defining reusable neutral conformance cases. This issue does not falsely claim the separation is already implemented.
+The **core unit-test contract must not require any third-party implementation**. Resource tests use the core assembly and NUnit only; adapter conformance is tested separately with real CsvHelper. At the time of the resource-message PR (#90), a single NUnit test assembly still referenced the adapter. [#91](https://github.com/infoconex/RecordSift/issues/91) subsequently split independent core and adapter test assemblies and introduced vendor-neutral reusable conformance cases; see [ADR 0011](0011-independent-core-contract-tests.md).
 
 ## Alternatives and tradeoffs
 

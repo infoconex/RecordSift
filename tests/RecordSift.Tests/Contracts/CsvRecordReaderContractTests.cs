@@ -2,17 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
-using RecordSift.Adapters.CsvHelper;
 
 namespace RecordSift.Tests
 {
     [TestFixture]
-    public sealed class CsvRecordReaderTests
+    public abstract class CsvRecordReaderContractTests
     {
-        private static CsvParseResult Parse(string text, int maxCharacters = 4096)
+        protected abstract ICsvRecordReader CreateReader();
+
+        private CsvParseResult Parse(string text, int maxCharacters = 4096)
         {
             using (var reader = new StringReader(text))
-                return new CsvHelperRecordReader().Read(reader, maxCharacters);
+                return CreateReader().Read(reader, maxCharacters);
         }
 
         [Test]
@@ -154,7 +155,7 @@ namespace RecordSift.Tests
         {
             using (var source = new ThrowingReader())
             {
-                var result = new CsvHelperRecordReader().Read(source, 20);
+                var result = CreateReader().Read(source, 20);
                 Assert.That(result.IsSuccessful, Is.False);
                 Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceUnreadable));
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("/private/customer.csv"));
@@ -164,7 +165,7 @@ namespace RecordSift.Tests
         [Test]
         public void NullSourceAndInvalidBudgetAreRejected()
         {
-            Assert.Throws<ArgumentNullException>(() => new CsvHelperRecordReader().Read(null, 10));
+            Assert.Throws<ArgumentNullException>(() => CreateReader().Read(null, 10));
             Assert.Throws<ArgumentOutOfRangeException>(() => Parse("data", 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => Parse("data", -1));
         }
@@ -183,7 +184,7 @@ namespace RecordSift.Tests
         {
             using (var text = new StringReader("a,b"))
             {
-                new CsvHelperRecordReader().Read(text, 10);
+                CreateReader().Read(text, 10);
                 Assert.DoesNotThrow(() => text.Peek());
             }
         }
