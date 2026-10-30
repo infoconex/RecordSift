@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
-using RecordSift.Application.Ports.Csv;
 using RecordSift.Application.Importing.Csv;
+using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
