@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using RecordSift;
+using RecordSift.Application.Abstractions.Csv;
 using RecordSift.Infrastructure.Csv;
 using RecordSift.Tests;
 

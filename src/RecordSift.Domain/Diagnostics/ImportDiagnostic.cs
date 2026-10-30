@@ -1,6 +1,6 @@
 using System;
 
-namespace RecordSift
+namespace RecordSift.Domain.Diagnostics
 {
     /// <summary>
     /// Immutable structured error metadata. Messages are fixed templates selected by

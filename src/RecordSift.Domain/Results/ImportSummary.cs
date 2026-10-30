@@ -1,6 +1,6 @@
 using System;
 
-namespace RecordSift
+namespace RecordSift.Domain.Results
 {
     /// <summary>Immutable counts of distinct logical data records, excluding headers.</summary>
     public sealed class ImportSummary

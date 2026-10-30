@@ -1,6 +1,7 @@
 using System;
+using RecordSift.Domain.Diagnostics;
 
-namespace RecordSift
+namespace RecordSift.Domain.Schema
 {
     /// <summary>
     /// Explicit binding of a declared schema column to a zero-based source field index.

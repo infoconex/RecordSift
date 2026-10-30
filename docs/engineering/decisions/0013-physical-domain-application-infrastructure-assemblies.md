@@ -16,7 +16,7 @@ Split source into distinct traditional .NET Framework 4.8 / C# 7.3 assemblies:
 
 Two NUnit assemblies remain independent: `RecordSift.Tests` references only Application, Domain, NUnit and uses fakes; `RecordSift.Infrastructure.Csv.Tests` invokes the actual library against the same vendor-neutral contract fixture. CI runs both suites individually.
 
-The original combined `RecordSift.dll` is **removed**, so this is a binary-breaking architectural correction, approved before shipping a typed import API. The public source namespace `RecordSift` is retained to avoid unrelated bulk renaming; the CLR project/assembly identity controls the physical layer. Any future namespace reorganization can be deliberate and separately tested.
+The original combined `RecordSift.dll` is **removed**, so this is a binary-breaking architectural correction, approved before shipping a typed import API. Initially, the public source namespace `RecordSift` was retained during this assembly split. That temporary decision was subsequently superseded by [ADR 0015](0015-layer-aligned-public-namespaces.md): public Domain and Application type namespaces now align with physical assembly boundaries. Both changes are intentionally pre-release source/binary breaking.
 
 Domain owns all error-code and text contracts. `DomainMessageResources.Get` is public to enable resource access from Application without copying string messages. The resource manifest name `RecordSift.Resources.DomainMessages.resources` remains unchanged. Domain schema and result invariants cannot depend on parser or IO types.
 

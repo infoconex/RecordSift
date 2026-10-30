@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Results;
 
 namespace RecordSift.Tests
 {

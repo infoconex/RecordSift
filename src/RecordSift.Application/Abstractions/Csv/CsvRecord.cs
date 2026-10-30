@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace RecordSift
+namespace RecordSift.Application.Abstractions.Csv
 {
     /// <summary>
     /// One raw logical CSV source record before header interpretation. Its ordinal

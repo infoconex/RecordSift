@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Resources;
 
-namespace RecordSift
+namespace RecordSift.Domain.Diagnostics
 {
     /// <summary>
     /// Core-owned resource catalog: stable machine codes and invariant messages.

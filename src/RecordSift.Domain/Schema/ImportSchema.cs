@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RecordSift.Domain.Diagnostics;
 
-namespace RecordSift
+namespace RecordSift.Domain.Schema
 {
     /// <summary>
     /// Reusable schema for named source columns. Does not parse files, map record

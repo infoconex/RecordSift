@@ -58,6 +58,14 @@ def verify_dependency_graph(graph):
             for project, expected in correct.items()
             if sorted(graph.get(project, [])) != sorted(expected)]
 
+def verify_namespace(source, expected, location):
+    """Enforce a single declared namespace matching its assembly and responsibility."""
+    declared = re.findall(r"(?m)^\s*namespace\s+([A-Za-z_][\w.]*)\s*\{", source)
+    return [] if declared == [expected] else [
+        f"{location}: namespaces {declared} must be [{expected}]"
+    ]
+
+
 def verify_layout():
     errors = []
     if (ROOT / "src" / "RecordSift" / "RecordSift.csproj").exists():
@@ -94,14 +102,14 @@ def verify_layout():
         csproj_text = project_path.read_text(encoding="utf-8")
         if "CsvHelper" in csproj_text:
             errors.append(f"{name}: application/domain layer references CsvHelper")
-        # Legacy namespace is deliberately retained for source compatibility
-        # while CLR assembly/project ownership is strictly split.
         for file in location.rglob("*.cs"):
             if file.name == "AssemblyInfo.cs":
                 continue
             source = file.read_text(encoding="utf-8")
-            if not re.search(r"\bnamespace\s+RecordSift\s*\{", source):
-                errors.append(f"{file.relative_to(ROOT)}: public namespace changed")
+            group = file.relative_to(location).parent.as_posix().replace("/", ".")
+            expected_namespace = f"{name}.{group}"
+            errors.extend(verify_namespace(source, expected_namespace,
+                                           str(file.relative_to(ROOT))))
             if name == "RecordSift.Domain" and re.search(
                 r"using\s+System\.IO\b|using\s+RecordSift\.Adapters\b|"
                 r"\b(?:TextReader|StreamReader|ICsvRecordReader|CsvTableReader)\b", source
@@ -112,6 +120,10 @@ def verify_layout():
                 r"\b(?:CsvConfiguration|CsvRecordReaderAdapter)\b", source
             ):
                 errors.append(f"{file.relative_to(ROOT)}: infrastructure reference in Application")
+        root_namespaces = [child.text for child in root.iter()
+                           if child.tag.rsplit("}", 1)[-1] == "RootNamespace"]
+        if root_namespaces != [name]:
+            errors.append(f"{name}: root namespace must match its assembly")
         assembly_names = re.findall(
             r"<AssemblyName>([^<]+)</AssemblyName>", csproj_text
         )
@@ -188,6 +200,12 @@ def self_test():
         ],
     }
     assert verify_dependency_graph(valid) == [], "Valid graph rejected"
+    assert verify_namespace("namespace RecordSift.Domain.Schema\n{ }",
+                            "RecordSift.Domain.Schema", "valid") == [], "Valid namespace rejected"
+    assert verify_namespace("namespace RecordSift\n{ }",
+                            "RecordSift.Domain.Schema", "invalid"), "Flat namespace was accepted"
+    assert verify_namespace("namespace RecordSift.Application.Importing.Csv\n{ }",
+                            "RecordSift.Domain.Schema", "outward"), "Wrong layer namespace was accepted"
     broken = {**valid, "RecordSift.Domain": ["RecordSift.Application.csproj"]}
     assert any("RecordSift.Domain" in error for error in verify_dependency_graph(broken)), \
         "Forbidden Domain->Application dependency was not detected"

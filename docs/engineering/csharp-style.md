@@ -5,12 +5,12 @@
 ## Current target and compatibility
 
 - **Target:** .NET Framework 4.8, conventional non-SDK Visual Studio projects, `LangVersion` **7.3**. Do not use newer language features (file-scoped namespaces, nullable-reference annotations, records, primary constructors, global usings, newer pattern forms) merely because a recent SDK supports them.
-- Use `namespace RecordSift { ... }` / block-scoped namespaces, four-space indents, UTF-8, LF, one declaration per relevant file, and consistent braces for new/modified control-flow code.
+- Use block-scoped, assembly/responsibility-aligned namespaces (`RecordSift.Domain.Diagnostics`, `RecordSift.Domain.Schema`, `RecordSift.Domain.Results`, `RecordSift.Application.Abstractions.Csv`, `RecordSift.Application.Importing.Csv`, or `RecordSift.Infrastructure.Csv`), four-space indents, UTF-8, LF, one declaration per relevant file, and consistent braces for new/modified control-flow code.
 - Use `using` directives outside the namespace, sort `System` first, eliminate unused imports and avoid wildcard imports. Do not change legacy files solely to satisfy cosmetic preferences outside the issue scope.
 
 ## Names, APIs and safety
 
-- Public namespaces, types, methods, properties, events and enum members: **PascalCase**. Interfaces: `I` + PascalCase (e.g. `ICsvRecordReader`). Parameters and locals: **camelCase**. Private nonconstant instance fields: `_camelCase`; private static nonconstant fields: `s_camelCase`. All `const` identifiers (public/private/local) are PascalCase **without underscores**. The default diagnostic string values such as `SOURCE_UNREADABLE` are stable external data, not C# names. Prefer meaningful domain names over implementation names.
+- Public namespaces must match the owning layer and responsibility; flat `namespace RecordSift` declarations are prohibited by CI. Public types, methods, properties, events and enum members: **PascalCase**. Interfaces: `I` + PascalCase (e.g. `ICsvRecordReader`). Parameters and locals: **camelCase**. Private nonconstant instance fields: `_camelCase`; private static nonconstant fields: `s_camelCase`. All `const` identifiers (public/private/local) are PascalCase **without underscores**. The default diagnostic string values such as `SOURCE_UNREADABLE` are stable external data, not C# names. Prefer meaningful domain names over implementation names.
 - Method names express actions; properties represent state. Prefer explicit guards and `nameof(parameter)` for argument exceptions. Document externally observable behavior and ownership of input readers/streams.
 - Preserve public API compatibility; do not expose vendor types or leak unsafe exception text in diagnostics. Follow standard `IDisposable` ownership rules for resources the implementation owns.
 - Prefer `var` only when the type is readily apparent; otherwise declare the type. Favor explicit culture/encoding and immutable or read-only views of returned data.

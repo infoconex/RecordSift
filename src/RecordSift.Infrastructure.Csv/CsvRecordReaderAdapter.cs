@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Domain.Diagnostics;
 
 namespace RecordSift.Infrastructure.Csv
 {

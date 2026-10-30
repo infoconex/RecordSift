@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using RecordSift.Application.Abstractions.Csv;
 
-namespace RecordSift
+namespace RecordSift.Application.Importing.Csv
 {
     /// <summary>
     /// Raw data row after explicit header policy. Row is one-based and excludes a

@@ -6,7 +6,7 @@
     <ProjectGuid>{A1EC796C-6724-4195-BFAF-98326A5C1868}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RecordSift</RootNamespace>
+    <RootNamespace>RecordSift.Application</RootNamespace>
     <AssemblyName>RecordSift.Application</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

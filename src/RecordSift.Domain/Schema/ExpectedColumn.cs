@@ -1,6 +1,7 @@
 using System;
+using RecordSift.Domain.Diagnostics;
 
-namespace RecordSift
+namespace RecordSift.Domain.Schema
 {
     /// <summary>Declared source-column metadata. Presence is not per-record value validation.</summary>
     public sealed class ExpectedColumn

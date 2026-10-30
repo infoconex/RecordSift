@@ -1,6 +1,7 @@
 using System;
+using RecordSift.Domain.Diagnostics;
 
-namespace RecordSift
+namespace RecordSift.Domain.Schema
 {
     /// <summary>Recognized source column; SourceIndex is zero-based, not a logical data-row coordinate.</summary>
     public sealed class SourceColumnBinding

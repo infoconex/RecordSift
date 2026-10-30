@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using RecordSift.Application.Abstractions.Csv;
+using RecordSift.Domain.Diagnostics;
 
 namespace RecordSift.Tests
 {
