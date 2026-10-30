@@ -39,21 +39,23 @@ argument_keys = {key for key in entries if key.startswith("Argument_")}
 public_catalog = CATALOG.read_text(encoding="utf-8")
 
 def raw_argument_uses(source):
-    return re.findall(r'DomainMessageResources\\.Get\\("?(Argument_\\w+)"?\\)', source)
+    return re.findall(r'DomainMessageResources\.Get\("(Argument_\w+)"\)', source)
 
 def validate_typed_message_contract(catalog, sources):
     violations = []
-    if re.search(r'public\\s+static\\s+string\\s+Get\\s*\\(\\s*string', catalog):
+    if re.search(r'public\s+static\s+string\s+Get\s*\(\s*string', catalog):
         violations.append("Raw resource-key Get(string) must not be public")
     properties = dict(re.findall(
-        r'public\\s+static\\s+string\\s+(\\w+)\\s*=>\\s*Get\\("([^"]+)"\\)\\s*;', catalog))
+        r'public\s+static\s+string\s+(\w+)\s*=>\s*Get\("([^"]+)"\)\s*;', catalog))
     declared = set(properties.values())
     if declared != argument_keys or len(properties) != len(argument_keys):
         violations.append("Named argument accessors must cover each Argument_ resource exactly once")
+    if any(property_name != key[len("Argument_"):] for property_name, key in properties.items()):
+        violations.append("Each named argument accessor must match its Argument_ resource")
     for where, source in sources:
         if raw_argument_uses(source):
             violations.append(f"{where}: literal resource lookup outside the catalog")
-        if re.search(r'"Argument_\\w+"', source):
+        if re.search(r'"Argument_\w+"', source):
             violations.append(f"{where}: raw Argument_ resource key outside the catalog")
     return violations
 

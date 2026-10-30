@@ -93,6 +93,43 @@ namespace RecordSift.Tests
         }
 
         [Test]
+        public void PublicDomainMessageContractExposesNamedPropertiesWithoutRawKeyApi()
+        {
+            var publicMembers = System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Static;
+            Assert.That(typeof(DomainMessageResources).GetMethod("Get", publicMembers), Is.Null);
+
+            var namedMessages = typeof(DomainMessageResources).GetProperties(publicMembers);
+            Assert.That(namedMessages, Has.Length.EqualTo(24));
+            foreach (var property in namedMessages)
+            {
+                Assert.That(property.PropertyType, Is.EqualTo(typeof(string)));
+                var key = "Argument_" + property.Name;
+                Assert.That(property.GetValue(null, null),
+                    Is.EqualTo(Catalog().GetString(key, CultureInfo.InvariantCulture)),
+                    "Named resource contract for " + key);
+            }
+        }
+
+        [Test]
+        public void NamedDomainMessagesUseInvariantResourcesRegardlessOfUICulture()
+        {
+            var original = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR");
+                Assert.That(DomainMessageResources.ReaderHeaderConflict,
+                    Is.EqualTo("Headed sources use named header bindings, not positions."));
+                Assert.That(DomainMessageResources.ColumnDeclarationNull,
+                    Is.EqualTo("Column declarations cannot contain null."));
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = original;
+            }
+        }
+
+        [Test]
         public void CsvDefaultDelimiterIsOwnedByCoreConfiguration()
         {
             Assert.That(CsvReadOptions.Default.Delimiter, Is.EqualTo(","));
