@@ -20,7 +20,7 @@ The initial baseline is synchronous and may materialize results, with explicit i
 6. Return only accepted typed records. Accumulate diagnostics for rejected records.
 7. Compute an internally consistent summary and expose JSON reporting from this in-memory result.
 
-Dependencies, exact API signatures, field conversion edge cases, and default limits remain decisions for implementation issues; this document is not an assertion of production behavior.
+Dependencies, exact API signatures, field conversion edge cases, and default limits remain decisions for implementation issues; this document is not an assertion of production behavior. The proposed JSON report contract is defined separately in [import-result.md](import-result.md) and [its JSON Schema](schemas/import-result.schema.json).
 
 ## Source location
 
@@ -51,13 +51,13 @@ A zero-record outcome is **not** automatically a failed import. RecordSift must 
 | Source and configuration | Outcome | Counts | Result message |
 | --- | --- | --- | --- |
 | Valid required headers, no data rows | Completed | ProcessedCount = AcceptedCount = RejectedCount = WarningRowCount = 0; zero validation errors | Informational: no data records found |
-| Zero bytes, explicitly headerless | Completed | Processed = Accepted = Rejected = 0; zero validation errors | Informational: source contains no records |
+| Zero bytes, explicitly headerless | Completed | ProcessedCount = AcceptedCount = RejectedCount = WarningRowCount = 0; zero validation errors | Informational: source contains no records |
 | Zero bytes, required headers | Failed (source/schema) | ProcessedCount = AcceptedCount = RejectedCount = WarningRowCount = 0; a source/schema diagnostic is present | Error: required CSV header row is missing |
 | Nonempty CSV missing a required column | Failed (schema binding) | Do not claim a successful import; counts reflect actual processed records | Error: identify the missing required column |
 
 The messages are intended for humans and may be revised or localized. **A caller must be able to determine completion/failure from machine-readable result state and coded diagnostics without parsing message text.** An informational zero-row summary must not contribute to error or warning counts. A source/schema error must not be represented as a rejected data record that was never processed.
 
-The exact public API member names, failure codes, and text localization policy are deferred to their implementation issues. The distinction and semantics above are requirements.
+The external JSON report property names, required fields and initial status values are proposed in the [versioned JSON contract](import-result.md). The internal public .NET API member names, complete diagnostic-code registry, and text localization policy are deferred to their implementation issues. The distinction and semantics above are requirements.
 
 ## Format-specific requirements
 
