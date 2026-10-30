@@ -1,6 +1,6 @@
 # Scenario-to-test traceability
 
-**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. This does not establish CSV/XLSX end-to-end behavior.
+**Scope:** 49 requirements and 109 acceptance scenarios. FR-030 summary-level scenarios SC01–SC05 have automated **in-memory unit** evidence; the remaining 104 scenarios are Planned. FR-028 diagnostic unit-contract tests also executed (35/35 total NUnit tests), but all three FR-028 scenarios remain Planned until reader/validation integration. This does not establish CSV/XLSX end-to-end behavior.
 
 ## Maintenance contract
 

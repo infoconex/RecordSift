@@ -9,12 +9,12 @@ namespace RecordSift.Tests
     {
         private static ImportDiagnostic RecordError(int row, string field = "CustomerId")
         {
-            return ImportDiagnostic.ForRecord(row, field, "INVALID_FIELD", "Field validation failed.");
+            return ImportDiagnostic.ForRecord(row, field, DiagnosticCodes.ValidationFailed);
         }
 
         private static ImportDiagnostic SourceError()
         {
-            return ImportDiagnostic.ForSource(null, "MISSING_HEADER", "Required header row is missing.");
+            return ImportDiagnostic.ForSource(null, DiagnosticCodes.RequiredHeaderMissing);
         }
 
         [Test]
