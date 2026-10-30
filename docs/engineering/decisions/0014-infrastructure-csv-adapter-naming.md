@@ -1,5 +1,7 @@
 # ADR 0014 — Name the CSV infrastructure by its architectural role, not its parser vendor
 
+**Additional implementation note:** [ADR 0021](0021-focused-csv-infrastructure-classes.md) separates the private character-limited reader and error classes into individual source files. The public adapter contract and assembly identity remain unchanged.
+
 **Status:** Accepted in [engineering issue #97](https://github.com/infoconex/RecordSift/issues/97). Amends ADR 0013 and names introduced by ADR 0008.
 
 ## Context
