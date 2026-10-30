@@ -47,6 +47,31 @@ def verify_test_dependency_graph(graph):
 DOMAIN_RESX = "Diagnostics/Resources/DomainMessages.resx"
 RESX_IDENTITY = "RecordSift.Resources.DomainMessages.resources"
 ADAPTER_SOURCE = "CsvRecordReaderAdapter.cs"
+ADAPTER_FILES = (
+    "CsvRecordReaderAdapter.cs",
+    "CharacterLimitedTextReader.cs",
+    "MalformedCsvException.cs",
+    "CharacterLimitExceededException.cs",
+)
+
+def verify_adapter_source_ownership(sources):
+    errors = []
+    for file, expected_type in (
+        ("CsvRecordReaderAdapter.cs", "CsvRecordReaderAdapter"),
+        ("CharacterLimitedTextReader.cs", "CharacterLimitedTextReader"),
+        ("MalformedCsvException.cs", "MalformedCsvException"),
+        ("CharacterLimitExceededException.cs", "CharacterLimitExceededException"),
+    ):
+        source = sources.get(file)
+        if source is None:
+            errors.append(f"Missing focused infrastructure source {file}")
+            continue
+        declared = re.findall(r"\b(?:public|internal)\s+sealed\s+class\s+(\w+)", source)
+        if declared != [expected_type]:
+            errors.append(f"{file}: expected one owned class {expected_type}, got {declared}")
+        errors.extend(verify_namespace(source, "RecordSift.Infrastructure.Csv", file))
+    return errors
+
 
 def project(path):
     return ET.parse(path).getroot()
@@ -196,8 +221,14 @@ def verify_layout():
     if adapter_project.is_file():
         root = project(adapter_project)
         graph["RecordSift.Infrastructure.Csv"] = dependencies(root)
-        if includes(root, "Compile") != [ADAPTER_SOURCE]:
-            errors.append("CsvHelper implementation must live in the infrastructure adapter project")
+        if set(includes(root, "Compile")) != set(ADAPTER_FILES) or len(includes(root, "Compile")) != len(ADAPTER_FILES):
+            errors.append("Infrastructure project must explicitly compile the four focused CSV sources")
+        sources = {file: (INFRASTRUCTURE / file).read_text(encoding="utf-8")
+                   for file in ADAPTER_FILES if (INFRASTRUCTURE / file).is_file()}
+        errors.extend(verify_adapter_source_ownership(sources))
+        actual_source = {path.name for path in INFRASTRUCTURE.glob("*.cs")}
+        if actual_source != set(ADAPTER_FILES):
+            errors.append("Infrastructure source ownership mismatch")
         if not (INFRASTRUCTURE / ADAPTER_SOURCE).is_file():
             errors.append("CsvHelper implementation source missing")
         else:
@@ -319,6 +350,16 @@ def self_test():
         for owner in ("RecordSift.Domain", "RecordSift.Application"):
             assert verify_core_dependency_metadata(root, owner), \
                 f"{owner} accepted {label}"
+    focused = {name: "namespace RecordSift.Infrastructure.Csv\n{ internal sealed class " +
+               name[:-3] + " { } }" for name in ADAPTER_FILES}
+    assert not verify_adapter_source_ownership(focused), "Focused adapter layout rejected"
+    missing = {key: value for key, value in focused.items()
+               if key != "CharacterLimitedTextReader.cs"}
+    assert verify_adapter_source_ownership(missing), "Missing reader source accepted"
+    mixed = dict(focused)
+    mixed["CsvRecordReaderAdapter.cs"] = focused["CsvRecordReaderAdapter.cs"].replace(
+        " { }", " { } internal sealed class CharacterLimitedTextReader { }")
+    assert verify_adapter_source_ownership(mixed), "Multiple classes in adapter accepted"
     legal_tests = {name: list(refs) for name, refs in TEST_PROJECT_REFERENCES.items()}
     assert verify_test_dependency_graph(legal_tests) == [], "Valid test graph rejected"
     broken_tests = {**legal_tests, "RecordSift.Domain.Tests": [

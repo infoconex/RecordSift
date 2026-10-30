@@ -44,6 +44,9 @@ src/
     Importing/Csv/                          table orchestration and header policy
   RecordSift.Infrastructure.Csv/            -> Application + Domain
     CsvRecordReaderAdapter.cs              real CSV adapter backed by CsvHelper
+    CharacterLimitedTextReader.cs          internal bounded decoded-character source
+    MalformedCsvException.cs              internal malformed source location failure
+    CharacterLimitExceededException.cs    internal character budget failure
 tests/
   RecordSift.Domain.Tests/                  -> Domain only + NUnit
   RecordSift.Application.Tests/             -> Application + Domain + NUnit

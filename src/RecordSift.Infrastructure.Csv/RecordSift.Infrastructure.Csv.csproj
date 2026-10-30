@@ -61,6 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CsvRecordReaderAdapter.cs" />
+    <Compile Include="CharacterLimitedTextReader.cs" />
+    <Compile Include="MalformedCsvException.cs" />
+    <Compile Include="CharacterLimitExceededException.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
