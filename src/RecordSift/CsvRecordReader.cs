@@ -38,10 +38,10 @@ namespace RecordSift
                 int next;
                 while ((next = source.Read()) != -1)
                 {
-                    charactersRead++;
-                    if (charactersRead > maxCharacters)
+                    if (charactersRead == maxCharacters)
                         return CsvParseResult.Failure(ImportDiagnostic.ForSource(null,
                             DiagnosticCodes.SourceLimitExceeded, null, null, physicalLine));
+                    charactersRead++;
 
                     var c = (char)next;
                     var isCrLfTail = c == '\n' && priorWasCarriageReturn;
@@ -60,7 +60,7 @@ namespace RecordSift
                     {
                         if (c == '"')
                         {
-                            openQuoteLine = recordStartLine;
+                            openQuoteLine = physicalLine;
                             state = FieldState.Quoted;
                         }
                         else if (c == ',')

@@ -169,6 +169,25 @@ namespace RecordSift.Tests
         }
 
         [Test]
+        public void UnclosedQuoteAfterEarlierMultilineFieldUsesCurrentPhysicalLine()
+        {
+            var result = Parse("\"first\nfield\",\"second\nunfinished");
+            Assert.That(result.IsSuccessful, Is.False);
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.MalformedSource));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void ReaderDoesNotDisposeCallerOwnedTextReader()
+        {
+            using (var text = new StringReader("a,b"))
+            {
+                CsvRecordReader.Read(text, 10);
+                Assert.DoesNotThrow(() => text.Peek());
+            }
+        }
+
+        [Test]
         public void RecordFieldCollectionsAndResultCollectionsAreImmutable()
         {
             var result = Parse("1,2");
