@@ -41,7 +41,7 @@ Exploratory and manual tests may supplement automation, but must include a repea
 - Use invariant/culture-explicit expectations; never assume machine locale, file iteration order, or local time.
 - Avoid brittle snapshots of runtime-generated exception stack traces and absolute file paths.
 - The authoritative report format is specified by [import-result.md](../specifications/import-result.md) and [JSON Schema 1.0](../specifications/schemas/import-result.schema.json). Do not maintain duplicate expected JSON documents inside the specifications.
-- When contract tests are implemented, place anonymized expected JSON snapshots under `tests/RecordSift.ContractTests/Fixtures/`, alongside the executable tests; the expected five scenarios are successful import, errors, warnings, empty import, and failed import.
+- When contract tests are implemented, place anonymized expected JSON snapshots under `tests/RecordSift.ContractTests/Fixtures/`, alongside executable tests; expected cases include successful import, completed with rejected rows, empty import, and failed import. No warning fixture is part of the initial contract.
 - Contract tests must validate report structure against the JSON Schema **and** assert semantic invariants not expressible in JSON Schema, especially row-based counting and source errors. Do not treat a schema passing as sufficient evidence that counters are correct.
 - Distinguish logical CSV record ordinal from physical line number in assertions.
 
