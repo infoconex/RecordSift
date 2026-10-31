@@ -50,6 +50,14 @@ namespace RecordSift.Domain.Results
             return Create(ImportStatus.Stopped, processedCount, diagnostics);
         }
 
+        /// <summary>Captures cancellation at a documented checkpoint with accepted and rejected counts for the processed prefix.</summary>
+        /// <param name="processedCount">Count of completed logical record validations before cancellation.</param>
+        /// <param name="diagnostics">Prior record-scope validation errors, if any; no source-scope errors.</param>
+        public static ImportResult Canceled(int processedCount, IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            return Create(ImportStatus.Canceled, processedCount, diagnostics);
+        }
+
         private static ImportResult Create(ImportStatus status, int processedCount,
             IEnumerable<ImportDiagnostic> diagnostics)
         {
@@ -86,6 +94,9 @@ namespace RecordSift.Domain.Results
 
             if (status == ImportStatus.Completed && hasSourceError)
                 throw new ArgumentException(DomainMessageResources.CompletedSourceError, nameof(diagnostics));
+            if (status == ImportStatus.Canceled && hasSourceError)
+                throw new ArgumentException(
+                    DomainMessageResources.CanceledSourceError, nameof(diagnostics));
             if (status == ImportStatus.Stopped && (hasSourceError || rejectedRows.Count == 0))
                 throw new ArgumentException(
                     DomainMessageResources.StoppedWithoutRecordError, nameof(diagnostics));
