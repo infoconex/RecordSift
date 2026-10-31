@@ -18,6 +18,7 @@ namespace RecordSift.Domain.Diagnostics
         public const string ConversionFailed = "CONVERSION_FAILED";
         public const string ValidationFailed = "VALIDATION_FAILED";
         public const string FieldLengthOutOfRange = "FIELD_LENGTH_OUT_OF_RANGE";
+        public const string FieldRangeOutOfRange = "FIELD_RANGE_OUT_OF_RANGE";
 
         public static bool IsKnown(string code)
         {
@@ -37,7 +38,8 @@ namespace RecordSift.Domain.Diagnostics
         public static bool IsRecordCode(string code)
         {
             return code == RequiredFieldMissing || code == ConversionFailed ||
-                   code == ValidationFailed || code == FieldLengthOutOfRange;
+                   code == ValidationFailed || code == FieldLengthOutOfRange ||
+                   code == FieldRangeOutOfRange;
         }
 
         internal static string GetSafeMessage(string code)
@@ -57,6 +59,7 @@ namespace RecordSift.Domain.Diagnostics
                 case ConversionFailed: return DomainMessageResources.Get(ConversionFailed);
                 case ValidationFailed: return DomainMessageResources.Get(ValidationFailed);
                 case FieldLengthOutOfRange: return DomainMessageResources.Get(FieldLengthOutOfRange);
+                case FieldRangeOutOfRange: return DomainMessageResources.Get(FieldRangeOutOfRange);
                 default: throw new ArgumentException(DomainMessageResources.UnknownDiagnosticCode, nameof(code));
             }
         }
