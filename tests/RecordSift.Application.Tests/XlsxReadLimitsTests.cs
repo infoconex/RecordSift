@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using NUnit.Framework;
 using RecordSift.Application.Ports.Xlsx;
 
@@ -8,6 +9,33 @@ namespace RecordSift.Application.Tests
     [Category("Unit")]
     public sealed class XlsxReadLimitsTests
     {
+
+        [Test]
+        public void PublicApplicationLibraryContractsMustNotExposeCompileTimeConstants()
+        {
+            var literals = typeof(XlsxReadLimits).Assembly.GetExportedTypes()
+                .SelectMany(type => type.GetFields(
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.Static |
+                    System.Reflection.BindingFlags.DeclaredOnly))
+                .Where(field => field.IsLiteral && !field.DeclaringType.IsEnum)
+                .Select(field => field.DeclaringType.FullName + "." + field.Name)
+                .ToArray();
+
+            Assert.That(literals, Is.Empty,
+                "Public compile-time constants are embedded into consuming assemblies.");
+        }
+
+        [Test]
+        public void LibraryConfigurationDefaultsRetainPublishedValues()
+        {
+            Assert.That(RecordSift.Application.Ports.Csv.CsvReadOptions.DefaultDelimiter,
+                Is.EqualTo(","));
+            Assert.That(XlsxReadLimits.DefaultMaxRows, Is.EqualTo(100000));
+            Assert.That(XlsxReadLimits.DefaultMaxColumns, Is.EqualTo(256));
+            Assert.That(XlsxReadLimits.DefaultMaxCellCharacters, Is.EqualTo(32767));
+        }
+
         [Test]
         [Property("Requirement", "FR-002")]
         public void ReadLimitsRequirePositiveBudgetsAndExposeConfiguredValues()
