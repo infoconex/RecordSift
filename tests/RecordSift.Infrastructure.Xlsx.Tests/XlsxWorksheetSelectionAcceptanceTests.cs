@@ -88,6 +88,35 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
 
         [Test]
         [Property("Requirement", "FR-005")]
+        public void WorksheetSelectionUsesExactOrdinalCaseSensitiveNames()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(Workbook)))
+            {
+                var result = Importer().Import(stream, 4096, Schema(), "case-sensitive",
+                    worksheetName: "customers");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.WorksheetNotFound));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "FR-005")]
+        public void BlankWorksheetSelectionIsRejectedAsInvalidCallerArgument()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(Workbook)))
+            {
+                Assert.Throws<ArgumentException>(() =>
+                    Importer().Import(stream, 4096, Schema(), "blank",
+                        worksheetName: " "));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "FR-005")]
         public void DefaultSelectionContinuesToReadFirstWorksheet()
         {
             using (var stream = new MemoryStream(Convert.FromBase64String(Workbook)))
