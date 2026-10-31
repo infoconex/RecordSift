@@ -1,12 +1,12 @@
 # NFR-010-SC01: inspect compiled net48 public assemblies; no third-party API diff tool.
 # Run on Windows PowerShell 5.1 AFTER Release MSBuild: powershell -File scripts/verify_public_api.ps1
 # To review intentional changes, inspect the printed diff and update the baseline in a PR.
-param([switch]$PrintCurrent)
+param([switch]$PrintCurrent, [string]$BaselineFile)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$baselinePath = Join-Path $root 'docs\compatibility\public-api-net48.txt'
+$baselinePath = if ($BaselineFile) { $BaselineFile } else { Join-Path $root 'docs\compatibility\public-api-net48.txt' }
 $components = @(
     'Domain',
     'Application',
@@ -192,7 +192,7 @@ if (-not (Test-Path $baselinePath)) {
     throw "NFR-010 baseline not approved: $baselinePath"
 }
 $expected = @(Get-Content $baselinePath -Encoding UTF8)
-$changes = @(Compare-Object -ReferenceObject $expected -DifferenceObject $current)
+$changes = @(Compare-Object -ReferenceObject $expected -DifferenceObject $current -CaseSensitive)
 if ($changes.Count -gt 0) {
     Write-Host 'PUBLIC API BASELINE DIFFERENCES (<= approved baseline; => current binaries):'
     $changes | ForEach-Object { Write-Host ('  ' + $_.SideIndicator + ' ' + $_.InputObject) }

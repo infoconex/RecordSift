@@ -47,7 +47,20 @@ jobs:
         shell: powershell
         run: |
           & .\scripts\verify_public_api.ps1
-          if ($LASTEXITCODE -ne 0) { throw "Public API baseline validation failed." }
+      - name: Verify the API gate rejects unapproved snapshot differences
+        shell: powershell
+        run: |
+          $tampered = Join-Path $env:RUNNER_TEMP 'nfr-010-tampered-baseline.txt'
+          Copy-Item 'docs\compatibility\public-api-net48.txt' $tampered
+          Add-Content -Path $tampered -Value 'type RecordSift.UnapprovedContract kind=class modifier=ordinary'
+          $rejected = $false
+          try {
+            & .\scripts\verify_public_api.ps1 -BaselineFile $tampered
+          } catch {
+            $rejected = $true
+            Write-Host 'NFR-010 negative regression: modified baseline correctly rejected.'
+          }
+          if (-not $rejected) { throw 'Public API regression gate accepted an altered baseline.' }
       - name: Enforce Microsoft C# naming with Roslyn IDE1006
         shell: pwsh
         run: |
