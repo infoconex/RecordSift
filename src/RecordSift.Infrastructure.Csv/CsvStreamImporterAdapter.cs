@@ -41,6 +41,27 @@ namespace RecordSift.Infrastructure.Csv
             string sourceId, bool strictDecoding = true,
             IEnumerable<SourceColumnPosition> positions = null, CsvReadOptions options = null)
         {
+            return Import(source, maxCharacters, encoding, schema, policy, sourceId,
+                strictDecoding, positions, options, false);
+        }
+
+        /// <summary>Imports explicitly decoded CSV with opt-in fail-fast validation, retaining the caller's source stream.</summary>
+        /// <param name="source">Caller-owned binary stream.</param>
+        /// <param name="maxCharacters">Positive decoded-character input budget.</param>
+        /// <param name="encoding">Caller-selected text encoding.</param>
+        /// <param name="schema">Declared source schema.</param>
+        /// <param name="policy">Source header policy.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="strictDecoding">Whether invalid bytes reject the input.</param>
+        /// <param name="positions">Optional positional source bindings.</param>
+        /// <param name="options">Optional CSV parser options.</param>
+        /// <param name="failFast">Stop row validation after its first rejected record.</param>
+        public TypedImportResult<T> Import(Stream source, int maxCharacters,
+            Encoding encoding, ImportSchema schema, CsvHeaderPolicy policy,
+            string sourceId, bool strictDecoding,
+            IEnumerable<SourceColumnPosition> positions, CsvReadOptions options,
+            bool failFast)
+        {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (encoding == null) throw new ArgumentNullException(nameof(encoding));
 
@@ -55,7 +76,7 @@ namespace RecordSift.Infrastructure.Csv
                 using (var reader = new StreamReader(source, selectedEncoding, false,
                     StreamReaderBufferSize, true))
                     return _importer.Import(reader, maxCharacters, schema,
-                        policy, sourceId, positions, options);
+                        policy, sourceId, positions, options, failFast);
             }
             catch (DecoderFallbackException)
             {

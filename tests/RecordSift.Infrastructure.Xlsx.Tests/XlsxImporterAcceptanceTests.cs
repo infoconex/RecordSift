@@ -692,5 +692,49 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC01")]
+        public void FR_031_SC01_RealXlsxStopsAtConversionFailureAndExcludesLaterValidRecord()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = CreateImporter().Import(stream, 4096, Schema(),
+                    "fr031-xlsx", null, null, true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Stopped));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].Worksheet, Is.EqualTo("Customers"));
+                Assert.That(result.Diagnostics[0].PhysicalRow, Is.EqualTo(4));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC02")]
+        public void FR_031_SC02_RealXlsxWithoutValidationFailureCompletesNormally()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Name", true, true)
+            });
+            var importer = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(),
+                values => new Customer { Name = values["Name"] });
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = importer.Import(stream, 4096, schema,
+                    "fr031-all-valid", null, null, true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+                Assert.That(result.Diagnostics, Is.Empty);
+            }
+        }
     }
 }

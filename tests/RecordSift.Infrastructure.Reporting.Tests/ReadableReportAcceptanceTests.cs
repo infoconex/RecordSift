@@ -115,5 +115,21 @@ namespace RecordSift.Infrastructure.Reporting.Tests
                 CultureInfo.CurrentUICulture = uiCulture;
             }
         }
+
+        [Test]
+        [Property("Requirement", "FR-031")]
+        public void StoppedOutcomeReadableReportDoesNotClaimCompletionOrLeakSourceValues()
+        {
+            var stopped = new TypedImportResult<string>("fr031-report",
+                ImportResult.Stopped(2, new[] {
+                    ImportDiagnostic.ForRecord(2, "Name", DiagnosticCodes.ValidationFailed)
+                }), new[] { "private-customer" }, "private-status");
+            var report = new ReadableImportResultFormatterAdapter().Format(stopped);
+            Assert.That(report, Does.Contain("Import stopped"));
+            Assert.That(report, Does.Contain("2 processed"));
+            Assert.That(report, Does.Not.Contain("Import completed"));
+            Assert.That(report, Does.Not.Contain("private-customer"));
+            Assert.That(report, Does.Not.Contain("private-status"));
+        }
     }
 }

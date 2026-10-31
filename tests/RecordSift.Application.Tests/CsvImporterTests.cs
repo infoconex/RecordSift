@@ -281,5 +281,68 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-invalid"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC01")]
+        public void FR_031_SC01_FailFastStopsBeforeMappingLaterRowsAndKeepsFirstFailure()
+        {
+            var mapped = 0;
+            var importer = new CsvImporter<Customer>(
+                new FakeReader(CsvParseResult.Success(new[] {
+                    new CsvRecord(1, 1, new[] { "Id", "Name" }),
+                    new CsvRecord(2, 2, new[] { "1", "Alice" }),
+                    new CsvRecord(3, 4, new[] { "2", "private-bad" }),
+                    new CsvRecord(4, 6, new[] { "3", "Carol" })
+                })),
+                values => {
+                    mapped++;
+                    return MapCustomer(values);
+                });
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, true, null, 5)
+            });
+            using (var input = new StringReader("ignored"))
+            {
+                var result = importer.Import(input, 4096, schema, CsvHeaderPolicy.WithHeader,
+                    "stop-source", null, null, true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Stopped));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(mapped, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Name"));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(4));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-bad"));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC02")]
+        public void FR_031_SC02_FailFastAcceptsAllValidRowsWhenNoErrors()
+        {
+            var importer = new CsvImporter<Customer>(
+                new FakeReader(CsvParseResult.Success(new[] {
+                    new CsvRecord(1, 1, new[] { "Id", "Name" }),
+                    new CsvRecord(2, 2, new[] { "1", "Alice" }),
+                    new CsvRecord(3, 3, new[] { "2", "Bob" })
+                })), MapCustomer);
+            using (var input = new StringReader("ignored"))
+            {
+                var result = importer.Import(input, 4096, Schema(),
+                    CsvHeaderPolicy.WithHeader, "all-valid", null, null, true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Diagnostics, Is.Empty);
+            }
+        }
     }
 }

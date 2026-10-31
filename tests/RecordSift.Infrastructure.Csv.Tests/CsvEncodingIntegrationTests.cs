@@ -128,5 +128,29 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.Diagnostics, Is.Empty);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC01")]
+        public void FR_031_SC01_EncodedCsvStreamStopsAtFirstInvalidRowWithoutDisposingCallerStream()
+        {
+            ImportSchema schema;
+            var importer = CreateImporter(out schema);
+            using (var source = new MemoryStream(Encoding.UTF8.GetBytes(
+                "Id,Name\r\n1,Alice\r\ninvalid,private\r\n3,Bob")))
+            {
+                var result = importer.Import(source, 4096, Encoding.UTF8, schema,
+                    CsvHeaderPolicy.WithHeader, "fr031-stream",
+                    true, null, null, true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Stopped));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
     }
 }

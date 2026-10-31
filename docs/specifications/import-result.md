@@ -23,6 +23,10 @@ This document defines the externally observable **JSON import report** for a sin
 
 `Completed` means the importer finished reading and processing the source. It **may include rejected rows**. `Failed` means an unrecoverable source/schema/import failure occurred; its diagnostics must explain the failure. Cancellation and partial-processing status extensions are out of scope for version 1.0.
 
+## Opt-in stopped outcome extension — JSON version 1.1 (FR-031)
+
+Existing Completed/Failed reports continue to serialize as `schemaVersion: "1.0"`, preserving all seven frozen compatibility fixtures and the existing [v1.0 schema](schemas/import-result.schema.json). An opt-in fail-fast import that terminates validation at its first rejected record uses `schemaVersion: "1.1"` with `status: "Stopped"`, following the separately versioned [stopped-result schema](schemas/import-result-stopped.schema.json). No other fields, diagnostic codes or object shapes change. A stopped result includes the first rejected logical row, accurate prefix counts and its sanitized record diagnostic, and cannot be confused with a fully processed `Completed` result or fatal source-level `Failed` result. Version 1.1 is emitted only for the new stopped outcome in FR-031; cancellation (FR-032) remains separately tracked.
+
 ## Summary fields (all required)
 
 | Field | Type | Meaning |

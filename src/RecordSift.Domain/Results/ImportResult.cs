@@ -42,6 +42,14 @@ namespace RecordSift.Domain.Results
             return Create(ImportStatus.Failed, processedCount, diagnostics);
         }
 
+        /// <summary>Validation stopped after its first rejected logical record, retaining accurate partial counts and record errors.</summary>
+        /// <param name="processedCount">Number of logical rows validated, including the first rejected row.</param>
+        /// <param name="diagnostics">At least one record-scope diagnostic; source-scope diagnostics are not allowed.</param>
+        public static ImportResult Stopped(int processedCount, IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            return Create(ImportStatus.Stopped, processedCount, diagnostics);
+        }
+
         private static ImportResult Create(ImportStatus status, int processedCount,
             IEnumerable<ImportDiagnostic> diagnostics)
         {
@@ -78,6 +86,9 @@ namespace RecordSift.Domain.Results
 
             if (status == ImportStatus.Completed && hasSourceError)
                 throw new ArgumentException(DomainMessageResources.CompletedSourceError, nameof(diagnostics));
+            if (status == ImportStatus.Stopped && (hasSourceError || rejectedRows.Count == 0))
+                throw new ArgumentException(
+                    DomainMessageResources.StoppedWithoutRecordError, nameof(diagnostics));
             if (status == ImportStatus.Failed && !hasSourceError)
                 throw new ArgumentException(DomainMessageResources.FailedWithoutSourceError, nameof(diagnostics));
 
