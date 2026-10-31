@@ -7,7 +7,7 @@ namespace RecordSift.Domain.Schema
 {
     /// <summary>
     /// Reusable schema for named source columns. Does not parse files, map record
-    /// properties, validate cell values or perform future positional mapping.
+    /// properties or perform type conversion. Explicit value requirements are validated separately.
     /// </summary>
     public sealed class ImportSchema
     {
@@ -29,6 +29,47 @@ namespace RecordSift.Domain.Schema
         }
 
         public IReadOnlyList<ExpectedColumn> Columns { get; private set; }
+
+        /// <summary>
+        /// Validates opt-in required record values, preserving the original
+        /// source field, logical row and reliable physical line. Source-column
+        /// presence remains governed by BindHeaders or BindPositions.
+        /// </summary>
+        public IReadOnlyList<ImportDiagnostic> ValidateRequiredValues(
+            IReadOnlyDictionary<string, string> values, int row, int? physicalLine = null)
+        {
+            if (values == null) throw new ArgumentNullException(nameof(values));
+            if (row < 1) throw new ArgumentOutOfRangeException(nameof(row));
+            if (physicalLine.HasValue && physicalLine.Value < 1)
+                throw new ArgumentOutOfRangeException(nameof(physicalLine));
+
+            // The supplied dictionary's comparer cannot relax schema identifiers.
+            var sourceValues = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var pair in values)
+                sourceValues.Add(pair.Key, pair.Value);
+
+            var errors = new List<ImportDiagnostic>();
+            foreach (var column in Columns)
+            {
+                if (!column.IsValueRequired)
+                    continue;
+
+                string value;
+                if (!sourceValues.TryGetValue(column.Name, out value))
+                {
+                    if (column.IsRequired)
+                        errors.Add(ImportDiagnostic.ForRecord(row, column.Name,
+                            DiagnosticCodes.RequiredFieldMissing, null, null, physicalLine));
+                }
+                else if (string.IsNullOrWhiteSpace(value))
+                {
+                    errors.Add(ImportDiagnostic.ForRecord(row, column.Name,
+                        DiagnosticCodes.RequiredFieldMissing, null, null, physicalLine));
+                }
+            }
+
+            return new ReadOnlyCollection<ImportDiagnostic>(errors);
+        }
 
         /// <summary>
         /// Bind to a supplied sequence of source header names, retaining declaration
