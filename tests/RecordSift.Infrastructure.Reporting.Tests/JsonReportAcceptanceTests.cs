@@ -48,7 +48,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(report["schemaVersion"], Is.EqualTo("1.0"));
             Assert.That(report["sourceId"], Is.EqualTo("source-035"));
             Assert.That(report["status"], Is.EqualTo("Completed"));
-            Assert.That(report["message"], Is.EqualTo("Import completed with errors."));
+            Assert.That(report["message"], Is.EqualTo("Import completed with rejected records."));
             var summary = Fields(report["summary"]);
             Assert.That(summary.Keys, Is.EquivalentTo(new[] {
                 "processedCount", "acceptedCount", "rejectedCount"
@@ -104,6 +104,18 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(report["sourceId"], Is.EqualTo(SafeSourceId));
             Assert.That(Fields(Items(report["diagnostics"])[0])["message"],
                 Is.EqualTo("A field failed validation."));
+
+            var unsafeResult = new TypedImportResult<string>(
+                @"C:\Users\private\source.csv",
+                ImportResult.Completed(2, new[] {
+                    ImportDiagnostic.ForRecord(1, "Name", DiagnosticCodes.ValidationFailed)
+                }), new[] { PrivateValue }, "Report contains " + PrivateValue);
+            var unsafeJson = new JsonImportResultSerializerAdapter().Serialize(unsafeResult);
+            var safeReport = Parse(unsafeJson);
+            Assert.That(unsafeJson, Does.Not.Contain(PrivateValue));
+            Assert.That(unsafeJson, Does.Not.Contain(@"C:\Users\"));
+            Assert.That(safeReport["sourceId"], Is.EqualTo("source-redacted"));
+            Assert.That(safeReport["message"], Is.EqualTo("Import completed with rejected records."));
         }
 
         [Test]

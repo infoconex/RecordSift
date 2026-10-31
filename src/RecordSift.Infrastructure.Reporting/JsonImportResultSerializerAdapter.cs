@@ -43,9 +43,9 @@ namespace RecordSift.Infrastructure.Reporting
             var report = new ReportContract
             {
                 SchemaVersion = JsonSchemaVersion,
-                SourceId = result.SourceId,
+                SourceId = SafeSourceIdentifier(result.SourceId),
                 Status = result.Status.ToString(),
-                Message = result.Message,
+                Message = SafeStatusMessage(result),
                 Summary = new SummaryContract
                 {
                     ProcessedCount = result.Summary.ProcessedCount,
@@ -62,6 +62,31 @@ namespace RecordSift.Infrastructure.Reporting
                 return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
+
+        // Avoid disclosing absolute local source paths, while preserving safe opaque IDs.
+        private static string SafeSourceIdentifier(string sourceId)
+        {
+            bool rooted = sourceId.StartsWith("/", StringComparison.Ordinal) ||
+                sourceId[0] == (char)92 ||
+                sourceId.StartsWith("file:", StringComparison.OrdinalIgnoreCase) ||
+                (sourceId.Length >= 3 && char.IsLetter(sourceId[0]) &&
+                 sourceId[1] == ':' && (sourceId[2] == '/' || sourceId[2] == (char)92));
+            return rooted ? RedactedSourceIdentifier : sourceId;
+        }
+
+        // Caller-supplied messages can contain arbitrary record values; never export them by default.
+        private static string SafeStatusMessage<T>(TypedImportResult<T> result)
+        {
+            if (result.Status == ImportStatus.Failed)
+                return ReportingMessageResources.ImportFailed;
+            if (result.Summary.ProcessedCount == 0)
+                return ReportingMessageResources.ImportEmpty;
+            return result.Summary.RejectedCount > 0
+                ? ReportingMessageResources.ImportCompletedWithRejections
+                : ReportingMessageResources.ImportCompleted;
+        }
+
+        private const string RedactedSourceIdentifier = "source-redacted";
 
         [DataContract]
         private sealed class ReportContract

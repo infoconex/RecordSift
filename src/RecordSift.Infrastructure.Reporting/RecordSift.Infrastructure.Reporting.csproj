@@ -29,6 +29,12 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonImportResultSerializerAdapter.cs" />
+    <Compile Include="ReportingMessageResources.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\\ReportingMessages.resx">
+      <LogicalName>RecordSift.Resources.ReportingMessages.resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RecordSift.Application\RecordSift.Application.csproj">
