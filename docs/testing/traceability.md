@@ -4,7 +4,7 @@
 
 **FR-001 slice evidence:** [Issue #113](https://github.com/infoconex/RecordSift/issues/113) implemented caller-mapped typed import via independent Domain, Application fake-port and real CsvHelper tests. [Windows #41145214018](https://github.com/infoconex/RecordSift/actions/runs/41145214018) passed 72 Domain, 21 Application, 52 adapter tests (145 total, zero failures). FR-001-SC01–SC06 remain Planned until generalized mapping and conversion/validation contracts and any remaining acceptance dependencies are complete; the observed integration evidence is recorded without upgrading scenario status.
 
-**FR-010 implementation slice:** [PR #115](https://github.com/infoconex/RecordSift/pull/115) introduces Domain-owned ordinal source/property mappings and Application-owned string-member assignment, with isolated fake-reader and real-parser test evidence. Only public writable string destinations and public parameterless constructors are supported in this slice; the two FR-010 scenarios remain Planned pending broader property type/conversion support under FR-011.
+**FR-010 implementation slice:** [PR #115](https://github.com/infoconex/RecordSift/pull/115) introduces Domain-owned ordinal source/property mappings and Application-owned string-member assignment, with isolated fake-reader and real-parser test evidence. Only public writable string destinations and public parameterless constructors on reference types are supported in this slice; the two FR-010 scenarios remain Planned pending broader property type/conversion support under FR-011.
 
 ## Maintenance contract
 

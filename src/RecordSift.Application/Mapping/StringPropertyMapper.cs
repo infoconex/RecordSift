@@ -11,7 +11,7 @@ namespace RecordSift.Application.Mapping
     /// Applies explicit format-neutral column bindings to writable string properties.
     /// Conversion of other CLR types is independently specified by FR-011.
     /// </summary>
-    public sealed class StringPropertyMapper<T> where T : new()
+    public sealed class StringPropertyMapper<T> where T : class, new()
     {
         private readonly PropertyMappingSchema _schema;
         private readonly IReadOnlyList<PropertyInfo> _properties;

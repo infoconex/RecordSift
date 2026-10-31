@@ -64,7 +64,7 @@ The concrete `RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : RecordSift.
 
 ## Explicit source-to-property mapping
 
-[FR-010 issue #19](https://github.com/infoconex/RecordSift/issues/19) introduces Domain-owned `SourcePropertyMapping` and `PropertyMappingSchema` declarations, validating that mapped sources are declared and destinations are unambiguous. Application-owned `StringPropertyMapper<T>` uses only .NET Framework reflection to assign properties, validates writable string destinations before any import, and can be composed with the existing injected `CsvImporter<T>`. Mapping contracts are format-neutral; no Infrastructure reference, vendor parser type or new package enters Domain/Application. This intentionally limited string-only implementation is specified in [ADR 0023](decisions/0023-explicit-string-property-mapping.md); FR-011 owns type conversion.
+[FR-010 issue #19](https://github.com/infoconex/RecordSift/issues/19) introduces Domain-owned `SourcePropertyMapping` and `PropertyMappingSchema` declarations, validating that mapped sources are declared and destinations are unambiguous. Application-owned `StringPropertyMapper<T>` uses only .NET Framework reflection to assign properties, validates writable string destinations on reference-type models before any import, and can be composed with the existing injected `CsvImporter<T>`. Mapping contracts are format-neutral; no Infrastructure reference, vendor parser type or new package enters Domain/Application. This intentionally limited string-only implementation is specified in [ADR 0023](decisions/0023-explicit-string-property-mapping.md); FR-011 owns type conversion.
 
 ## Replaceable source-reader contracts
 
