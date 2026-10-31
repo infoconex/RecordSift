@@ -297,5 +297,67 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 new PrimitivePropertyMapper<NumericCustomer>(mappings, CultureInfo.InvariantCulture));
         }
 
+        private sealed class GuidCustomer
+        {
+            public Guid CustomerId { get; set; }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-016")]
+        [Property("Scenario", "FR-016-SC01")]
+        public void FR_016_SC01_RealCsvUsesExplicitGuidConverterWithoutVendorContracts()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Customer Id", true) });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var converter = new PrimitivePropertyMapper<GuidCustomer>(
+                mapping, CultureInfo.InvariantCulture,
+                new[] { new FieldConversionRule("Customer Id",
+                    (raw, culture) => Guid.Parse(raw)) });
+            var importer = new CsvImporter<GuidCustomer>(new CsvRecordReaderAdapter(), converter.Map);
+            using (var source = new StringReader(
+                "Customer Id\r\n7ed046a7-a0d2-4080-bc16-578f7c8083fe"))
+            {
+                var result = importer.Import(source, 2048, schema,
+                    CsvHeaderPolicy.WithHeader, "guid-source");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].CustomerId,
+                    Is.EqualTo(Guid.Parse("7ed046a7-a0d2-4080-bc16-578f7c8083fe")));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-016")]
+        [Property("Scenario", "FR-016-SC02")]
+        public void FR_016_SC02_RealCsvRejectedConversionKeepsSourceLineAndLaterRecord()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Customer Id", true) });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var converter = new PrimitivePropertyMapper<GuidCustomer>(
+                mapping, CultureInfo.InvariantCulture,
+                new[] { new FieldConversionRule("Customer Id",
+                    (raw, culture) => Guid.Parse(raw)) });
+            var importer = new CsvImporter<GuidCustomer>(new CsvRecordReaderAdapter(), converter.Map);
+            using (var source = new StringReader(
+                "Customer Id\r\nsensitive-not-a-guid\r\n7ed046a7-a0d2-4080-bc16-578f7c8083fe"))
+            {
+                var result = importer.Import(source, 2048, schema,
+                    CsvHeaderPolicy.WithHeader, "guid-source");
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Customer Id"));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("sensitive-not-a-guid"));
+            }
+        }
+
     }
 }
