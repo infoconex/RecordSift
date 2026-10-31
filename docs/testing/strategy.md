@@ -67,6 +67,29 @@ The architecture test-project split in [#91](https://github.com/infoconex/Record
 
 Use a maintained test framework and adapter compatible with the historical net48 baseline. NUnit is the proposed default; **pin versions only after a successful clean Windows restore/build**. NSubstitute is optional where genuine collaborators need isolation; avoid gratuitous mocks of plain data and validators. Later test-framework upgrades are isolated from SDK and project-format experiments.
 
+## Test naming, metadata and targeted execution
+
+Test **level**, **verification purpose**, and **traceability** are independent dimensions. Use NUnit 3's existing metadata; no additional test framework is required.
+
+- Every concrete NUnit `[TestFixture]` declares exactly one **primary level** at the class level: `[Category("Unit")]`, `[Category("Component")]`, or `[Category("Integration")]`. Use `EndToEnd` only after explicitly extending this policy and introducing a genuinely end-to-end suite. The abstract shared reader-port contract fixture has no category; its concrete Infrastructure implementation declares `Component`.
+- `[Property("Verification", "Acceptance")]` indicates a test asserts behavior from a documented acceptance scenario; it is **not** another test level. Other documented purposes may include `Contract`, `Regression`, and `Characterization`. Do not assume all tests supporting a requirement are acceptance tests.
+- `[Property("Requirement", "FR-017")]` (or `NFR-###`) establishes the associated requirement. `[Property("Scenario", "FR-017-SC01")]` is for a named scenario, and requires matching Requirement plus `Verification=Acceptance`. Multiple scenario properties are allowed where a focused split is not practical; preserve every actual scenario association.
+- Test classes describe the exercised component/behavior and end in `Tests` rather than a requirement number. Ordinary methods describe the observable outcome in PascalCase; scenario-linked tests start with the normalized scenario ID, e.g. `FR_017_SC01_RejectsBlankRequiredValues`. Multiple scenarios can use `FR_017_SC01_SC02_...` when necessary. The suffix should describe behavior, not repeat the class name.
+- `scripts/validate_test_metadata.py` verifies fixture-level category, documented requirement/scenario IDs, scenario-name/metadata agreement, and verification purpose. It has positive and negative self-tests. Metadata is **not execution evidence**: a scenario remains Planned in `traceability.md` until complete relevant behavior has observed passing evidence.
+
+With Release test assemblies already built on Windows and NuGet packages restored, use `scripts/run_tests.ps1` for focused execution:
+
+```powershell
+.\scripts\run_tests.ps1 -Level Unit
+.\scripts\run_tests.ps1 -Verification Acceptance
+.\scripts\run_tests.ps1 -Requirement FR-017
+.\scripts\run_tests.ps1 -Scenario FR-017-SC01
+.\scripts\run_tests.ps1 -Level Integration -Requirement FR-017 -Verification Acceptance
+.\scripts\run_tests.ps1 -Where "Requirement == 'FR-017' || Requirement == 'FR-018'"
+```
+
+Selectors combine with logical AND; `-Where` accepts NUnit's native expression language for complex cases. A selected run with zero tests fails. The Windows GitHub Actions `workflow_dispatch` input `test_filter` provides optional manual targeted execution. **Pull requests and pushes ignore filters, always run all three full suites, and retain the minimum-test-count gate.** NUnit XML evidence is uploaded in either mode; targeted XML is labeled `nunit-targeted.xml`.
+
 ## Pre-merge quality gate
 
 - A PR must reference one primary issue and exact requirement/scenario IDs.
@@ -79,4 +102,4 @@ Use a maintained test framework and adapter compatible with the historical net48
 
 ## Current status
 
-**FR-030-SC01–SC05 have observed in-memory unit evidence, and FR-011-SC01/SC02 have Domain/Application/real-adapter acceptance evidence; the remaining 102 scenarios are Planned.** FR-028, FR-009 and FR-013 have unit-contract evidence but have not demonstrated reader-integrated acceptance. The 94-test Windows suite passed in [run #41075489461](https://github.com/infoconex/RecordSift/actions/runs/41075489461). The CSV parser component is not a typed import acceptance test. Initial .NET Framework 4.8 assembly smoke tests ran on Windows ([run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680): 3 passed, 0 failed). These are not requirement acceptance tests. Ongoing CI is implemented through issue #64.
+As of [Windows run #41156947959](https://github.com/infoconex/RecordSift/actions/runs/41156947959), **172 NUnit cases passed** across Domain (85), Application (31), and real Infrastructure CSV (56). **11 of 109** documented acceptance scenarios have Automated evidence; 98 remain Planned (see [traceability](traceability.md)). FR-001 full import acceptance and other pending requirements are not completed by merely labeling or filtering related tests. Existing adapter contract and fake-port evidence is useful but does not, by itself, prove an end-to-end workflow. The current Windows and docs validation gates are described in the GitHub Actions workflows.
