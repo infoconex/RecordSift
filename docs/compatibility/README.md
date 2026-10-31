@@ -21,3 +21,7 @@ Commit intentional baseline changes **only in a reviewed PR** explaining API/pac
 ## Future modernization obligation
 
 The present approved surface and fixtures are from **net48**. Any migration to another target framework must perform a cross-target public API and package/binding comparison and re-run semantic JSON fixture checks against the modernized implementation before claiming compatibility. A passing net48-only gate does not satisfy that future milestone.
+
+## Baseline CI evidence
+
+PR #151: [Windows acceptance run #41181906001](https://github.com/infoconex/RecordSift/actions/runs/41181906001) passed 375 API entries, tamper-negative coverage and 278/278 NUnit tests; [documentation run #41181905950](https://github.com/infoconex/RecordSift/actions/runs/41181905950) passed. This is net48 evidence only.
