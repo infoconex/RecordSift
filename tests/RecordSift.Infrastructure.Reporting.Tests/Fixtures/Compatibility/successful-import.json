@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "sourceId": "csv-success",
+  "status": "Completed",
+  "message": "Import completed.",
+  "summary": {
+    "processedCount": 2,
+    "acceptedCount": 2,
+    "rejectedCount": 0
+  },
+  "diagnostics": []
+}
