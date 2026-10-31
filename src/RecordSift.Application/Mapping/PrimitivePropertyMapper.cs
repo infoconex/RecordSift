@@ -72,12 +72,18 @@ namespace RecordSift.Application.Mapping
         public T Map(IReadOnlyDictionary<string, string> values)
         {
             if (values == null) throw new ArgumentNullException(nameof(values));
+            // Caller dictionaries can use non-ordinal comparers. Normalize keys so
+            // the mapping contract always uses exact-case source identifiers.
+            var sourceValues = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var value in values)
+                sourceValues.Add(value.Key, value.Value);
+
             var record = new T();
             for (var i = 0; i < _schema.Mappings.Count; i++)
             {
                 var sourceName = _schema.Mappings[i].SourceColumnName;
                 string value;
-                if (!values.TryGetValue(sourceName, out value))
+                if (!sourceValues.TryGetValue(sourceName, out value))
                 {
                     if (_required[i])
                         throw new ArgumentException(
