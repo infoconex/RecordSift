@@ -15,11 +15,15 @@
     <DebugSymbols>true</DebugSymbols><DebugType>full</DebugType>
     <Optimize>false</Optimize><OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants><WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\RecordSift.Infrastructure.Reporting.xml</DocumentationFile>
+    <WarningsAsErrors>1591</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize><OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants><WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\RecordSift.Infrastructure.Reporting.xml</DocumentationFile>
+    <WarningsAsErrors>1591</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

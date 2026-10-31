@@ -26,6 +26,7 @@ These repository-wide instructions apply to human and AI-assisted contributions.
 - Keep parsing, mapping, validation, and reporting behavior deterministic. Avoid ambient culture and hidden global state.
 - Security: treat imported files as hostile, cap consumption, avoid logging raw data and secrets, do not evaluate spreadsheet macros/formulas.
 - Use established packages only after reviewing compatibility, licensing and security; pin reproducible versions.
+- Add accurate XML documentation to externally visible APIs; compiler warning CS1591 fails Debug/Release production builds and Windows CI includes an intentional undocumented-member negative test. Document public ownership and failure semantics, not private statement-by-statement narration; see `docs/engineering/csharp-style.md` and issue #152.
 - Do **not** claim compilation, passing tests, security scans, performance improvements or external availability without observed evidence.
 - Do not silently change public APIs or JSON contracts; add characterization tests and document intentional changes.
 

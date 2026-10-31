@@ -43,6 +43,10 @@ jobs:
           if (-not $msbuild) { throw "MSBuild not found." }
           & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
           if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+      - name: Validate generated public API XML documentation
+        shell: pwsh
+        run: |
+          & .\scripts\verify_xml_documentation.ps1
       - name: Enforce compiled public API and package compatibility (NFR-010-SC01)
         shell: powershell
         run: |
@@ -149,6 +153,10 @@ jobs:
             throw "NUnit metadata filter regression: matched=$selected, failed=$failed."
           }
           Write-Host "NUnit metadata filter selected $selected real CSV integration acceptance test(s)."
+      - name: Prove CS1591 rejects an undocumented public member
+        shell: pwsh
+        run: |
+          & .\scripts\verify_xml_documentation.ps1 -Negative
       - name: Upload NUnit XML evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
