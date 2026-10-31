@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "sourceId": "csv-rejected",
+  "status": "Completed",
+  "message": "Import completed with rejected records.",
+  "summary": {
+    "processedCount": 2,
+    "acceptedCount": 0,
+    "rejectedCount": 2
+  },
+  "diagnostics": [
+    {
+      "scope": "Record",
+      "row": 1,
+      "field": "Id",
+      "code": "REQUIRED_FIELD_MISSING",
+      "message": "A required field is missing."
+    },
+    {
+      "scope": "Record",
+      "row": 1,
+      "field": "Name",
+      "code": "VALIDATION_FAILED",
+      "message": "A field failed validation."
+    },
+    {
+      "scope": "Record",
+      "row": 2,
+      "field": "Age",
+      "code": "CONVERSION_FAILED",
+      "message": "A field could not be converted."
+    }
+  ]
+}

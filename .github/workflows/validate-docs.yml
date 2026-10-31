@@ -1,0 +1,39 @@
+name: Validate engineering documentation
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+  push:
+    branches:
+      - main
+      - 'release/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    name: Requirement catalogs and internal links
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0 (Node.js 24)
+        with:
+          persist-credentials: false
+      - name: Validate versioned requirements and Markdown links
+        run: python3 scripts/validate_docs.py
+      - name: Validate NUnit test levels, acceptance metadata and naming consistency
+        run: python3 scripts/validate_test_metadata.py
+      - name: Verify PascalCase constant identifiers and negative fixtures
+        run: python3 scripts/validate_constant_names.py
+      - name: Validate physical domain, application and infrastructure layers
+        run: python3 scripts/validate_architecture_layers.py
+      - name: Validate domain message resources and production string policy
+        run: python3 scripts/validate_core_messages.py

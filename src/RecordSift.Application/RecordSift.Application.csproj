@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A1EC796C-6724-4195-BFAF-98326A5C1868}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RecordSift.Application</RootNamespace>
+    <AssemblyName>RecordSift.Application</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\RecordSift.Application.xml</DocumentationFile>
+    <WarningsAsErrors>1591</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\RecordSift.Application.xml</DocumentationFile>
+    <WarningsAsErrors>1591</WarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Ports\Csv\ICsvRecordReader.cs" />
+    <Compile Include="Ports\Reporting\IImportResultSerializer.cs" />
+    <Compile Include="Ports\Reporting\IImportResultFormatter.cs" />
+    <Compile Include="Ports\Csv\CsvReadOptions.cs" />
+    <Compile Include="Ports\Csv\CsvParseResult.cs" />
+    <Compile Include="Ports\Csv\CsvRecord.cs" />
+    <Compile Include="Importing\Csv\CsvDataRow.cs" />
+    <Compile Include="Importing\Csv\CsvHeaderPolicy.cs" />
+    <Compile Include="Importing\Csv\CsvTableReader.cs" />
+    <Compile Include="Importing\Csv\CsvImporter.cs" />
+    <Compile Include="Importing\ImportDataRow.cs" />
+    <Compile Include="Importing\RecordValidationPipeline.cs" />
+    <Compile Include="Importing\Xlsx\XlsxImporter.cs" />
+    <Compile Include="Ports\Xlsx\IXlsxWorksheetReader.cs" />
+    <Compile Include="Ports\Xlsx\XlsxReadResult.cs" />
+    <Compile Include="Ports\Xlsx\XlsxRecord.cs" />
+    <Compile Include="Ports\Xlsx\XlsxReadLimits.cs" />
+    <Compile Include="Mapping\StringPropertyMapper.cs" />
+    <Compile Include="Mapping\PrimitivePropertyMapper.cs" />
+    <Compile Include="Importing\Csv\CsvTableResult.cs" />
+    <Compile Include="Messages\CsvMessageResources.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Messages\Resources\CsvMessages.resx">
+      <LogicalName>RecordSift.Resources.CsvMessages.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RecordSift.Domain\RecordSift.Domain.csproj">
+      <Project>{D107315D-E4EA-4C77-8A14-8F34F76B2100}</Project>
+      <Name>RecordSift.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

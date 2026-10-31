@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using RecordSift.Domain.Diagnostics;
+
+namespace RecordSift.Domain.Results
+{
+    /// <summary>
+    /// Immutable in-memory status, logical record counts and structured error diagnostics.
+    /// Format-specific JSON and readable output are provided by separate adapters.
+    /// </summary>
+    public sealed class ImportResult
+    {
+        private ImportResult(ImportStatus status, ImportSummary summary,
+            IReadOnlyList<ImportDiagnostic> diagnostics)
+        {
+            Status = status;
+            Summary = summary;
+            Diagnostics = diagnostics;
+        }
+
+        /// <summary>Gets whether processing completed or failed on a source/schema condition.</summary>
+        public ImportStatus Status { get; private set; }
+        /// <summary>Gets processed, accepted and rejected logical record counts.</summary>
+        public ImportSummary Summary { get; private set; }
+        /// <summary>Gets a read-only snapshot of structured source and record errors.</summary>
+        public IReadOnlyList<ImportDiagnostic> Diagnostics { get; private set; }
+
+        /// <summary>Processing finished, possibly with rejected data records.</summary>
+        /// <param name="processedCount">Number of logical data records processed; must be nonnegative.</param>
+        /// <param name="diagnostics">Record-scope errors only; the list is snapshotted and distinct row numbers determine rejections.</param>
+        public static ImportResult Completed(int processedCount, IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            return Create(ImportStatus.Completed, processedCount, diagnostics);
+        }
+
+        /// <summary>A source/schema failure occurred, with any preceding processed rows retained.</summary>
+        /// <param name="processedCount">Number of logical data records processed before failure, including any accepted earlier rows.</param>
+        /// <param name="diagnostics">Must include at least one source-scope diagnostic; the list is snapshotted.</param>
+        public static ImportResult Failed(int processedCount, IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            return Create(ImportStatus.Failed, processedCount, diagnostics);
+        }
+
+        /// <summary>Validation stopped after its first rejected logical record, retaining accurate partial counts and record errors.</summary>
+        /// <param name="processedCount">Number of logical rows validated, including the first rejected row.</param>
+        /// <param name="diagnostics">At least one record-scope diagnostic; source-scope diagnostics are not allowed.</param>
+        public static ImportResult Stopped(int processedCount, IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            return Create(ImportStatus.Stopped, processedCount, diagnostics);
+        }
+
+        /// <summary>Captures cancellation at a documented checkpoint with accepted and rejected counts for the processed prefix.</summary>
+        /// <param name="processedCount">Count of completed logical record validations before cancellation.</param>
+        /// <param name="diagnostics">Prior record-scope validation errors, if any; no source-scope errors.</param>
+        public static ImportResult Canceled(int processedCount, IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            return Create(ImportStatus.Canceled, processedCount, diagnostics);
+        }
+
+        private static ImportResult Create(ImportStatus status, int processedCount,
+            IEnumerable<ImportDiagnostic> diagnostics)
+        {
+            if (processedCount < 0) throw new ArgumentOutOfRangeException(nameof(processedCount));
+            if (diagnostics == null) throw new ArgumentNullException(nameof(diagnostics));
+
+            var snapshot = new List<ImportDiagnostic>();
+            var rejectedRows = new HashSet<int>();
+            var hasSourceError = false;
+
+            foreach (var error in diagnostics)
+            {
+                if (error == null)
+                    throw new ArgumentException(DomainMessageResources.DiagnosticNull, nameof(diagnostics));
+
+                if (error.Scope == DiagnosticScope.Record)
+                {
+                    if (!error.Row.HasValue || error.Row.Value > processedCount)
+                        throw new ArgumentOutOfRangeException(nameof(diagnostics),
+                            DomainMessageResources.DiagnosticRowOutOfRange);
+                    rejectedRows.Add(error.Row.Value);
+                }
+                else if (error.Scope == DiagnosticScope.Source)
+                {
+                    hasSourceError = true;
+                }
+                else
+                {
+                    throw new ArgumentException(DomainMessageResources.DiagnosticScopeUnknown, nameof(diagnostics));
+                }
+
+                snapshot.Add(error);
+            }
+
+            if (status == ImportStatus.Completed && hasSourceError)
+                throw new ArgumentException(DomainMessageResources.CompletedSourceError, nameof(diagnostics));
+            if (status == ImportStatus.Canceled && hasSourceError)
+                throw new ArgumentException(
+                    DomainMessageResources.CanceledSourceError, nameof(diagnostics));
+            if (status == ImportStatus.Stopped && (hasSourceError || rejectedRows.Count == 0))
+                throw new ArgumentException(
+                    DomainMessageResources.StoppedWithoutRecordError, nameof(diagnostics));
+            if (status == ImportStatus.Failed && !hasSourceError)
+                throw new ArgumentException(DomainMessageResources.FailedWithoutSourceError, nameof(diagnostics));
+
+            return new ImportResult(status,
+                new ImportSummary(processedCount, rejectedRows.Count),
+                new ReadOnlyCollection<ImportDiagnostic>(snapshot));
+        }
+    }
+}

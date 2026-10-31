@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SOURCE_UNREADABLE" xml:space="preserve"><value>The source could not be read.</value></data>
+  <data name="SOURCE_DECODING_FAILED" xml:space="preserve"><value>The source text could not be decoded with the configured encoding.</value></data>
+  <data name="SOURCE_LIMIT_EXCEEDED" xml:space="preserve"><value>The source exceeded the configured read limit.</value></data>
+  <data name="REQUIRED_HEADER_MISSING" xml:space="preserve"><value>A required source header is missing.</value></data>
+  <data name="REQUIRED_COLUMN_MISSING" xml:space="preserve"><value>A required source column is missing.</value></data>
+  <data name="AMBIGUOUS_COLUMN" xml:space="preserve"><value>A declared source column is ambiguous.</value></data>
+  <data name="INVALID_COLUMN_POSITION" xml:space="preserve"><value>A declared source column position is outside the available field range.</value></data>
+  <data name="INVALID_CSV_DELIMITER" xml:space="preserve"><value>The configured CSV delimiter is invalid.</value></data>
+  <data name="MALFORMED_SOURCE" xml:space="preserve"><value>The source structure is malformed.</value></data>
+  <data name="WORKSHEET_NOT_FOUND" xml:space="preserve"><value>The requested worksheet was not found in the workbook.</value></data>
+  <data name="REQUIRED_FIELD_MISSING" xml:space="preserve"><value>A required field is missing.</value></data>
+  <data name="CONVERSION_FAILED" xml:space="preserve"><value>A field could not be converted.</value></data>
+  <data name="VALIDATION_FAILED" xml:space="preserve"><value>A field failed validation.</value></data>
+  <data name="FIELD_LENGTH_OUT_OF_RANGE" xml:space="preserve"><value>The field length is outside the configured range.</value></data>
+  <data name="FIELD_RANGE_OUT_OF_RANGE" xml:space="preserve"><value>The field value is outside the configured range.</value></data>
+  <data name="DUPLICATE_IDENTIFIER" xml:space="preserve"><value>A duplicate record identifier was detected.</value></data>
+  <data name="Argument_ColumnDeclarationNull" xml:space="preserve"><value>Column declarations cannot contain null.</value></data>
+  <data name="Argument_ColumnNamesDuplicate" xml:space="preserve"><value>Declared column names must be unique (ordinal match).</value></data>
+  <data name="Argument_PositionMappingNull" xml:space="preserve"><value>Position mappings cannot contain null.</value></data>
+  <data name="Argument_PositionMappingUndeclared" xml:space="preserve"><value>Position mapping refers to an undeclared source column.</value></data>
+  <data name="Argument_PositionMappingDuplicate" xml:space="preserve"><value>A declared source column cannot have multiple positions.</value></data>
+  <data name="Argument_DiagnosticFieldBlank" xml:space="preserve"><value>Field must be nonempty when supplied.</value></data>
+  <data name="Argument_DiagnosticWorksheetBlank" xml:space="preserve"><value>Worksheet must be nonempty when supplied.</value></data>
+  <data name="Argument_DiagnosticCodeNotRecord" xml:space="preserve"><value>Code is not a registered record error.</value></data>
+  <data name="Argument_SourceDiagnosticHasRow" xml:space="preserve"><value>Source diagnostics cannot identify a logical data row.</value></data>
+  <data name="Argument_DiagnosticCodeNotSource" xml:space="preserve"><value>Code is not a registered source error.</value></data>
+  <data name="Argument_DiagnosticNull" xml:space="preserve"><value>Diagnostics cannot contain null.</value></data>
+  <data name="Argument_DiagnosticRowOutOfRange" xml:space="preserve"><value>Record diagnostics must identify a processed logical row.</value></data>
+  <data name="Argument_DiagnosticScopeUnknown" xml:space="preserve"><value>Unrecognized diagnostic scope.</value></data>
+  <data name="Argument_CompletedSourceError" xml:space="preserve"><value>A completed import cannot contain fatal source errors.</value></data>
+  <data name="Argument_FailedWithoutSourceError" xml:space="preserve"><value>A failed import must identify a source-level error.</value></data>
+  <data name="Argument_ExpectedColumnName" xml:space="preserve"><value>Expected column name must be nonempty.</value></data>
+  <data name="Argument_FieldLengthMinimumExceedsMaximum" xml:space="preserve"><value>Minimum field length cannot exceed maximum field length.</value></data>
+  <data name="Argument_RangeBoundsInvalid" xml:space="preserve"><value>Range bounds must define a nonempty interval.</value></data>
+  <data name="Argument_RangeFieldName" xml:space="preserve"><value>Range field name must be nonempty.</value></data>
+  <data name="Argument_RangeRuleNull" xml:space="preserve"><value>Range rules cannot contain null.</value></data>
+  <data name="Argument_RecordValidationRuleNull" xml:space="preserve"><value>Custom validation rules cannot contain null.</value></data>
+  <data name="Argument_DuplicateFieldName" xml:space="preserve"><value>Identifier field name must be nonempty.</value></data>
+  <data name="Argument_SourcePositionName" xml:space="preserve"><value>Declared column name must be nonempty.</value></data>
+  <data name="Argument_BoundColumnName" xml:space="preserve"><value>Bound column name must be nonempty.</value></data>
+  <data name="Argument_UnknownDiagnosticCode" xml:space="preserve"><value>Unknown diagnostic code.</value></data>
+  <data name="Argument_AcceptedRecordCountMismatch" xml:space="preserve"><value>The accepted record count must match the import summary.</value></data>
+  <data name="Argument_ImportSourceIdBlank" xml:space="preserve"><value>The source identifier must be nonempty.</value></data>
+  <data name="Argument_ImportMessageBlank" xml:space="preserve"><value>The import outcome message must be nonempty.</value></data>
+  <data name="Argument_PropertyMappingSourceName" xml:space="preserve"><value>Source column name must be nonempty.</value></data>
+  <data name="Argument_PropertyMappingDestinationName" xml:space="preserve"><value>Destination property name must be nonempty.</value></data>
+  <data name="Argument_PropertyMappingNull" xml:space="preserve"><value>Property mappings cannot contain null.</value></data>
+  <data name="Argument_PropertyMappingUndeclaredSource" xml:space="preserve"><value>Property mapping refers to an undeclared source column.</value></data>
+  <data name="Argument_PropertyMappingDuplicateDestination" xml:space="preserve"><value>Multiple source columns cannot target the same destination property.</value></data>
+  <data name="Argument_PropertyMappingEmpty" xml:space="preserve"><value>At least one property mapping must be declared.</value></data>
+  <data name="Argument_PropertyMappingUnsupportedDestination" xml:space="preserve"><value>Mapped destination must be a public writable string property.</value></data>
+  <data name="Argument_PropertyMappingRequiredSourceMissing" xml:space="preserve"><value>A required mapped source column is missing from the supplied record.</value></data>
+  <data name="Argument_ConversionRuleNull" xml:space="preserve"><value>Field conversion rules cannot contain null.</value></data>
+  <data name="Argument_ConversionRuleDuplicate" xml:space="preserve"><value>Each source field can have only one custom converter.</value></data>
+  <data name="Argument_ConversionRuleUndeclared" xml:space="preserve"><value>A field converter refers to a source column without a property mapping.</value></data>
+  <data name="Argument_CanceledSourceError" xml:space="preserve"><value>A canceled import cannot contain source-level failure diagnostics.</value></data>
+  <data name="Argument_StoppedWithoutRecordError" xml:space="preserve"><value>A stopped import requires a rejected record and no source-level failure.</value></data>
+  <data name="Argument_PatternRuleNull" xml:space="preserve"><value>Pattern rules cannot contain null.</value></data>
+  <data name="Argument_PatternRuleDuplicate" xml:space="preserve"><value>A source field cannot declare multiple regex patterns.</value></data>
+  <data name="Argument_PatternRuleUndeclared" xml:space="preserve"><value>A regex rule refers to an undeclared source field.</value></data>
+  <data name="Argument_PatternRuleInvalidExpression" xml:space="preserve"><value>The configured regular expression is invalid.</value></data>
+  <data name="Argument_ConversionInvalidValue" xml:space="preserve"><value>The field value cannot be converted to the destination type.</value></data>
+  <data name="Argument_ConversionUnsupportedType" xml:space="preserve"><value>The destination type is not supported for primitive field conversion.</value></data>
+  <data name="Argument_PropertyMappingUnsupportedMember" xml:space="preserve"><value>Mapped destination must be a public writable supported property.</value></data>
+</root>

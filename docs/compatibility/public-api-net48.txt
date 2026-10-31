@@ -1,0 +1,428 @@
+# Framework modernization MUST compare against this baseline; net48-only checks do not certify modernization.
+# Generated with scripts/verify_public_api.ps1 from Release binaries.
+# RecordSift net48 compiled public API baseline; approved via reviewed pull requests.
+assembly RecordSift.Application version=0.1.0.0 culture=neutral publicKeyToken=null
+assembly RecordSift.Domain version=0.1.0.0 culture=neutral publicKeyToken=null
+assembly RecordSift.Infrastructure.Csv version=0.1.0.0 culture=neutral publicKeyToken=null
+assembly RecordSift.Infrastructure.Reporting version=0.1.0.0 culture=neutral publicKeyToken=null
+assembly RecordSift.Infrastructure.Xlsx version=0.1.0.0 culture=neutral publicKeyToken=null
+base RecordSift.Application.Importing.Csv.CsvDataRow : System.Object
+base RecordSift.Application.Importing.Csv.CsvHeaderPolicy : System.Enum
+base RecordSift.Application.Importing.Csv.CsvImporter<T> : System.Object
+base RecordSift.Application.Importing.Csv.CsvTableReader : System.Object
+base RecordSift.Application.Importing.Csv.CsvTableResult : System.Object
+base RecordSift.Application.Importing.ImportDataRow : System.Object
+base RecordSift.Application.Importing.RecordValidationPipeline : System.Object
+base RecordSift.Application.Importing.Xlsx.XlsxImporter<T> : System.Object
+base RecordSift.Application.Mapping.PrimitivePropertyMapper<T> : System.Object
+base RecordSift.Application.Mapping.StringPropertyMapper<T> : System.Object
+base RecordSift.Application.Messages.CsvMessageResources : System.Object
+base RecordSift.Application.Ports.Csv.CsvParseResult : System.Object
+base RecordSift.Application.Ports.Csv.CsvReadOptions : System.Object
+base RecordSift.Application.Ports.Csv.CsvRecord : System.Object
+base RecordSift.Application.Ports.Xlsx.XlsxReadLimits : System.Object
+base RecordSift.Application.Ports.Xlsx.XlsxReadResult : System.Object
+base RecordSift.Application.Ports.Xlsx.XlsxRecord : System.Object
+base RecordSift.Domain.Diagnostics.DiagnosticCodes : System.Object
+base RecordSift.Domain.Diagnostics.DiagnosticScope : System.Enum
+base RecordSift.Domain.Diagnostics.DomainMessageResources : System.Object
+base RecordSift.Domain.Diagnostics.FieldConversionException : System.FormatException
+base RecordSift.Domain.Diagnostics.ImportDiagnostic : System.Object
+base RecordSift.Domain.Results.ImportResult : System.Object
+base RecordSift.Domain.Results.ImportStatus : System.Enum
+base RecordSift.Domain.Results.ImportSummary : System.Object
+base RecordSift.Domain.Results.TypedImportResult<T> : System.Object
+base RecordSift.Domain.Schema.DuplicateIdentifierRule<T> : System.Object
+base RecordSift.Domain.Schema.ExpectedColumn : System.Object
+base RecordSift.Domain.Schema.FieldConversionRule : System.Object
+base RecordSift.Domain.Schema.FieldPatternRule : System.Object
+base RecordSift.Domain.Schema.FieldRangeRule<T> : System.Object
+base RecordSift.Domain.Schema.ImportSchema : System.Object
+base RecordSift.Domain.Schema.PrimitiveFieldConverter : System.Object
+base RecordSift.Domain.Schema.PropertyMappingSchema : System.Object
+base RecordSift.Domain.Schema.RecordValidationRule<T> : System.Object
+base RecordSift.Domain.Schema.SchemaBindingResult : System.Object
+base RecordSift.Domain.Schema.SourceColumnBinding : System.Object
+base RecordSift.Domain.Schema.SourceColumnPosition : System.Object
+base RecordSift.Domain.Schema.SourcePropertyMapping : System.Object
+base RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : System.Object
+base RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> : System.Object
+base RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter : System.Object
+base RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter : System.Object
+base RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter : System.Object
+base RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter : System.Object
+constructor RecordSift.Application.Importing.Csv.CsvImporter<T>(RecordSift.Application.Ports.Csv.ICsvRecordReader reader, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord)
+constructor RecordSift.Application.Importing.Csv.CsvImporter<T>(RecordSift.Application.Ports.Csv.ICsvRecordReader reader, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules)
+constructor RecordSift.Application.Importing.Csv.CsvImporter<T>(RecordSift.Application.Ports.Csv.ICsvRecordReader reader, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule)
+constructor RecordSift.Application.Importing.Csv.CsvImporter<T>(RecordSift.Application.Ports.Csv.ICsvRecordReader reader, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules)
+constructor RecordSift.Application.Importing.ImportDataRow(System.Int32 row, System.Collections.Generic.IEnumerable<System.String> fields, System.String worksheet optional=null, System.Nullable<System.Int32> physicalRow optional=null, System.Nullable<System.Int32> physicalLine optional=null)
+constructor RecordSift.Application.Importing.Xlsx.XlsxImporter<T>(RecordSift.Application.Ports.Xlsx.IXlsxWorksheetReader reader, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules optional=null, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule optional=null, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules optional=null)
+constructor RecordSift.Application.Mapping.PrimitivePropertyMapper<T>(RecordSift.Domain.Schema.PropertyMappingSchema schema, System.Globalization.CultureInfo culture)
+constructor RecordSift.Application.Mapping.PrimitivePropertyMapper<T>(RecordSift.Domain.Schema.PropertyMappingSchema schema, System.Globalization.CultureInfo culture, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldConversionRule> customConverters)
+constructor RecordSift.Application.Mapping.StringPropertyMapper<T>(RecordSift.Domain.Schema.PropertyMappingSchema schema)
+constructor RecordSift.Application.Ports.Csv.CsvReadOptions(System.String delimiter)
+constructor RecordSift.Application.Ports.Csv.CsvRecord(System.Int32 sourceRecordNumber, System.Int32 physicalLine, System.Collections.Generic.IEnumerable<System.String> fields)
+constructor RecordSift.Application.Ports.Xlsx.XlsxReadLimits(System.Int32 maxRows, System.Int32 maxColumns, System.Int32 maxCellCharacters)
+constructor RecordSift.Application.Ports.Xlsx.XlsxRecord(System.Int32 physicalRow, System.Collections.Generic.IEnumerable<System.String> fields)
+constructor RecordSift.Domain.Diagnostics.FieldConversionException(System.String field)
+constructor RecordSift.Domain.Results.TypedImportResult<T>(System.String sourceId, RecordSift.Domain.Results.ImportResult outcome, System.Collections.Generic.IEnumerable<T> acceptedRecords, System.String message)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength, System.Collections.Generic.IEnumerable<System.String> aliases)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength, System.Collections.Generic.IEnumerable<System.String> aliases, System.String defaultValue)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.String defaultValue)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Collections.Generic.IEnumerable<System.String> aliases)
+constructor RecordSift.Domain.Schema.FieldConversionRule(System.String field, System.Func<System.String, System.Globalization.CultureInfo, System.Object> convert)
+constructor RecordSift.Domain.Schema.FieldPatternRule(System.String field, System.String pattern)
+constructor RecordSift.Domain.Schema.FieldPatternRule(System.String field, System.String pattern, System.TimeSpan timeout)
+constructor RecordSift.Domain.Schema.ImportSchema(System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.ExpectedColumn> columns)
+constructor RecordSift.Domain.Schema.ImportSchema(System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.ExpectedColumn> columns, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldPatternRule> patternRules)
+constructor RecordSift.Domain.Schema.PrimitiveFieldConverter(System.Globalization.CultureInfo culture)
+constructor RecordSift.Domain.Schema.PropertyMappingSchema(RecordSift.Domain.Schema.ImportSchema sourceSchema, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourcePropertyMapping> mappings)
+constructor RecordSift.Domain.Schema.RecordValidationRule<T>(System.String field, System.Func<T, System.Boolean> isValid)
+constructor RecordSift.Domain.Schema.SourceColumnPosition(System.String name, System.Int32 sourceIndex)
+constructor RecordSift.Domain.Schema.SourcePropertyMapping(System.String sourceColumnName, System.String propertyName)
+constructor RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter()
+constructor RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T>(RecordSift.Application.Importing.Csv.CsvImporter<T> importer)
+constructor RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter()
+constructor RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter(System.Char delimiter)
+constructor RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter()
+constructor RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter()
+constructor RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter()
+field RecordSift.Application.Importing.Csv.CsvHeaderPolicy instance mutable System.Int32 value__
+field RecordSift.Application.Importing.Csv.CsvHeaderPolicy static const RecordSift.Application.Importing.Csv.CsvHeaderPolicy WithHeader
+field RecordSift.Application.Importing.Csv.CsvHeaderPolicy static const RecordSift.Application.Importing.Csv.CsvHeaderPolicy WithoutHeader
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String AmbiguousColumn
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String ConversionFailed
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String DuplicateIdentifier
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String FieldLengthOutOfRange
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String FieldRangeOutOfRange
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String InvalidColumnPosition
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String InvalidCsvDelimiter
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String MalformedSource
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String RequiredColumnMissing
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String RequiredFieldMissing
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String RequiredHeaderMissing
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String SourceDecodingFailed
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String SourceLimitExceeded
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String SourceUnreadable
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String ValidationFailed
+field RecordSift.Domain.Diagnostics.DiagnosticCodes static readonly System.String WorksheetNotFound
+field RecordSift.Domain.Diagnostics.DiagnosticScope instance mutable System.Int32 value__
+field RecordSift.Domain.Diagnostics.DiagnosticScope static const RecordSift.Domain.Diagnostics.DiagnosticScope Record
+field RecordSift.Domain.Diagnostics.DiagnosticScope static const RecordSift.Domain.Diagnostics.DiagnosticScope Source
+field RecordSift.Domain.Results.ImportStatus instance mutable System.Int32 value__
+field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Canceled
+field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Completed
+field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Failed
+field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Stopped
+fileVersion RecordSift.Application 0.1.0.0
+fileVersion RecordSift.Domain 0.1.0.0
+fileVersion RecordSift.Infrastructure.Csv 0.1.0.0
+fileVersion RecordSift.Infrastructure.Reporting 0.1.0.0
+fileVersion RecordSift.Infrastructure.Xlsx 0.1.0.0
+generic RecordSift.Application.Importing.Csv.CsvImporter<T>
+generic RecordSift.Application.Importing.Xlsx.XlsxImporter<T>
+generic RecordSift.Application.Mapping.PrimitivePropertyMapper<T> where T:class&new()
+generic RecordSift.Application.Mapping.StringPropertyMapper<T> where T:class&new()
+generic RecordSift.Domain.Results.TypedImportResult<T>
+generic RecordSift.Domain.Schema.DuplicateIdentifierRule<T>
+generic RecordSift.Domain.Schema.FieldRangeRule<T>
+generic RecordSift.Domain.Schema.RecordValidationRule<T>
+generic RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T>
+interface RecordSift.Application.Importing.Csv.CsvHeaderPolicy : System.IComparable
+interface RecordSift.Application.Importing.Csv.CsvHeaderPolicy : System.IConvertible
+interface RecordSift.Application.Importing.Csv.CsvHeaderPolicy : System.IFormattable
+interface RecordSift.Domain.Diagnostics.DiagnosticScope : System.IComparable
+interface RecordSift.Domain.Diagnostics.DiagnosticScope : System.IConvertible
+interface RecordSift.Domain.Diagnostics.DiagnosticScope : System.IFormattable
+interface RecordSift.Domain.Diagnostics.FieldConversionException : System.Runtime.InteropServices._Exception
+interface RecordSift.Domain.Diagnostics.FieldConversionException : System.Runtime.Serialization.ISerializable
+interface RecordSift.Domain.Results.ImportStatus : System.IComparable
+interface RecordSift.Domain.Results.ImportStatus : System.IConvertible
+interface RecordSift.Domain.Results.ImportStatus : System.IFormattable
+interface RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : RecordSift.Application.Ports.Csv.ICsvRecordReader
+interface RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter : RecordSift.Application.Ports.Reporting.IImportResultSerializer
+interface RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter : RecordSift.Application.Ports.Reporting.IImportResultSerializer
+interface RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter : RecordSift.Application.Ports.Reporting.IImportResultFormatter
+interface RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter : RecordSift.Application.Ports.Xlsx.IXlsxWorksheetReader
+literal RecordSift.Application.Importing.Csv.CsvHeaderPolicy.WithHeader=1
+literal RecordSift.Application.Importing.Csv.CsvHeaderPolicy.WithoutHeader=2
+literal RecordSift.Domain.Diagnostics.DiagnosticScope.Record=0
+literal RecordSift.Domain.Diagnostics.DiagnosticScope.Source=1
+literal RecordSift.Domain.Results.ImportStatus.Canceled=3
+literal RecordSift.Domain.Results.ImportStatus.Completed=0
+literal RecordSift.Domain.Results.ImportStatus.Failed=1
+literal RecordSift.Domain.Results.ImportStatus.Stopped=2
+metadata RecordSift.Application AssemblyCompanyAttribute=Infoconex
+metadata RecordSift.Application AssemblyDescriptionAttribute=RecordSift application orchestration and owned source ports.
+metadata RecordSift.Application AssemblyProductAttribute=RecordSift
+metadata RecordSift.Application AssemblyTitleAttribute=RecordSift.Application
+metadata RecordSift.Application TargetFrameworkAttribute=.NETFramework,Version=v4.8
+metadata RecordSift.Domain AssemblyCompanyAttribute=Infoconex
+metadata RecordSift.Domain AssemblyDescriptionAttribute=RecordSift domain invariants and import contracts.
+metadata RecordSift.Domain AssemblyProductAttribute=RecordSift
+metadata RecordSift.Domain AssemblyTitleAttribute=RecordSift.Domain
+metadata RecordSift.Domain TargetFrameworkAttribute=.NETFramework,Version=v4.8
+metadata RecordSift.Infrastructure.Csv TargetFrameworkAttribute=.NETFramework,Version=v4.8
+metadata RecordSift.Infrastructure.Reporting AssemblyCompanyAttribute=RecordSift
+metadata RecordSift.Infrastructure.Reporting AssemblyDescriptionAttribute=RecordSift format-neutral reporting adapters
+metadata RecordSift.Infrastructure.Reporting AssemblyProductAttribute=RecordSift
+metadata RecordSift.Infrastructure.Reporting AssemblyTitleAttribute=RecordSift.Infrastructure.Reporting
+metadata RecordSift.Infrastructure.Reporting TargetFrameworkAttribute=.NETFramework,Version=v4.8
+metadata RecordSift.Infrastructure.Xlsx TargetFrameworkAttribute=.NETFramework,Version=v4.8
+method RecordSift.Application.Importing.Csv.CsvImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions optional=null, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
+method RecordSift.Application.Importing.Csv.CsvImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast)
+method RecordSift.Application.Importing.Csv.CsvImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast, System.Threading.CancellationToken cancellationToken)
+method RecordSift.Application.Importing.Csv.CsvTableReader static ordinary RecordSift.Application.Importing.Csv.CsvTableResult Read(RecordSift.Application.Ports.Csv.ICsvRecordReader reader, System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions optional=null, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
+method RecordSift.Application.Importing.RecordValidationPipeline static ordinary RecordSift.Domain.Results.TypedImportResult<T> Process<T>(System.Collections.Generic.IReadOnlyList<RecordSift.Application.Importing.ImportDataRow> rows, System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> bindings, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules, System.String emptyMessage, System.String completedMessage, System.String rejectedMessage)
+method RecordSift.Application.Importing.RecordValidationPipeline static ordinary RecordSift.Domain.Results.TypedImportResult<T> Process<T>(System.Collections.Generic.IReadOnlyList<RecordSift.Application.Importing.ImportDataRow> rows, System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> bindings, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules, System.String emptyMessage, System.String completedMessage, System.String rejectedMessage, System.Boolean failFast, System.String stoppedMessage)
+method RecordSift.Application.Importing.RecordValidationPipeline static ordinary RecordSift.Domain.Results.TypedImportResult<T> Process<T>(System.Collections.Generic.IReadOnlyList<RecordSift.Application.Importing.ImportDataRow> rows, System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> bindings, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules, System.String emptyMessage, System.String completedMessage, System.String rejectedMessage, System.Boolean failFast, System.String stoppedMessage, System.Threading.CancellationToken cancellationToken, System.String canceledMessage)
+method RecordSift.Application.Importing.Xlsx.XlsxImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxBytes, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, RecordSift.Application.Ports.Xlsx.XlsxReadLimits limits optional=null, System.String worksheetName optional=null)
+method RecordSift.Application.Importing.Xlsx.XlsxImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxBytes, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, RecordSift.Application.Ports.Xlsx.XlsxReadLimits limits, System.String worksheetName, System.Boolean failFast)
+method RecordSift.Application.Importing.Xlsx.XlsxImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxBytes, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, RecordSift.Application.Ports.Xlsx.XlsxReadLimits limits, System.String worksheetName, System.Boolean failFast, System.Threading.CancellationToken cancellationToken)
+method RecordSift.Application.Mapping.PrimitivePropertyMapper<T> instance ordinary T Map(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values)
+method RecordSift.Application.Mapping.StringPropertyMapper<T> instance ordinary T Map(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values)
+method RecordSift.Application.Ports.Csv.CsvParseResult static ordinary RecordSift.Application.Ports.Csv.CsvParseResult Failure(RecordSift.Domain.Diagnostics.ImportDiagnostic diagnostic)
+method RecordSift.Application.Ports.Csv.CsvParseResult static ordinary RecordSift.Application.Ports.Csv.CsvParseResult Success(System.Collections.Generic.IEnumerable<RecordSift.Application.Ports.Csv.CsvRecord> records)
+method RecordSift.Application.Ports.Csv.ICsvRecordReader instance abstract RecordSift.Application.Ports.Csv.CsvParseResult Read(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
+method RecordSift.Application.Ports.Reporting.IImportResultFormatter instance abstract System.String Format<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
+method RecordSift.Application.Ports.Reporting.IImportResultSerializer instance abstract System.String Serialize<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
+method RecordSift.Application.Ports.Xlsx.IXlsxWorksheetReader instance abstract RecordSift.Application.Ports.Xlsx.XlsxReadResult Read(System.IO.Stream source, System.Int32 maxBytes, System.Int32 maxRows, System.Int32 maxColumns, System.Int32 maxCellCharacters, System.String worksheetName optional=null)
+method RecordSift.Application.Ports.Xlsx.XlsxReadResult static ordinary RecordSift.Application.Ports.Xlsx.XlsxReadResult Failure(RecordSift.Domain.Diagnostics.ImportDiagnostic error)
+method RecordSift.Application.Ports.Xlsx.XlsxReadResult static ordinary RecordSift.Application.Ports.Xlsx.XlsxReadResult Success(System.String worksheet, System.Collections.Generic.IEnumerable<RecordSift.Application.Ports.Xlsx.XlsxRecord> records)
+method RecordSift.Domain.Diagnostics.ImportDiagnostic static ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic ForRecord(System.Int32 row, System.String field, System.String code)
+method RecordSift.Domain.Diagnostics.ImportDiagnostic static ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic ForRecord(System.Int32 row, System.String field, System.String code, System.String worksheet, System.Nullable<System.Int32> physicalRow, System.Nullable<System.Int32> physicalLine)
+method RecordSift.Domain.Diagnostics.ImportDiagnostic static ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic ForSource(System.String field, System.String code)
+method RecordSift.Domain.Diagnostics.ImportDiagnostic static ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic ForSource(System.String field, System.String code, System.String worksheet, System.Nullable<System.Int32> physicalRow, System.Nullable<System.Int32> physicalLine)
+method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Canceled(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
+method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Completed(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
+method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Failed(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
+method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Stopped(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
+method RecordSift.Domain.Schema.DuplicateIdentifierRule<T> instance ordinary System.Func<T, System.Int32, System.Nullable<System.Int32>, RecordSift.Domain.Diagnostics.ImportDiagnostic> CreateValidator()
+method RecordSift.Domain.Schema.DuplicateIdentifierRule<T> static ordinary RecordSift.Domain.Schema.DuplicateIdentifierRule<T> ForKey<TKey>(System.String field, System.Func<T, TKey> selector, System.Collections.Generic.IEqualityComparer<TKey> comparer optional=null)
+method RecordSift.Domain.Schema.FieldConversionRule instance ordinary System.Object Convert(System.String value, System.Globalization.CultureInfo culture)
+method RecordSift.Domain.Schema.FieldRangeRule<T> instance ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic Validate(T record, System.Int32 row, System.Nullable<System.Int32> physicalLine optional=null)
+method RecordSift.Domain.Schema.FieldRangeRule<T> static ordinary RecordSift.Domain.Schema.FieldRangeRule<T> Date(System.String field, System.Func<T, System.DateTime> selector, System.Nullable<System.DateTime> minimum, System.Boolean minimumInclusive, System.Nullable<System.DateTime> maximum, System.Boolean maximumInclusive)
+method RecordSift.Domain.Schema.FieldRangeRule<T> static ordinary RecordSift.Domain.Schema.FieldRangeRule<T> Numeric(System.String field, System.Func<T, System.Decimal> selector, System.Nullable<System.Decimal> minimum, System.Boolean minimumInclusive, System.Nullable<System.Decimal> maximum, System.Boolean maximumInclusive)
+method RecordSift.Domain.Schema.ImportSchema instance ordinary RecordSift.Domain.Schema.SchemaBindingResult BindHeaders(System.Collections.Generic.IEnumerable<System.String> sourceHeaders)
+method RecordSift.Domain.Schema.ImportSchema instance ordinary RecordSift.Domain.Schema.SchemaBindingResult BindPositions(System.Int32 sourceFieldCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions)
+method RecordSift.Domain.Schema.ImportSchema instance ordinary System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> ValidateFieldLengths(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values, System.Int32 row, System.Nullable<System.Int32> physicalLine optional=null)
+method RecordSift.Domain.Schema.ImportSchema instance ordinary System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> ValidatePatterns(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values, System.Int32 row, System.Nullable<System.Int32> physicalLine optional=null)
+method RecordSift.Domain.Schema.ImportSchema instance ordinary System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> ValidateRequiredValues(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values, System.Int32 row, System.Nullable<System.Int32> physicalLine optional=null)
+method RecordSift.Domain.Schema.PrimitiveFieldConverter instance ordinary System.Boolean IsSupported(System.Type destinationType)
+method RecordSift.Domain.Schema.PrimitiveFieldConverter instance ordinary System.Object Convert(System.String value, System.Type destinationType)
+method RecordSift.Domain.Schema.RecordValidationRule<T> instance ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic Validate(T record, System.Int32 row, System.Nullable<System.Int32> physicalLine optional=null)
+method RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter instance virtual RecordSift.Application.Ports.Csv.CsvParseResult Read(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
+method RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxCharacters, System.Text.Encoding encoding, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Boolean strictDecoding optional=True, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions optional=null, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
+method RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxCharacters, System.Text.Encoding encoding, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Boolean strictDecoding, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast)
+method RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxCharacters, System.Text.Encoding encoding, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Boolean strictDecoding, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast, System.Threading.CancellationToken cancellationToken)
+method RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter instance virtual System.String Serialize<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
+method RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter instance virtual System.String Serialize<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
+method RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter instance virtual System.String Format<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
+method RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter instance virtual RecordSift.Application.Ports.Xlsx.XlsxReadResult Read(System.IO.Stream source, System.Int32 maxBytes, System.Int32 maxRows, System.Int32 maxColumns, System.Int32 maxCellCharacters, System.String worksheetName optional=null)
+package RecordSift.Infrastructure.Csv CsvHelper=33.1.0
+package RecordSift.Infrastructure.Csv Microsoft.Bcl.AsyncInterfaces=8.0.0
+package RecordSift.Infrastructure.Csv Microsoft.Bcl.HashCode=1.1.1
+package RecordSift.Infrastructure.Csv Microsoft.CSharp=4.7.0
+package RecordSift.Infrastructure.Csv System.Buffers=4.5.1
+package RecordSift.Infrastructure.Csv System.Memory=4.5.5
+package RecordSift.Infrastructure.Csv System.Numerics.Vectors=4.5.0
+package RecordSift.Infrastructure.Csv System.Runtime.CompilerServices.Unsafe=6.0.0
+package RecordSift.Infrastructure.Csv System.Threading.Tasks.Extensions=4.5.4
+package RecordSift.Infrastructure.Xlsx ExcelDataReader=3.9.0
+package RecordSift.Infrastructure.Xlsx System.ValueTuple=4.5.0
+project RecordSift.Application target=v4.8 output=Library
+project RecordSift.Domain target=v4.8 output=Library
+project RecordSift.Infrastructure.Csv target=v4.8 output=Library
+project RecordSift.Infrastructure.Reporting target=v4.8 output=Library
+project RecordSift.Infrastructure.Xlsx target=v4.8 output=Library
+property RecordSift.Application.Importing.Csv.CsvDataRow System.Collections.Generic.IReadOnlyList<System.String> Fields[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvDataRow System.Int32 PhysicalLine[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvDataRow System.Int32 Row[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvDataRow System.Int32 SourceRecordNumber[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvTableResult RecordSift.Domain.Results.ImportStatus Status[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvTableResult System.Collections.Generic.IReadOnlyList<RecordSift.Application.Importing.Csv.CsvDataRow> DataRows[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvTableResult System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> Diagnostics[] {get,-}
+property RecordSift.Application.Importing.Csv.CsvTableResult System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> Bindings[] {get,-}
+property RecordSift.Application.Importing.ImportDataRow System.Collections.Generic.IReadOnlyList<System.String> Fields[] {get,-}
+property RecordSift.Application.Importing.ImportDataRow System.Int32 Row[] {get,-}
+property RecordSift.Application.Importing.ImportDataRow System.Nullable<System.Int32> PhysicalLine[] {get,-}
+property RecordSift.Application.Importing.ImportDataRow System.Nullable<System.Int32> PhysicalRow[] {get,-}
+property RecordSift.Application.Importing.ImportDataRow System.String Worksheet[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String FailedTableNoError[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String FailedTableNonSourceError[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String HeaderlessMissingPositions[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportCanceled[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportCompletedWithErrors[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportCompleted[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportEmptySource[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportFailed[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportMissingHeader[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportNoDataRecords[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportStopped[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ParserErrorScope[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ReaderHeaderConflict[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvParseResult System.Boolean IsSuccessful[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvParseResult System.Collections.Generic.IReadOnlyList<RecordSift.Application.Ports.Csv.CsvRecord> Records[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvParseResult System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> Diagnostics[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvReadOptions RecordSift.Application.Ports.Csv.CsvReadOptions Default[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvReadOptions System.Boolean IsValid[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvReadOptions System.String Delimiter[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvRecord System.Collections.Generic.IReadOnlyList<System.String> Fields[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvRecord System.Int32 PhysicalLine[] {get,-}
+property RecordSift.Application.Ports.Csv.CsvRecord System.Int32 SourceRecordNumber[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadLimits RecordSift.Application.Ports.Xlsx.XlsxReadLimits Default[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadLimits System.Int32 MaxCellCharacters[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadLimits System.Int32 MaxColumns[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadLimits System.Int32 MaxRows[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadResult RecordSift.Domain.Diagnostics.ImportDiagnostic Error[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadResult System.Boolean IsSuccessful[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadResult System.Collections.Generic.IReadOnlyList<RecordSift.Application.Ports.Xlsx.XlsxRecord> Records[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxReadResult System.String Worksheet[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxRecord System.Collections.Generic.IReadOnlyList<System.String> Fields[] {get,-}
+property RecordSift.Application.Ports.Xlsx.XlsxRecord System.Int32 PhysicalRow[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String AcceptedRecordCountMismatch[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String BoundColumnName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String CanceledSourceError[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ColumnDeclarationNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ColumnNamesDuplicate[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String CompletedSourceError[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionInvalidValue[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionRuleDuplicate[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionRuleNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionRuleUndeclared[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionUnsupportedType[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticCodeNotRecord[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticCodeNotSource[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticFieldBlank[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticRowOutOfRange[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticScopeUnknown[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticWorksheetBlank[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DuplicateFieldName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ExpectedColumnName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String FailedWithoutSourceError[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String FieldLengthMinimumExceedsMaximum[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ImportMessageBlank[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ImportSourceIdBlank[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PatternRuleDuplicate[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PatternRuleInvalidExpression[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PatternRuleNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PatternRuleUndeclared[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PositionMappingDuplicate[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PositionMappingNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PositionMappingUndeclared[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingDestinationName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingDuplicateDestination[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingEmpty[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingRequiredSourceMissing[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingSourceName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingUndeclaredSource[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingUnsupportedDestination[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String PropertyMappingUnsupportedMember[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String RangeBoundsInvalid[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String RangeFieldName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String RangeRuleNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String RecordValidationRuleNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String SourceDiagnosticHasRow[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String SourcePositionName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String StoppedWithoutRecordError[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String UnknownDiagnosticCode[] {get,-}
+property RecordSift.Domain.Diagnostics.FieldConversionException System.String Field[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic RecordSift.Domain.Diagnostics.DiagnosticScope Scope[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.Nullable<System.Int32> PhysicalLine[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.Nullable<System.Int32> PhysicalRow[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.Nullable<System.Int32> Row[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.String Code[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.String Field[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.String Message[] {get,-}
+property RecordSift.Domain.Diagnostics.ImportDiagnostic System.String Worksheet[] {get,-}
+property RecordSift.Domain.Results.ImportResult RecordSift.Domain.Results.ImportStatus Status[] {get,-}
+property RecordSift.Domain.Results.ImportResult RecordSift.Domain.Results.ImportSummary Summary[] {get,-}
+property RecordSift.Domain.Results.ImportResult System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> Diagnostics[] {get,-}
+property RecordSift.Domain.Results.ImportSummary System.Int32 AcceptedCount[] {get,-}
+property RecordSift.Domain.Results.ImportSummary System.Int32 ProcessedCount[] {get,-}
+property RecordSift.Domain.Results.ImportSummary System.Int32 RejectedCount[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> RecordSift.Domain.Results.ImportResult Outcome[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> RecordSift.Domain.Results.ImportStatus Status[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> RecordSift.Domain.Results.ImportSummary Summary[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> Diagnostics[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> System.Collections.Generic.IReadOnlyList<T> AcceptedRecords[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> System.String Message[] {get,-}
+property RecordSift.Domain.Results.TypedImportResult<T> System.String SourceId[] {get,-}
+property RecordSift.Domain.Schema.DuplicateIdentifierRule<T> System.String Field[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.Boolean IsRequired[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.Boolean IsValueRequired[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.Collections.Generic.IReadOnlyList<System.String> Aliases[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MaximumLength[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MinimumLength[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.String DefaultValue[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.String Name[] {get,-}
+property RecordSift.Domain.Schema.FieldConversionRule System.String Field[] {get,-}
+property RecordSift.Domain.Schema.FieldPatternRule System.String Field[] {get,-}
+property RecordSift.Domain.Schema.FieldRangeRule<T> System.String Field[] {get,-}
+property RecordSift.Domain.Schema.ImportSchema System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.ExpectedColumn> Columns[] {get,-}
+property RecordSift.Domain.Schema.PropertyMappingSchema RecordSift.Domain.Schema.ImportSchema SourceSchema[] {get,-}
+property RecordSift.Domain.Schema.PropertyMappingSchema System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourcePropertyMapping> Mappings[] {get,-}
+property RecordSift.Domain.Schema.RecordValidationRule<T> System.String Field[] {get,-}
+property RecordSift.Domain.Schema.SchemaBindingResult System.Boolean IsSuccessful[] {get,-}
+property RecordSift.Domain.Schema.SchemaBindingResult System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Diagnostics.ImportDiagnostic> Diagnostics[] {get,-}
+property RecordSift.Domain.Schema.SchemaBindingResult System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> Bindings[] {get,-}
+property RecordSift.Domain.Schema.SourceColumnBinding System.Int32 SourceIndex[] {get,-}
+property RecordSift.Domain.Schema.SourceColumnBinding System.String Name[] {get,-}
+property RecordSift.Domain.Schema.SourceColumnPosition System.Int32 SourceIndex[] {get,-}
+property RecordSift.Domain.Schema.SourceColumnPosition System.String Name[] {get,-}
+property RecordSift.Domain.Schema.SourcePropertyMapping System.String PropertyName[] {get,-}
+property RecordSift.Domain.Schema.SourcePropertyMapping System.String SourceColumnName[] {get,-}
+type RecordSift.Application.Importing.Csv.CsvDataRow kind=class modifier=sealed
+type RecordSift.Application.Importing.Csv.CsvHeaderPolicy kind=enum modifier=ordinary
+type RecordSift.Application.Importing.Csv.CsvImporter<T> kind=class modifier=sealed
+type RecordSift.Application.Importing.Csv.CsvTableReader kind=class modifier=static
+type RecordSift.Application.Importing.Csv.CsvTableResult kind=class modifier=sealed
+type RecordSift.Application.Importing.ImportDataRow kind=class modifier=sealed
+type RecordSift.Application.Importing.RecordValidationPipeline kind=class modifier=static
+type RecordSift.Application.Importing.Xlsx.XlsxImporter<T> kind=class modifier=sealed
+type RecordSift.Application.Mapping.PrimitivePropertyMapper<T> kind=class modifier=sealed
+type RecordSift.Application.Mapping.StringPropertyMapper<T> kind=class modifier=sealed
+type RecordSift.Application.Messages.CsvMessageResources kind=class modifier=static
+type RecordSift.Application.Ports.Csv.CsvParseResult kind=class modifier=sealed
+type RecordSift.Application.Ports.Csv.CsvReadOptions kind=class modifier=sealed
+type RecordSift.Application.Ports.Csv.CsvRecord kind=class modifier=sealed
+type RecordSift.Application.Ports.Csv.ICsvRecordReader kind=interface modifier=ordinary
+type RecordSift.Application.Ports.Reporting.IImportResultFormatter kind=interface modifier=ordinary
+type RecordSift.Application.Ports.Reporting.IImportResultSerializer kind=interface modifier=ordinary
+type RecordSift.Application.Ports.Xlsx.IXlsxWorksheetReader kind=interface modifier=ordinary
+type RecordSift.Application.Ports.Xlsx.XlsxReadLimits kind=class modifier=sealed
+type RecordSift.Application.Ports.Xlsx.XlsxReadResult kind=class modifier=sealed
+type RecordSift.Application.Ports.Xlsx.XlsxRecord kind=class modifier=sealed
+type RecordSift.Domain.Diagnostics.DiagnosticCodes kind=class modifier=static
+type RecordSift.Domain.Diagnostics.DiagnosticScope kind=enum modifier=ordinary
+type RecordSift.Domain.Diagnostics.DomainMessageResources kind=class modifier=static
+type RecordSift.Domain.Diagnostics.FieldConversionException kind=class modifier=sealed
+type RecordSift.Domain.Diagnostics.ImportDiagnostic kind=class modifier=sealed
+type RecordSift.Domain.Results.ImportResult kind=class modifier=sealed
+type RecordSift.Domain.Results.ImportStatus kind=enum modifier=ordinary
+type RecordSift.Domain.Results.ImportSummary kind=class modifier=sealed
+type RecordSift.Domain.Results.TypedImportResult<T> kind=class modifier=sealed
+type RecordSift.Domain.Schema.DuplicateIdentifierRule<T> kind=class modifier=sealed
+type RecordSift.Domain.Schema.ExpectedColumn kind=class modifier=sealed
+type RecordSift.Domain.Schema.FieldConversionRule kind=class modifier=sealed
+type RecordSift.Domain.Schema.FieldPatternRule kind=class modifier=sealed
+type RecordSift.Domain.Schema.FieldRangeRule<T> kind=class modifier=sealed
+type RecordSift.Domain.Schema.ImportSchema kind=class modifier=sealed
+type RecordSift.Domain.Schema.PrimitiveFieldConverter kind=class modifier=sealed
+type RecordSift.Domain.Schema.PropertyMappingSchema kind=class modifier=sealed
+type RecordSift.Domain.Schema.RecordValidationRule<T> kind=class modifier=sealed
+type RecordSift.Domain.Schema.SchemaBindingResult kind=class modifier=sealed
+type RecordSift.Domain.Schema.SourceColumnBinding kind=class modifier=sealed
+type RecordSift.Domain.Schema.SourceColumnPosition kind=class modifier=sealed
+type RecordSift.Domain.Schema.SourcePropertyMapping kind=class modifier=sealed
+type RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter kind=class modifier=sealed
+type RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> kind=class modifier=sealed
+type RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter kind=class modifier=sealed
+type RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter kind=class modifier=sealed
+type RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter kind=class modifier=sealed
+type RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter kind=class modifier=sealed

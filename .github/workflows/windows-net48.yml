@@ -1,0 +1,367 @@
+name: Windows .NET Framework 4.8 build and test
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+  push:
+    branches:
+      - main
+      - 'release/**'
+  workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Optional NUnit --where expression for manual runs; blank runs the full suite'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: net48-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Windows restore, MSBuild and NUnit
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Restore packages.config dependencies
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+      - name: Build separate Domain, Application and Infrastructure projects with MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw "MSBuild not found." }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+      - name: Validate generated public API XML documentation
+        shell: pwsh
+        run: |
+          & .\scripts\verify_xml_documentation.ps1
+      - name: Enforce compiled public API and package compatibility (NFR-010-SC01)
+        shell: powershell
+        run: |
+          & .\scripts\verify_public_api.ps1
+      - name: Verify the API gate rejects unapproved snapshot differences
+        shell: powershell
+        run: |
+          $tampered = Join-Path $env:RUNNER_TEMP 'nfr-010-tampered-baseline.txt'
+          Copy-Item 'docs\compatibility\public-api-net48.txt' $tampered
+          Add-Content -Path $tampered -Value 'type RecordSift.UnapprovedContract kind=class modifier=ordinary'
+          $rejected = $false
+          try {
+            & .\scripts\verify_public_api.ps1 -BaselineFile $tampered
+          } catch {
+            $rejected = $true
+            Write-Host 'NFR-010 negative regression: modified baseline correctly rejected.'
+          }
+          if (-not $rejected) { throw 'Public API regression gate accepted an altered baseline.' }
+      - name: Enforce Microsoft C# naming with Roslyn IDE1006
+        shell: pwsh
+        run: |
+          # A semantic analyzer is required; a regex check cannot distinguish
+          # const fields from locals, static fields, or contractual string values.
+          $sdk = & dotnet --version
+          if ($LASTEXITCODE -ne 0) { throw 'Required .NET SDK for Roslyn style analysis not found.' }
+          Write-Host "Roslyn analysis SDK=$sdk"
+          & dotnet format style RecordSift.sln --no-restore --verify-no-changes --diagnostics IDE1006 --severity error --verbosity normal
+          if ($LASTEXITCODE -ne 0) { throw "IDE1006 C# naming gate failed: $LASTEXITCODE" }
+      - name: Run Domain-only, Application-only and real-adapter NUnit suites
+        env:
+          NUNIT_WHERE: ${{ github.event_name == 'workflow_dispatch' && inputs.test_filter || '' }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          if (-not (Test-Path $runner)) { throw "NUnit runner is missing: $runner" }
+          $assemblies = @{
+            domain = 'tests\RecordSift.Domain.Tests\bin\Release\RecordSift.Domain.Tests.dll'
+            application = 'tests\RecordSift.Application.Tests\bin\Release\RecordSift.Application.Tests.dll'
+            adapter = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+            reporting = 'tests\RecordSift.Infrastructure.Reporting.Tests\bin\Release\RecordSift.Infrastructure.Reporting.Tests.dll'
+            xlsx = 'tests\RecordSift.Infrastructure.Xlsx.Tests\bin\Release\RecordSift.Infrastructure.Xlsx.Tests.dll'
+          }
+          foreach ($layer in @('domain', 'application', 'adapter', 'reporting', 'xlsx')) {
+            if (-not (Test-Path $assemblies[$layer])) { throw "Test assembly missing: $($assemblies[$layer])" }
+          }
+          $domainOutput = Split-Path -Parent $assemblies.domain
+          if (Test-Path (Join-Path $domainOutput 'RecordSift.Application.dll')) {
+            throw 'Domain-only tests must not copy Application.'
+          }
+          foreach ($core in @('domain', 'application')) {
+            $output = Split-Path -Parent $assemblies[$core]
+            if (Test-Path (Join-Path $output 'RecordSift.Infrastructure.Csv.dll')) {
+              throw "$core tests must not copy infrastructure adapters."
+            }
+            if (Test-Path (Join-Path $output 'ExcelDataReader.dll')) {
+              throw "$core tests must not copy XLSX vendor parser packages."
+            }
+            if (Test-Path (Join-Path $output 'CsvHelper.dll')) {
+              throw "$core tests must not copy vendor parser packages."
+            }
+          }
+          $filter = $env:NUNIT_WHERE
+          if (-not [string]::IsNullOrWhiteSpace($filter)) {
+            Write-Host "Manual targeted NUnit selection: $filter"
+            & $runner $assemblies.domain $assemblies.application $assemblies.adapter $assemblies.reporting $assemblies.xlsx "--where=$filter" "--result=TestResults/nunit-targeted.xml;format=nunit3" --noheader
+            if ($LASTEXITCODE -ne 0) { throw "Targeted NUnit failed: $LASTEXITCODE" }
+            [xml]$targeted = Get-Content TestResults/nunit-targeted.xml
+            $selected = [int]$targeted.'test-run'.total
+            $failed = [int]$targeted.'test-run'.failed
+            if ($selected -lt 1 -or $failed -ne 0) {
+              throw "Invalid targeted NUnit outcome: selected=$selected, failed=$failed; zero matches must fail."
+            }
+            Write-Host "Verified targeted NUnit=$selected, failed=$failed."
+          } else {
+            $counts = @{}
+            $failures = 0
+            foreach ($layer in @('domain', 'application', 'adapter', 'reporting', 'xlsx')) {
+              & $runner $assemblies[$layer] "--result=TestResults/nunit-$layer.xml;format=nunit3" --noheader
+              if ($LASTEXITCODE -ne 0) { throw "$layer NUnit failed: $LASTEXITCODE" }
+              [xml]$report = Get-Content "TestResults/nunit-$layer.xml"
+              $counts[$layer] = [int]$report.'test-run'.total
+              $failures += [int]$report.'test-run'.failed
+              if ($counts[$layer] -lt 1) { throw "$layer NUnit suite has no tests." }
+            }
+            $total = $counts.domain + $counts.application + $counts.adapter + $counts.reporting + $counts.xlsx
+            if ($failures -ne 0 -or $total -lt 126) {
+              throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), reporting=$($counts.reporting), xlsx=$($counts.xlsx), failed=$failures."
+            }
+            Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), reporting NUnit=$($counts.reporting), XLSX NUnit=$($counts.xlsx), total=$total failed=$failures."
+          }
+      - name: Verify NFR-003 on an Office-free Windows runner
+        shell: pwsh
+        run: |
+          $excelCom = [Type]::GetTypeFromProgID('Excel.Application')
+          if ($null -ne $excelCom) { throw 'Excel COM registration exists; runner is not Office-free.' }
+          if (Get-Command 'EXCEL.EXE' -ErrorAction SilentlyContinue) {
+            throw 'Excel executable is on PATH; runner is not Office-free.'
+          }
+          $officeExecutables = @(
+            'C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE',
+            'C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE'
+          )
+          foreach ($path in $officeExecutables) {
+            if (Test-Path $path) { throw "Excel installed: $path" }
+          }
+          $files = Get-ChildItem src -Recurse -File | Where-Object {
+            $_.Extension -in @('.cs', '.csproj', '.config')
+          }
+          $automation = $files | Select-String -Pattern 'Microsoft\.Office\.Interop|Interop\.Excel|Excel\.Application|Marshal\.GetActiveObject|Activator\.CreateInstance\s*\(\s*.*Excel|Office\.dll'
+          if ($automation) {
+            throw "Office/COM automation dependency detected in production source or project metadata."
+          }
+          $reader = 'tests\RecordSift.Infrastructure.Xlsx.Tests\bin\Release\RecordSift.Infrastructure.Xlsx.Tests.dll'
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          & $runner $reader "--where=Requirement == 'NFR-003'" "--result=TestResults/nunit-office-free.xml;format=nunit3" --noheader
+          if ($LASTEXITCODE -ne 0) { throw "NFR-003 Office-free acceptance failed: $LASTEXITCODE" }
+          [xml]$result = Get-Content TestResults/nunit-office-free.xml
+          if ([int]$result.'test-run'.total -ne 2 -or [int]$result.'test-run'.failed -ne 0) {
+            throw 'NFR-003 must pass both scenario tests on Office-free Windows.'
+          }
+          Write-Host 'Verified absent Excel COM registration/executable and Office dependencies; NFR-003 acceptance 2/2.'
+      - name: Verify NFR-002 CSV and XLSX acceptance with blocked outbound network
+        shell: pwsh
+        run: |
+          # Dependencies have already been restored and the assemblies built.
+          # --inprocess ensures tests execute inside the firewall-blocked runner,
+          # rather than in an unrestricted nunit-agent process.
+          $runner = (Resolve-Path 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe').Path
+          $profiles = Get-NetFirewallProfile -ErrorAction Stop
+          if (-not ($profiles | Where-Object { $_.Enabled })) {
+            throw 'No enabled Windows Firewall profile; cannot claim offline evidence.'
+          }
+          $ruleName = 'RecordSift-NFR-002-OffLine-NUnit'
+          New-NetFirewallRule -DisplayName $ruleName -Direction Outbound -Action Block -Program $runner -Profile Any -Enabled True -ErrorAction Stop | Out-Null
+          try {
+            $rule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction Stop
+            if ($rule.Action -ne 'Block' -or $rule.Direction -ne 'Outbound' -or -not $rule.Enabled) {
+              throw 'NFR-002 outbound firewall restriction was not established.'
+            }
+            $csv = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+            $xlsx = 'tests\RecordSift.Infrastructure.Xlsx.Tests\bin\Release\RecordSift.Infrastructure.Xlsx.Tests.dll'
+            & $runner $csv $xlsx --inprocess "--where=Requirement == 'NFR-002'" "--result=TestResults/nunit-offline.xml;format=nunit3" --noheader
+            if ($LASTEXITCODE -ne 0) { throw "Offline NFR-002 NUnit failed: $LASTEXITCODE" }
+            [xml]$result = Get-Content 'TestResults/nunit-offline.xml'
+            if ([int]$result.'test-run'.total -lt 2 -or [int]$result.'test-run'.failed -ne 0) {
+              throw 'NFR-002 must execute both CSV and XLSX acceptance checks offline.'
+            }
+            Write-Host "NFR-002 restricted-process acceptance: $($result.'test-run'.total) passed."
+          } finally {
+            Remove-NetFirewallRule -DisplayName $ruleName -ErrorAction Stop
+          }
+      - name: Verify combined NUnit category and scenario property filtering
+        shell: pwsh
+        run: |
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          $adapter = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+          $selection = "cat == Integration && Verification == Acceptance && Requirement == 'FR-017' && Scenario == 'FR-017-SC01'"
+          & $runner $adapter "--where=$selection" "--result=TestResults/nunit-filter-smoke.xml;format=nunit3" --noheader
+          if ($LASTEXITCODE -ne 0) { throw "Metadata filter smoke run failed: $LASTEXITCODE" }
+          [xml]$filtered = Get-Content TestResults/nunit-filter-smoke.xml
+          $selected = [int]$filtered.'test-run'.total
+          $failed = [int]$filtered.'test-run'.failed
+          if ($selected -lt 1 -or $failed -ne 0) {
+            throw "NUnit metadata filter regression: matched=$selected, failed=$failed."
+          }
+          Write-Host "NUnit metadata filter selected $selected real CSV integration acceptance test(s)."
+      - name: Build and verify unpublished net48 NuGet candidate
+        shell: pwsh
+        run: |
+          # Local validation only: do not upload nupkg artifacts or publish to any feed.
+          & .\scripts\build_release_candidate.ps1 -OutputDirectory (Join-Path $env:RUNNER_TEMP 'RecordSift-Internal-Candidate')
+          if ($LASTEXITCODE -ne 0) { throw "Internal candidate packaging failed: $LASTEXITCODE" }
+      - name: Prove CS1591 rejects an undocumented public member
+        shell: pwsh
+        run: |
+          & .\scripts\verify_xml_documentation.ps1 -Negative
+      - name: Upload NUnit XML evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nunit-net48-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/nunit-*.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  dependency-audit:
+    name: Verify pinned packages and audit vulnerabilities
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Validate pinned dependency inventory and NuGet audit
+        shell: pwsh
+        run: |
+          [xml]$config = Get-Content tests/RecordSift.Domain.Tests/packages.config -Raw
+          $packages = @($config.packages.package)
+          if ($packages.Count -ne 2) { throw "Unexpected test package count: $($packages.Count)" }
+          $expected = @{ NUnit = '3.14.0'; 'NUnit.ConsoleRunner' = '3.17.0' }
+          foreach ($package in $packages) {
+            $id = [string]$package.id
+            if (-not $expected.ContainsKey($id) -or $expected[$id] -ne [string]$package.version) {
+              throw "Unexpected pinned dependency: $id $($package.version)"
+            }
+          }
+          [xml]$applicationConfig = Get-Content tests/RecordSift.Application.Tests/packages.config -Raw
+          $applicationPackages = @($applicationConfig.packages.package)
+          if ($applicationPackages.Count -ne 1 -or
+              [string]$applicationPackages[0].id -ne 'NUnit' -or
+              [string]$applicationPackages[0].version -ne '3.14.0') {
+            throw 'Unexpected Application test package inventory.'
+          }
+          $applicationTestsProject = Get-Content tests/RecordSift.Application.Tests/RecordSift.Application.Tests.csproj -Raw
+          if ($applicationTestsProject -match 'CsvHelper|RecordSift\.Infrastructure') {
+            throw 'Application tests must not reference Infrastructure or CsvHelper.'
+          }
+          $badApplicationSource = @(Get-ChildItem tests/RecordSift.Application.Tests -Recurse -Filter '*.cs' |
+              Select-String -Pattern '^\s*using\s+(?:CsvHelper|RecordSift\.Infrastructure)\b')
+          if ($badApplicationSource.Count -gt 0) {
+            throw 'Application test source must not import vendor adapters.'
+          }
+          [xml]$adapterTests = Get-Content tests/RecordSift.Infrastructure.Csv.Tests/packages.config -Raw
+          $adapterTestPackages = @($adapterTests.packages.package)
+          if ($adapterTestPackages.Count -ne 1 -or
+              [string]$adapterTestPackages[0].id -ne 'NUnit' -or
+              [string]$adapterTestPackages[0].version -ne '3.14.0') {
+            throw 'Unexpected adapter test dependency inventory.'
+          }
+          [xml]$reportingTests = Get-Content tests/RecordSift.Infrastructure.Reporting.Tests/packages.config -Raw
+          $reportingTestPackages = @($reportingTests.packages.package)
+          if ($reportingTestPackages.Count -ne 1 -or
+              [string]$reportingTestPackages[0].id -ne 'NUnit' -or
+              [string]$reportingTestPackages[0].version -ne '3.14.0') {
+            throw 'Unexpected reporting test dependency inventory.'
+          }
+          $reportingProject = Get-Content src/RecordSift.Infrastructure.Reporting/RecordSift.Infrastructure.Reporting.csproj -Raw
+          if ($reportingProject -match 'CsvHelper|PackageReference|HintPath') {
+            throw 'Reporting adapter must not depend on CSV vendors or NuGet packages.'
+          }
+          function Assert-DomainTestProjectDependencies([string]$projectContent) {
+            if ($projectContent -match 'RecordSift\.Application|RecordSift\.Infrastructure|CsvHelper') {
+              throw 'Domain tests must not reference Application, Infrastructure or CsvHelper.'
+            }
+          }
+          $domainTestsProject = Get-Content tests/RecordSift.Domain.Tests/RecordSift.Domain.Tests.csproj -Raw
+          Assert-DomainTestProjectDependencies $domainTestsProject
+          # Negative regression: each forbidden reference must make the actual guard fail.
+          foreach ($forbidden in @('RecordSift.Application', 'RecordSift.Infrastructure.Csv', 'CsvHelper')) {
+            $invalidProject = $domainTestsProject.Replace('</Project>', ('<ItemGroup><Reference Include="{0}" /></ItemGroup></Project>' -f $forbidden))
+            $wasRejected = $false
+            try { Assert-DomainTestProjectDependencies $invalidProject } catch { $wasRejected = $true }
+            if (-not $wasRejected) { throw "Domain dependency audit failed to reject $forbidden." }
+          }
+          Write-Host 'Domain dependency audit rejected all three forbidden-reference regressions.'
+          $badCoreSource = @(Get-ChildItem tests/RecordSift.Domain.Tests -Recurse -Filter '*.cs' |
+              Select-String -Pattern '^\s*using\s+(?:RecordSift\.Application|CsvHelper|RecordSift\.Infrastructure)\b')
+          if ($badCoreSource.Count -gt 0) {
+            throw 'Domain unit-test source must not import Application or vendor adapter namespaces.'
+          }
+          [xml]$adapterConfig = Get-Content src/RecordSift.Infrastructure.Csv/packages.config -Raw
+          $adapterPackages = @($adapterConfig.packages.package)
+          $adapterExpected = @{
+            CsvHelper = '33.1.0'
+            'Microsoft.Bcl.AsyncInterfaces' = '8.0.0'
+            'Microsoft.Bcl.HashCode' = '1.1.1'
+            'Microsoft.CSharp' = '4.7.0'
+            'System.Memory' = '4.5.5'
+            'System.Buffers' = '4.5.1'
+            'System.Numerics.Vectors' = '4.5.0'
+            'System.Runtime.CompilerServices.Unsafe' = '6.0.0'
+            'System.Threading.Tasks.Extensions' = '4.5.4'
+          }
+          if ($adapterPackages.Count -ne $adapterExpected.Count) {
+            throw "Unexpected CSV adapter package count: $($adapterPackages.Count)"
+          }
+          foreach ($package in $adapterPackages) {
+            $id = [string]$package.id
+            if (-not $adapterExpected.ContainsKey($id) -or $adapterExpected[$id] -ne [string]$package.version) {
+              throw "Unexpected CSV adapter dependency: $id $($package.version)"
+            }
+          }
+          [xml]$xlsxConfig = Get-Content src/RecordSift.Infrastructure.Xlsx/packages.config -Raw
+          $xlsxPackages = @($xlsxConfig.packages.package)
+          $xlsxExpected = @{ ExcelDataReader = '3.9.0'; 'System.ValueTuple' = '4.5.0' }
+          if ($xlsxPackages.Count -ne $xlsxExpected.Count) { throw 'Unexpected XLSX package inventory.' }
+          foreach ($package in $xlsxPackages) {
+            $id = [string]$package.id
+            if (-not $xlsxExpected.ContainsKey($id) -or $xlsxExpected[$id] -ne [string]$package.version) {
+              throw "Unexpected pinned XLSX dependency: $id $($package.version)"
+            }
+          }
+          foreach ($layer in @("RecordSift.Domain", "RecordSift.Application")) {
+            if ((Get-Content "src/$layer/$layer.csproj" -Raw) -match 'CsvHelper') {
+              throw "$layer must not reference the CSV vendor or adapter."
+            }
+          }
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          $lines = @(& nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config -Verbosity normal 2>&1)
+          $exit = $LASTEXITCODE
+          $lines | ForEach-Object { Write-Host "$_" }
+          $lines | Set-Content TestResults/nuget-audit.log
+          if ($exit -ne 0) { throw "NuGet audit restore failed with exit code $exit" }
+          $findings = @($lines | Where-Object { "$_" -match '\bNU190[0-5]\b' })
+          if ($findings.Count -gt 0) { throw "NuGet audit reported $($findings.Count) warning(s), see nuget-audit.log" }
+          Write-Host 'Expected packages pinned; NuGet audit reported no NU1900-NU1905 warnings.'
+      - name: Upload NuGet audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nuget-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/nuget-audit.log
+          if-no-files-found: warn
+          retention-days: 14
