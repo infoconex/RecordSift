@@ -530,5 +530,73 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
             Assert.That(result.AcceptedRecords[1].Note, Is.Null);
         }
+
+        private static TypedImportResult<Customer> ImportWithNameLengthConstraint(
+            string csv, int? minimumLength, int? maximumLength)
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, false, minimumLength, maximumLength)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Name", "Name")
+            });
+            var mapper = new PrimitivePropertyMapper<Customer>(
+                mapping, CultureInfo.InvariantCulture);
+            var importer = new CsvImporter<Customer>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+            using (var source = new StringReader(csv))
+                return importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "fr019-length");
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-019")]
+        [Property("Scenario", "FR-019-SC01")]
+        public void FR_019_SC01_OverlengthRealCsvValueRejectsOnlyItsRowWithFieldAndLocation()
+        {
+            var result = ImportWithNameLengthConstraint(
+                "Id,Name\r\n1,private-long-value\r\n2,Bob", null, 4);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.SourceId, Is.EqualTo("fr019-length"));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Bob"));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[0].Code,
+                Is.EqualTo(DiagnosticCodes.FieldLengthOutOfRange));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Name"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Message,
+                Does.Not.Contain("private-long-value"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-019")]
+        [Property("Scenario", "FR-019-SC02")]
+        public void FR_019_SC02_ExactInclusiveLengthBoundariesPreserveTypedCsvRecords()
+        {
+            var result = ImportWithNameLengthConstraint(
+                "Id,Name\r\n1,AB\r\n2,WXYZ\r\n3, AB ", 2, 4);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(3));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("AB"));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("WXYZ"));
+            Assert.That(result.AcceptedRecords[2].Name, Is.EqualTo(" AB "));
+        }
     }
 }
