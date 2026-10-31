@@ -133,9 +133,10 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "FR-032")]
         [Property("Scenario", "FR-032-SC01")]
-        public void CanceledReadableReportDoesNotClaimCompletionOrExposeCallerValues()
+        public void FR_032_SC01_CanceledReadableReportDoesNotClaimCompletionOrExposeCallerValues()
         {
             var result = new TypedImportResult<string>("cancel-safe",
                 ImportResult.Canceled(1, new ImportDiagnostic[0]),
