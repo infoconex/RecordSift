@@ -11,9 +11,20 @@ namespace RecordSift.Domain.Schema
     /// </summary>
     public sealed class ImportSchema
     {
+        private readonly IReadOnlyList<FieldPatternRule> _patterns;
+
         /// <summary>Creates a reusable, ordinal, read-only snapshot of declared columns; duplicate names and null declarations are invalid.</summary>
         /// <param name="columns">Column declarations; null, duplicate names and null items are invalid.</param>
         public ImportSchema(IEnumerable<ExpectedColumn> columns)
+            : this(columns, null)
+        {
+        }
+
+        /// <summary>Creates a canonical source schema with optional, bounded, prevalidated regular-expression field rules.</summary>
+        /// <param name="columns">Declared canonical columns and aliases; duplicates are invalid.</param>
+        /// <param name="patternRules">Optional regex rules keyed by exact-case canonical column names; unknown, duplicate and null rules are invalid.</param>
+        public ImportSchema(IEnumerable<ExpectedColumn> columns,
+            IEnumerable<FieldPatternRule> patternRules)
         {
             if (columns == null) throw new ArgumentNullException(nameof(columns));
             var snapshot = new List<ExpectedColumn>();
@@ -32,10 +43,64 @@ namespace RecordSift.Domain.Schema
                 snapshot.Add(column);
             }
             Columns = new ReadOnlyCollection<ExpectedColumn>(snapshot);
+
+            var declared = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var column in snapshot)
+                declared.Add(column.Name);
+            var rules = new List<FieldPatternRule>();
+            var patternFields = new HashSet<string>(StringComparer.Ordinal);
+            if (patternRules != null)
+                foreach (var rule in patternRules)
+                {
+                    if (rule == null)
+                        throw new ArgumentException(
+                            DomainMessageResources.PatternRuleNull, nameof(patternRules));
+                    if (!declared.Contains(rule.Field))
+                        throw new ArgumentException(
+                            DomainMessageResources.PatternRuleUndeclared, nameof(patternRules));
+                    if (!patternFields.Add(rule.Field))
+                        throw new ArgumentException(
+                            DomainMessageResources.PatternRuleDuplicate, nameof(patternRules));
+                    rules.Add(rule);
+                }
+            _patterns = new ReadOnlyCollection<FieldPatternRule>(rules);
         }
 
         /// <summary>Gets declared columns in their original order as a read-only snapshot.</summary>
         public IReadOnlyList<ExpectedColumn> Columns { get; private set; }
+
+        /// <summary>
+        /// Validates present, decoded source text against explicitly declared bounded regex rules.
+        /// Optional absent or null fields are skipped; normal IsMatch substring semantics apply.
+        /// Any timeout or mismatch produces a field-specific, sanitized record diagnostic.
+        /// </summary>
+        /// <param name="values">Canonical, exact-case string fields for one record.</param>
+        /// <param name="row">One-based logical record number.</param>
+        /// <param name="physicalLine">Optional one-based source line for accurate provenance.</param>
+        public IReadOnlyList<ImportDiagnostic> ValidatePatterns(
+            IReadOnlyDictionary<string, string> values, int row, int? physicalLine = null)
+        {
+            if (values == null) throw new ArgumentNullException(nameof(values));
+            if (row < 1) throw new ArgumentOutOfRangeException(nameof(row));
+            if (physicalLine.HasValue && physicalLine.Value < 1)
+                throw new ArgumentOutOfRangeException(nameof(physicalLine));
+
+            var sourceValues = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var value in values)
+                sourceValues.Add(value.Key, value.Value);
+
+            var errors = new List<ImportDiagnostic>();
+            foreach (var rule in _patterns)
+            {
+                string value;
+                if (!sourceValues.TryGetValue(rule.Field, out value) || value == null)
+                    continue;
+                if (!rule.Matches(value))
+                    errors.Add(ImportDiagnostic.ForRecord(row, rule.Field,
+                        DiagnosticCodes.ValidationFailed, null, null, physicalLine));
+            }
+            return new ReadOnlyCollection<ImportDiagnostic>(errors);
+        }
 
         /// <summary>
         /// Validates opt-in required record values, preserving the original

@@ -13,7 +13,7 @@ namespace RecordSift.Application.Importing
     /// </summary>
     public static class RecordValidationPipeline
     {
-        /// <summary>Applies required-value, length, conversion, range, custom and duplicate checks to already-bound logical data rows in that order; rejected rows are excluded from accepted records.</summary>
+        /// <summary>Applies required-value, length, bounded pattern, conversion, range, custom and duplicate checks to already-bound logical data rows in that order; rejected rows are excluded from accepted records.</summary>
         /// <param name="rows">Already-parsed logical data rows in source order.</param>
         /// <param name="bindings">Resolved zero-based field indexes for declared columns.</param>
         /// <param name="schema">Declared source field schema used for header matching.</param>
@@ -75,6 +75,14 @@ namespace RecordSift.Application.Importing
                 if (lengthErrors.Count != 0)
                 {
                     AppendDiagnostics(diagnostics, lengthErrors, row);
+                    continue;
+                }
+
+                var patternErrors = schema.ValidatePatterns(
+                    recordValues, row.Row, row.PhysicalLine);
+                if (patternErrors.Count != 0)
+                {
+                    AppendDiagnostics(diagnostics, patternErrors, row);
                     continue;
                 }
 

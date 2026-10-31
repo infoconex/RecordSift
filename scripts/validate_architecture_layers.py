@@ -22,7 +22,7 @@ EXPECTED = {
                    "SourceColumnBinding", "SourceColumnPosition",
                    "SourcePropertyMapping", "PropertyMappingSchema", "PrimitiveFieldConverter",
                    "FieldRangeRule", "DuplicateIdentifierRule", "RecordValidationRule",
-                   "FieldConversionRule"),
+                   "FieldConversionRule", "FieldPatternRule"),
         "Results": ("ImportResult", "ImportStatus", "ImportSummary", "TypedImportResult"),
     },
     "RecordSift.Application": {

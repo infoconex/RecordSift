@@ -601,5 +601,35 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(rewritten.CanRead, Is.True);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-023")]
+        [Property("Scenario", "FR-023-SC01")]
+        public void FR_023_SC01_RealXlsxPatternRejectionRetainsWorksheetAndPhysicalRow()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Name", true, true),
+                new ExpectedColumn("Id", true, true)
+            }, new[] { new FieldPatternRule("Name", "^Alice$") });
+
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = CreateImporter().Import(stream, 4096, schema, "xlsx-pattern");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                var lastDiagnostic = result.Diagnostics[result.Diagnostics.Count - 1];
+                Assert.That(lastDiagnostic.Code, Is.EqualTo(DiagnosticCodes.ValidationFailed));
+                Assert.That(lastDiagnostic.Field, Is.EqualTo("Name"));
+                Assert.That(lastDiagnostic.Row, Is.EqualTo(3));
+                Assert.That(lastDiagnostic.Worksheet, Is.EqualTo("Customers"));
+                Assert.That(lastDiagnostic.PhysicalRow, Is.EqualTo(6));
+                Assert.That(lastDiagnostic.PhysicalLine, Is.Null);
+                Assert.That(lastDiagnostic.Message, Does.Not.Contain("Bob"));
+            }
+        }
     }
 }

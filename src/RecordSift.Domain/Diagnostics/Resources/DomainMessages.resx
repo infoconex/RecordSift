@@ -59,6 +59,10 @@
   <data name="Argument_ConversionRuleNull" xml:space="preserve"><value>Field conversion rules cannot contain null.</value></data>
   <data name="Argument_ConversionRuleDuplicate" xml:space="preserve"><value>Each source field can have only one custom converter.</value></data>
   <data name="Argument_ConversionRuleUndeclared" xml:space="preserve"><value>A field converter refers to a source column without a property mapping.</value></data>
+  <data name="Argument_PatternRuleNull" xml:space="preserve"><value>Pattern rules cannot contain null.</value></data>
+  <data name="Argument_PatternRuleDuplicate" xml:space="preserve"><value>A source field cannot declare multiple regex patterns.</value></data>
+  <data name="Argument_PatternRuleUndeclared" xml:space="preserve"><value>A regex rule refers to an undeclared source field.</value></data>
+  <data name="Argument_PatternRuleInvalidExpression" xml:space="preserve"><value>The configured regular expression is invalid.</value></data>
   <data name="Argument_ConversionInvalidValue" xml:space="preserve"><value>The field value cannot be converted to the destination type.</value></data>
   <data name="Argument_ConversionUnsupportedType" xml:space="preserve"><value>The destination type is not supported for primitive field conversion.</value></data>
   <data name="Argument_PropertyMappingUnsupportedMember" xml:space="preserve"><value>Mapped destination must be a public writable supported property.</value></data>
