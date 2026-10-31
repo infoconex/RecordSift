@@ -504,5 +504,102 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(source.CanRead, Is.True);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-008")]
+        [Property("Scenario", "NFR-008-SC01")]
+        public void NFR_008_SC01_MacroPartIsRejectedWithoutOpeningExecutableContent()
+        {
+            var bytes = Convert.FromBase64String(ValidWorkbook);
+            using (var source = new MemoryStream())
+            {
+                source.Write(bytes, 0, bytes.Length);
+                source.Position = 0;
+                using (var archive = new System.IO.Compression.ZipArchive(source,
+                    System.IO.Compression.ZipArchiveMode.Update, true))
+                {
+                    var entry = archive.CreateEntry("xl/vbaProject.bin");
+                    using (var writer = new StreamWriter(entry.Open()))
+                        writer.Write("harmless-marker-not-a-real-macro");
+                }
+                source.Position = 0;
+                var result = CreateImporter().Import(source, (int)source.Length,
+                    Schema(), "macro-bearing");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Diagnostics[0].Message,
+                    Does.Not.Contain("harmless-marker"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-008")]
+        [Property("Scenario", "NFR-008-SC01")]
+        public void NFR_008_SC01_FormulaCellUsesCachedValueRatherThanEvaluatingExpression()
+        {
+            var original = Convert.FromBase64String(ValidWorkbook);
+            using (var source = new MemoryStream(original))
+            using (var rewritten = new MemoryStream())
+            {
+                using (var inputPackage = new System.IO.Compression.ZipArchive(
+                    source, System.IO.Compression.ZipArchiveMode.Read, true))
+                using (var outputPackage = new System.IO.Compression.ZipArchive(
+                    rewritten, System.IO.Compression.ZipArchiveMode.Create, true))
+                {
+                    foreach (var inputEntry in inputPackage.Entries)
+                    {
+                        var outputEntry = outputPackage.CreateEntry(inputEntry.FullName);
+                        using (var input = inputEntry.Open())
+                        using (var output = outputEntry.Open())
+                        {
+                            if (inputEntry.FullName == "xl/worksheets/sheet1.xml")
+                            {
+                                var xml = new System.Xml.XmlDocument();
+                                xml.Load(input);
+                                var cell = xml.SelectSingleNode(
+                                    "//*[local-name()='row' and @r='3']/*[local-name()='c'][last()]")
+                                    as System.Xml.XmlElement;
+                                Assert.That(cell, Is.Not.Null);
+                                var coordinate = cell.GetAttribute("r");
+                                Assert.That(coordinate, Is.Not.Empty);
+                                cell.RemoveAll();
+                                cell.SetAttribute("r", coordinate);
+                                var formula = xml.CreateElement("f", cell.NamespaceURI);
+                                formula.InnerText = "1+1";
+                                cell.AppendChild(formula);
+                                var cached = xml.CreateElement("v", cell.NamespaceURI);
+                                cached.InnerText = "777";
+                                cell.AppendChild(cached);
+                                xml.Save(output);
+                            }
+                            else
+                            {
+                                input.CopyTo(output);
+                            }
+                        }
+                    }
+                }
+                rewritten.Position = 0;
+                var result = CreateImporter().Import(rewritten, (int)rewritten.Length,
+                    Schema(), "formula-cache");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(777),
+                    "The stored value must be read, not the 1+1 formula evaluated.");
+                Assert.That(rewritten.CanRead, Is.True);
+            }
+        }
     }
 }
