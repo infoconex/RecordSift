@@ -165,8 +165,8 @@ jobs:
             throw 'Unexpected Application test package inventory.'
           }
           $applicationTestsProject = Get-Content tests/RecordSift.Application.Tests/RecordSift.Application.Tests.csproj -Raw
-          if ($applicationTestsProject -match 'CsvHelper|RecordSift.Infrastructure.Csv') {
-            throw 'Application tests must not reference vendor adapters.'
+          if ($applicationTestsProject -match 'CsvHelper|RecordSift\.Infrastructure') {
+            throw 'Application tests must not reference Infrastructure or CsvHelper.'
           }
           $badApplicationSource = @(Get-ChildItem tests/RecordSift.Application.Tests -Recurse -Filter '*.cs' |
               Select-String -Pattern '^\s*using\s+(?:CsvHelper|RecordSift\.Infrastructure)\b')
@@ -180,10 +180,21 @@ jobs:
               [string]$adapterTestPackages[0].version -ne '3.14.0') {
             throw 'Unexpected adapter test dependency inventory.'
           }
-          $domainTestsProject = Get-Content tests/RecordSift.Domain.Tests/RecordSift.Domain.Tests.csproj -Raw
-          if ($coreTestsProject -match 'CsvHelper|RecordSift.Infrastructure.Csv') {
-            throw 'Domain unit-test project must not reference Application or third-party adapters.'
+          function Assert-DomainTestProjectDependencies([string]$projectContent) {
+            if ($projectContent -match 'RecordSift\.Application|RecordSift\.Infrastructure|CsvHelper') {
+              throw 'Domain tests must not reference Application, Infrastructure or CsvHelper.'
+            }
           }
+          $domainTestsProject = Get-Content tests/RecordSift.Domain.Tests/RecordSift.Domain.Tests.csproj -Raw
+          Assert-DomainTestProjectDependencies $domainTestsProject
+          # Negative regression: each forbidden reference must make the actual guard fail.
+          foreach ($forbidden in @('RecordSift.Application', 'RecordSift.Infrastructure.Csv', 'CsvHelper')) {
+            $invalidProject = $domainTestsProject.Replace('</Project>', "<ItemGroup><Reference Include=\u0060"$forbidden\u0060" /></ItemGroup></Project>")
+            $wasRejected = $false
+            try { Assert-DomainTestProjectDependencies $invalidProject } catch { $wasRejected = $true }
+            if (-not $wasRejected) { throw "Domain dependency audit failed to reject $forbidden." }
+          }
+          Write-Host 'Domain dependency audit rejected all three forbidden-reference regressions.'
           $badCoreSource = @(Get-ChildItem tests/RecordSift.Domain.Tests -Recurse -Filter '*.cs' |
               Select-String -Pattern '^\s*using\s+(?:RecordSift\.Application|CsvHelper|RecordSift\.Infrastructure)\b')
           if ($badCoreSource.Count -gt 0) {
