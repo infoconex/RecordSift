@@ -249,5 +249,33 @@ namespace RecordSift.Domain.Tests
             Assert.That(schema.Columns[0].IsRequired, Is.True);
             Assert.That(schema.Columns[0].IsValueRequired, Is.False);
         }
+
+        [Test]
+        public void LengthConstraintsRejectInvalidDeclarationBounds()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new ExpectedColumn("Name", true, false, -1, 4));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new ExpectedColumn("Name", true, false, 0, -1));
+            Assert.Throws<ArgumentException>(() =>
+                new ExpectedColumn("Name", true, false, 5, 4));
+        }
+
+        [Test]
+        public void LengthPolicyPreservesOrdinalFieldNamesAndIgnoresAbsentOptionalColumns()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Note", false, false, 2, 4)
+            });
+            var wrongCase = new Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase) { { "note", "oversized" } };
+            var empty = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            Assert.That(schema.ValidateFieldLengths(wrongCase, 1), Is.Empty);
+            Assert.That(schema.ValidateFieldLengths(empty, 1), Is.Empty);
+            Assert.That(schema.ValidateFieldLengths(
+                new Dictionary<string, string> { { "Note", "A" } }, 2, 5)[0].Code,
+                Is.EqualTo(DiagnosticCodes.FieldLengthOutOfRange));
+        }
     }
 }
