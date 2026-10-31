@@ -131,7 +131,7 @@ namespace RecordSift.Domain.Tests
                     System.Reflection.BindingFlags.Public |
                     System.Reflection.BindingFlags.Static |
                     System.Reflection.BindingFlags.DeclaredOnly))
-                .Where(field => field.IsLiteral)
+                .Where(field => field.IsLiteral && !field.DeclaringType.IsEnum)
                 .Select(field => field.DeclaringType.FullName + "." + field.Name)
                 .ToArray();
 
