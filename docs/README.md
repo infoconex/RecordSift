@@ -11,7 +11,7 @@ These pages document the **accepted release 0.1 Windows/.NET Framework 4.8 imple
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and **108 active release scenarios**; scenario-level test mappings and observed Windows execution evidence are maintained in the [traceability matrix](testing/traceability.md). Historical NFR-009-SC02 is retired from release 0.1 acceptance and preserved in the [platform review](engineering/platform-dependencies-net48.md).
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and **108 active catalogued scenario IDs** (95 Automated, one Manual, 12 deferred Future); scenario-level test mappings and observed Windows execution evidence are maintained in the [traceability matrix](testing/traceability.md). Historical NFR-009-SC02 is retired from release 0.1 acceptance and preserved in the [platform review](engineering/platform-dependencies-net48.md).
 - [Accepted release 0.1 import behavior and historical decisions](specifications/record-import.md)
 - [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — normative wire contract; seven approved JSON golden fixtures now live in the [reporting test project](../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/) and run in Windows CI.
 - [TDD and test types](testing/strategy.md)
