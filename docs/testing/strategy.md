@@ -1,23 +1,30 @@
 # Testing strategy and TDD policy
 
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
-**Status:** Engineering policy for release 0.1. In [issue #91](https://github.com/infoconex/RecordSift/issues/91), Windows [run #41085050502](https://github.com/infoconex/RecordSift/actions/runs/41085050502) observed **71/71 independent domain unit tests and 48/48 real-adapter contract/component tests** (119/119 total). Core test binary is checked for absence of adapter DLLs, and test project dependencies are inspected. Full typed importer acceptance remains planned.
+**Status:** Engineering policy for release 0.1. Current acceptance status and observed Windows CI evidence are maintained per scenario in [traceability](traceability.md); earlier milestone test counts below are historical, not the current release total.
 
 ## Test-driven development
 
-For each independently tracked FR/NFR, start from its authoritative `docs/scenarios/<category>/<ID>.md` specification. Every scenario must trace to a test or verification procedure as implementation progresses:
+For each independently tracked FR/NFR, start from its authoritative `docs/scenarios/<category>/<ID>.md` specification. Inspect the actual code, dependencies, existing tests, and last passing CI **before** deciding whether production work is necessary. Record exactly one primary evaluation outcome in the issue and PR:
 
-For each independently tracked FR/NFR:
+| Outcome | When to use it | Required evidence |
+| --- | --- | --- |
+| **Acceptance verification only** | Required behavior already exists; additional independent acceptance or boundary tests establish evidence. | Scenario-linked tests or reviewed procedures, observed passing Windows CI, and a clear statement that no production code change was necessary. Do **not** fabricate a failing RED test. |
+| **Defect correction** | Existing behavior violates a scenario or a boundary contract. | Reproducible failing regression against the original implementation, minimum corrective production change, and passing regression plus affected acceptance suite. |
+| **New capability** | Required behavior is missing from the public/owned contract. | Genuine TDD RED for absent behavior, smallest compatible implementation, GREEN, relevant negative/boundary tests, and compatibility review. |
 
-1. **Red:** Add a small, observable acceptance or lower-level test that states the requirement and initially fails for the missing behavior.
-2. **Green:** Make the smallest useful production change to pass it.
-3. **Refactor:** Improve the design with the tests still green.
-4. **Review:** Add negative, boundary, malformed-input, and culture-sensitive cases as appropriate; keep tests deterministic.
-5. **Trace:** Reference `FR-###` or `NFR-###`, scenario `FR-###-SC01`/`NFR-###-SC01`, and the GitHub issue in test metadata or method names/comments where practical.
-6. **Demonstrate:** Document the exact command, target, test results, and CI run URL in the PR. A planned scenario is not evidence that a test ran.
+When one issue combines acceptance verification and a defect correction, explicitly identify **both** contributions; label the primary outcome by the reason production code changed. A refactor without observable behavior change must be identified as a refactor and supported by the appropriate regression gate, not described as a new capability.
 
-A requirement may need several tests, but a test should have one clear reason to fail. Maintain functional API behavior independently of package/project-format modernization.
+For every outcome:
 
+1. **Classify:** State the existing behavior, expected Given/When/Then behavior, any identified gap, and the chosen outcome with supporting code/test references.
+2. **Test:** Add independent scenario-level coverage when existing tests do not establish acceptance. Run relevant Domain/Application/real-adapter checks; include malformed inputs, inclusive boundaries, culture, and negative cases when applicable.
+3. **Red/green only when justified:** For a genuine defect or missing capability, capture a meaningful failing pre-fix test and then make the smallest production change to reach GREEN. For verification-only work, keep the existing implementation unchanged.
+4. **Refactor and protect:** Preserve the domain-owned contract, dependency direction, resource-backed diagnostic messages, public API/JSON baselines, and release framework/language compatibility.
+5. **Trace:** Include `FR-###` / `NFR-###`, `*-SC##`, and issue references in NUnit metadata and tests as applicable; update each scenario row in [traceability](traceability.md) with actual observed evidence.
+6. **Demonstrate:** Record the evaluation outcome, changed production/test files, exact CI run URL, outcome, and applicable scope limits in the PR and issue. A scenario is not Automated just because a test was written; a passed net48 gate is not cross-platform certification.
+
+A requirement may require several tests, but each test should have one clear reason to fail. A **Planned** scenario means there is not yet adequate execution evidence; a maintained specification is not evidence of a passing test. Keep architecture and public API modernization separate from release 0.1 behavioral acceptance.
 ## Test levels
 
 | Level | Purpose | Evidence |
@@ -102,4 +109,4 @@ Selectors combine with logical AND; `-Where` accepts NUnit's native expression l
 
 ## Current status
 
-As of [Windows run #41161622927](https://github.com/infoconex/RecordSift/actions/runs/41161622927), **197 NUnit cases passed** across Domain (88), Application (39), and real Infrastructure CSV (70). **25 of 109** documented acceptance scenarios have Automated evidence; 84 remain Planned (see [traceability](traceability.md)). FR-001's six typed CSV scenarios have now been verified through the real adapter and Domain-declared property mappings. Other requirements, especially XLSX workflows, are not completed merely by labeling or filtering related tests. Existing adapter contracts and fake-port evidence supplement, but do not alone establish, real-adapter acceptance. The current Windows and docs validation gates are described in the GitHub Actions workflows.
+See [scenario-to-test traceability](traceability.md) for current Automated/Planned/Manual/Blocked evidence and the specific Windows CI runs that established it. Older milestone totals are historical and must not be repeated as the current suite count. A source specification, test name, or merged PR alone does **not** prove a scenario passed; mark it verified only after observing the relevant Windows CI and documenting remaining scope limits. In particular, .NET Framework 4.8 acceptance cannot establish the behavior of an unbuilt modern target.

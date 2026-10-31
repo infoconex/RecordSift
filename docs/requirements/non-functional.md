@@ -1,6 +1,6 @@
 # Nonfunctional requirements — RecordSift
 
-**Baseline:** Draft for release 0.1. The constructed net48 baseline has three verified assembly smoke tests; NFR acceptance, cross-platform support and published packages remain unverified.
+**Baseline:** .NET Framework 4.8 / C# 7.3 release 0.1. Nonfunctional scenario verification is tracked individually in [scenario-to-test traceability](../testing/traceability.md), including observed Windows CI. Completed net48 acceptance does **not** establish cross-platform compatibility, a framework migration comparison, or package publication.
 
 | Requirement | Quality attribute | Intent | GitHub issue / acceptance |
 | --- | --- | --- | --- |
