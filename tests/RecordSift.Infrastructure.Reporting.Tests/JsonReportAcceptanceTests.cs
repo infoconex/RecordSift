@@ -90,18 +90,18 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         [Property("Scenario", "FR-035-SC03")]
         public void FR_035_SC03_JsonExcludesRawRecordsAndEscapesOpaqueIdentifier()
         {
-            const string privateValue = "person-secret-123";
-            const string safeSourceId = "batch-\"quoted\"\\two";
-            var result = new TypedImportResult<string>(safeSourceId,
+            const string PrivateValue = "person-secret-123";
+            const string SafeSourceId = "batch-\"quoted\"\\two";
+            var result = new TypedImportResult<string>(SafeSourceId,
                 ImportResult.Completed(2, new[] {
                     ImportDiagnostic.ForRecord(1, "Name", DiagnosticCodes.ValidationFailed)
-                }), new[] { privateValue }, "Completed with errors.");
+                }), new[] { PrivateValue }, "Completed with errors.");
             var json = new JsonImportResultSerializerAdapter().Serialize(result);
             var report = Parse(json);
-            Assert.That(json, Does.Not.Contain(privateValue));
+            Assert.That(json, Does.Not.Contain(PrivateValue));
             Assert.That(json, Does.Not.Contain("acceptedRecords"));
             Assert.That(json, Does.Not.Contain("C:\\Users\\"));
-            Assert.That(report["sourceId"], Is.EqualTo(safeSourceId));
+            Assert.That(report["sourceId"], Is.EqualTo(SafeSourceId));
             Assert.That(Fields(Items(report["diagnostics"])[0])["message"],
                 Is.EqualTo("A field failed validation."));
         }
