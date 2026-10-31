@@ -188,5 +188,53 @@ namespace RecordSift.Domain.Tests
             Assert.That(errors[0].PhysicalLine, Is.EqualTo(5));
             Assert.That(errors[1].Field, Is.EqualTo("Name"));
         }
+
+        [Test]
+        public void FR_017_SC02_NonblankRequiredValuesAndBlankOptionalValuesAreAccepted()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Notes", false)
+            });
+            var values = new Dictionary<string, string> {
+                { "Id", "  42  " }, { "Notes", "" }
+            };
+
+            Assert.That(schema.ValidateRequiredValues(values, 1), Is.Empty);
+        }
+
+        [Test]
+        public void RequiredValueRuleRejectsNullAndUsesOrdinalSourceIdentifiers()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true)
+            });
+            var missing = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+                { "id", "42" }
+            };
+            var noValue = new Dictionary<string, string> {
+                { "Id", null }
+            };
+
+            Assert.That(schema.ValidateRequiredValues(missing, 1)[0].Field,
+                Is.EqualTo("Id"));
+            Assert.That(schema.ValidateRequiredValues(noValue, 1)[0].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+        }
+
+        [Test]
+        public void ExistingRequiredColumnPresenceDoesNotImplicitlyRequireNonblankValues()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true)
+            });
+            var values = new Dictionary<string, string> {
+                { "Id", "" }
+            };
+
+            Assert.That(schema.ValidateRequiredValues(values, 1), Is.Empty);
+            Assert.That(schema.Columns[0].IsRequired, Is.True);
+            Assert.That(schema.Columns[0].IsValueRequired, Is.False);
+        }
     }
 }
