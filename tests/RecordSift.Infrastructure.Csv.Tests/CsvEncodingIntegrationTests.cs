@@ -152,5 +152,29 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(source.CanRead, Is.True);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_PreCanceledEncodedStreamPreservesCallerOwnedBytes()
+        {
+            ImportSchema schema;
+            var importer = CreateImporter(out schema);
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(
+                "Id,Name\r\n1,Alice\r\n2,Bob")))
+            {
+                cancellation.Cancel();
+                var result = importer.Import(stream, 4096, Encoding.UTF8,
+                    schema, CsvHeaderPolicy.WithHeader, "fr032-stream",
+                    true, null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(stream.Position, Is.Zero);
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
     }
 }
