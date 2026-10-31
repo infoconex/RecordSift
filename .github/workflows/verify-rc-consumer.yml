@@ -40,3 +40,11 @@ jobs:
           $feed = Join-Path $env:RUNNER_TEMP 'RecordSift-Internal-RC'
           & .\scripts\build_release_candidate.ps1 -OutputDirectory $feed
           & .\scripts\verify_clean_consumer.ps1 -CandidateDirectory $feed
+      - name: Validate unpublished stable 0.1.0 package in independent net48 consumer
+        shell: pwsh
+        run: |
+          # Internal-only local staging: do not upload, tag, create a release, or push to any feed.
+          $feed = Join-Path $env:RUNNER_TEMP 'RecordSift-Internal-Stable'
+          & .\scripts\build_release_candidate.ps1 -OutputDirectory $feed -PackageVersion '0.1.0'
+          & .\scripts\verify_clean_consumer.ps1 -CandidateDirectory $feed -PackageVersion '0.1.0'
+
