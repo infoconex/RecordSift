@@ -32,7 +32,7 @@
     <Compile Include="ReportingMessageResources.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\\ReportingMessages.resx">
+    <EmbeddedResource Include="Resources/ReportingMessages.resx">
       <LogicalName>RecordSift.Resources.ReportingMessages.resources</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
