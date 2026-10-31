@@ -14,6 +14,8 @@ namespace RecordSift.Application.Tests
         public void ApplicationContractsUseDeclaredResponsibilityNamespaces()
         {
             AssertNamespace(typeof(CsvMessageResources), "RecordSift.Application.Messages");
+            AssertNamespace(typeof(PrimitivePropertyMapper<System.Collections.Generic.List<string>>),
+                "RecordSift.Application.Mapping");
             AssertNamespace(typeof(StringPropertyMapper<System.Collections.Generic.List<string>>),
                 "RecordSift.Application.Mapping");
             AssertNamespace(typeof(ICsvRecordReader), "RecordSift.Application.Ports.Csv");

@@ -16,12 +16,14 @@ namespace RecordSift.Domain.Tests
             AssertNamespace(typeof(DiagnosticScope), "RecordSift.Domain.Diagnostics");
             AssertNamespace(typeof(DomainMessageResources), "RecordSift.Domain.Diagnostics");
             AssertNamespace(typeof(ImportDiagnostic), "RecordSift.Domain.Diagnostics");
+            AssertNamespace(typeof(FieldConversionException), "RecordSift.Domain.Diagnostics");
             AssertNamespace(typeof(ExpectedColumn), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(ImportSchema), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(SchemaBindingResult), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(SourceColumnBinding), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(SourceColumnPosition), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(PropertyMappingSchema), "RecordSift.Domain.Schema");
+            AssertNamespace(typeof(PrimitiveFieldConverter), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(SourcePropertyMapping), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(ImportResult), "RecordSift.Domain.Results");
             AssertNamespace(typeof(ImportStatus), "RecordSift.Domain.Results");

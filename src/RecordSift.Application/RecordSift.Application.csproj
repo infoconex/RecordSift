@@ -42,6 +42,7 @@
     <Compile Include="Importing\Csv\CsvTableReader.cs" />
     <Compile Include="Importing\Csv\CsvImporter.cs" />
     <Compile Include="Mapping\StringPropertyMapper.cs" />
+    <Compile Include="Mapping\PrimitivePropertyMapper.cs" />
     <Compile Include="Importing\Csv\CsvTableResult.cs" />
     <Compile Include="Messages\CsvMessageResources.cs" />
   </ItemGroup>

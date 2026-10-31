@@ -37,9 +37,11 @@
     <Compile Include="Diagnostics\DiagnosticScope.cs" />
     <Compile Include="Diagnostics\DomainMessageResources.cs" />
     <Compile Include="Diagnostics\ImportDiagnostic.cs" />
+    <Compile Include="Diagnostics\FieldConversionException.cs" />
     <Compile Include="Schema\ExpectedColumn.cs" />
     <Compile Include="Schema\ImportSchema.cs" />
     <Compile Include="Schema\PropertyMappingSchema.cs" />
+    <Compile Include="Schema\PrimitiveFieldConverter.cs" />
     <Compile Include="Schema\SourcePropertyMapping.cs" />
     <Compile Include="Schema\SchemaBindingResult.cs" />
     <Compile Include="Schema\SourceColumnBinding.cs" />

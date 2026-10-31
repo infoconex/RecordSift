@@ -57,6 +57,11 @@ namespace RecordSift.Application.Importing.Csv
                 {
                     accepted.Add(_mapRecord(new ReadOnlyDictionary<string, string>(values)));
                 }
+                catch (FieldConversionException error)
+                {
+                    diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, error.Field,
+                        DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
+                }
                 catch (FormatException)
                 {
                     diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, null,
