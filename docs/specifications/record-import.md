@@ -1,7 +1,7 @@
 # Record import behavioral specification (draft)
 
 **Issue:** [#51](https://github.com/infoconex/RecordSift/issues/51)  
-**Status:** Draft behavioral contract. An in-memory summary and supplied diagnostic carrier exist for FR-030. The raw CSV reader/table is implemented with a separately injected CsvHelper adapter and FR-003 delimiter options (component tests observed); issue #113 adds a narrowly scoped typed CSV API with caller-supplied conversion and real-adapter integration tests; generalized conversion/mapping/validation, XLSX and full FR-001 acceptance remain outstanding.  
+**Status:** Draft behavioral contract. An in-memory summary and supplied diagnostic carrier exist for FR-030. The raw CSV reader/table is implemented with a separately injected CsvHelper adapter and FR-003 delimiter options (component tests observed); issue #113 adds a narrowly scoped typed CSV API with caller-supplied conversion and real-adapter integration tests; generalized validation, XLSX and complete FR-001 acceptance remain outstanding; explicit string and primitive CLR conversion now have real CSV integration evidence.  
 **Applies to:** Release 0.1 Must requirements.
 
 ## Intent and boundaries
@@ -20,7 +20,7 @@ The initial baseline is synchronous and may materialize results, with explicit i
 6. Return only accepted typed records. Accumulate diagnostics for rejected records.
 7. Compute an internally consistent summary and expose JSON reporting from this in-memory result.
 
-The FR-010 initial binding contract now supports explicit, exact-case source-column names to public writable string properties through `PropertyMappingSchema` and `StringPropertyMapper<T>`. All other CLR conversions and destination construction policies remain decisions for FR-011/FR-026; this document is not an assertion of complete production behavior. The proposed JSON report contract is defined separately in [import-result.md](import-result.md) and [its JSON Schema](schemas/import-result.schema.json).
+FR-010 establishes explicit ordinal source-to-property mapping. FR-011 now adds a Domain-owned culture-controlled primitive converter and Application mapping for strings, integers, decimals, dates, booleans and nullable values, with source-aware conversion errors. Further validation policy, custom conversion and immutable destination constructors remain separate FRs; this is not evidence of complete FR-001 acceptance. The proposed JSON report contract is defined separately in [import-result.md](import-result.md) and [its JSON Schema](schemas/import-result.schema.json).
 
 ## Source location
 

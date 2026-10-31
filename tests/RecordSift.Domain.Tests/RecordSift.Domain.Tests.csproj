@@ -43,6 +43,7 @@
     <Compile Include="ImportDiagnosticTests.cs" />
     <Compile Include="ImportSchemaTests.cs" />
     <Compile Include="PropertyMappingSchemaTests.cs" />
+    <Compile Include="PrimitiveFieldConverterTests.cs" />
     <Compile Include="PositionalBindingTests.cs" />
     <Compile Include="DomainMessageResourceTests.cs" />
     <Compile Include="AssemblyIsolationTests.cs" />

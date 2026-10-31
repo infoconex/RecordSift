@@ -16,17 +16,18 @@ INFRASTRUCTURE = ROOT / "src" / "RecordSift.Infrastructure.Csv"
 
 EXPECTED = {
     "RecordSift.Domain": {
-        "Diagnostics": ("DiagnosticCodes", "DiagnosticScope", "DomainMessageResources", "ImportDiagnostic"),
+        "Diagnostics": ("DiagnosticCodes", "DiagnosticScope", "DomainMessageResources", "ImportDiagnostic",
+                        "FieldConversionException"),
         "Schema": ("ExpectedColumn", "ImportSchema", "SchemaBindingResult",
                    "SourceColumnBinding", "SourceColumnPosition",
-                   "SourcePropertyMapping", "PropertyMappingSchema"),
+                   "SourcePropertyMapping", "PropertyMappingSchema", "PrimitiveFieldConverter"),
         "Results": ("ImportResult", "ImportStatus", "ImportSummary", "TypedImportResult"),
     },
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Messages": ("CsvMessageResources",),
-        "Mapping": ("StringPropertyMapper",),
+        "Mapping": ("StringPropertyMapper", "PrimitivePropertyMapper"),
     },
 }
 TEST_PROJECT_REFERENCES = {

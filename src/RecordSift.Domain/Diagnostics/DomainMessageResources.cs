@@ -12,6 +12,9 @@ namespace RecordSift.Domain.Diagnostics
         private static readonly ResourceManager s_catalog = new ResourceManager(
             "RecordSift.Resources.DomainMessages", typeof(DomainMessageResources).Assembly);
 
+        public static string ConversionInvalidValue => Get("Argument_ConversionInvalidValue");
+        public static string ConversionUnsupportedType => Get("Argument_ConversionUnsupportedType");
+        public static string PropertyMappingUnsupportedMember => Get("Argument_PropertyMappingUnsupportedMember");
         public static string PropertyMappingRequiredSourceMissing => Get("Argument_PropertyMappingRequiredSourceMissing");
         public static string PropertyMappingSourceName => Get("Argument_PropertyMappingSourceName");
         public static string PropertyMappingDestinationName => Get("Argument_PropertyMappingDestinationName");
