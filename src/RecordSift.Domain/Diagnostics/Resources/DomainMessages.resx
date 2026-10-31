@@ -18,6 +18,7 @@
   <data name="VALIDATION_FAILED" xml:space="preserve"><value>A field failed validation.</value></data>
   <data name="FIELD_LENGTH_OUT_OF_RANGE" xml:space="preserve"><value>The field length is outside the configured range.</value></data>
   <data name="FIELD_RANGE_OUT_OF_RANGE" xml:space="preserve"><value>The field value is outside the configured range.</value></data>
+  <data name="DUPLICATE_IDENTIFIER" xml:space="preserve"><value>A duplicate record identifier was detected.</value></data>
   <data name="Argument_ColumnDeclarationNull" xml:space="preserve"><value>Column declarations cannot contain null.</value></data>
   <data name="Argument_ColumnNamesDuplicate" xml:space="preserve"><value>Declared column names must be unique (ordinal match).</value></data>
   <data name="Argument_PositionMappingNull" xml:space="preserve"><value>Position mappings cannot contain null.</value></data>
@@ -38,6 +39,7 @@
   <data name="Argument_RangeBoundsInvalid" xml:space="preserve"><value>Range bounds must define a nonempty interval.</value></data>
   <data name="Argument_RangeFieldName" xml:space="preserve"><value>Range field name must be nonempty.</value></data>
   <data name="Argument_RangeRuleNull" xml:space="preserve"><value>Range rules cannot contain null.</value></data>
+  <data name="Argument_DuplicateFieldName" xml:space="preserve"><value>Identifier field name must be nonempty.</value></data>
   <data name="Argument_SourcePositionName" xml:space="preserve"><value>Declared column name must be nonempty.</value></data>
   <data name="Argument_BoundColumnName" xml:space="preserve"><value>Bound column name must be nonempty.</value></data>
   <data name="Argument_UnknownDiagnosticCode" xml:space="preserve"><value>Unknown diagnostic code.</value></data>
