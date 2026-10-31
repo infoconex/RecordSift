@@ -402,5 +402,71 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics, Is.Empty);
         }
 
+
+        private sealed class NumericRange
+        {
+            public int Start { get; set; }
+            public int End { get; set; }
+        }
+
+        private static TypedImportResult<NumericRange> ImportRealRanges(
+            string content, Func<NumericRange, bool> predicate)
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Start", true, true),
+                new ExpectedColumn("End", true, true)
+            });
+            var importer = new CsvImporter<NumericRange>(
+                new CsvRecordReaderAdapter(),
+                values => new NumericRange {
+                    Start = int.Parse(values["Start"], CultureInfo.InvariantCulture),
+                    End = int.Parse(values["End"], CultureInfo.InvariantCulture)
+                },
+                null, null, new[] {
+                    new RecordValidationRule<NumericRange>(null, predicate)
+                });
+            using (var source = new StringReader(content))
+                return importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "range-csv");
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-024")]
+        [Property("Scenario", "FR-024-SC01")]
+        public void FR_024_SC01_RealCsvRejectsInconsistentNumericColumnsWithSourceLine()
+        {
+            var result = ImportRealRanges(
+                "Start,End\r\n1,3\r\n5,2\r\n7,7\r\n10,12",
+                range => range.Start <= range.End);
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(4));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Start, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[1].Start, Is.EqualTo(7));
+            Assert.That(result.AcceptedRecords[2].Start, Is.EqualTo(10));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[0].Field, Is.Null);
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ValidationFailed));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-024")]
+        [Property("Scenario", "FR-024-SC02")]
+        public void FR_024_SC02_RealCsvAcceptsMatchingRelationshipsAndEqualEndpoints()
+        {
+            var result = ImportRealRanges(
+                "Start,End\r\n1,3\r\n7,7\r\n10,12",
+                range => range.Start <= range.End);
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+        }
     }
 }
