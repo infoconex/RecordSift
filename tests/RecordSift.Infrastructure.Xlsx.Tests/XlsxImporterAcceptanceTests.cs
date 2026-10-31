@@ -4,6 +4,8 @@ using System.Globalization;
 using System.IO;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Xlsx;
+using RecordSift.Application.Mapping;
+using RecordSift.Application.Ports.Xlsx;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
@@ -111,6 +113,72 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
                 Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
                 Assert.That(result.AcceptedRecords, Is.Empty);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-001")]
+        [Property("Scenario", "NFR-001-SC01")]
+        public void NFR_001_SC01_PublicXlsxConsumerImportsTypedRecordsUsingDocumentedDefaults()
+        {
+            var schema = Schema();
+            var properties = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Name", "Name"),
+                new SourcePropertyMapping("Id", "Id")
+            });
+            var mapper = new PrimitivePropertyMapper<Customer>(
+                properties, CultureInfo.InvariantCulture);
+            var importer = new XlsxImporter<Customer>(
+                new XlsxWorksheetReaderAdapter(), mapper.Map);
+
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var defaults = XlsxReadLimits.Default;
+                Assert.That(defaults.MaxRows, Is.GreaterThan(0));
+                Assert.That(defaults.MaxColumns, Is.GreaterThan(0));
+                Assert.That(defaults.MaxCellCharacters, Is.GreaterThan(0));
+
+                var result = importer.Import(stream, 4096, schema, "customers",
+                    limits: defaults);
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].Worksheet, Is.EqualTo("Customers"));
+                Assert.That(result.Diagnostics[0].PhysicalRow, Is.EqualTo(4));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-001")]
+        [Property("Scenario", "NFR-001-SC02")]
+        public void NFR_001_SC02_PublicXlsxConsumerRejectsBlankWorksheetAndInvalidLimits()
+        {
+            var importer = CreateImporter();
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var worksheetError = Assert.Throws<ArgumentException>(() =>
+                    importer.Import(stream, 4096, Schema(), "customers",
+                        worksheetName: "  "));
+                Assert.That(worksheetError.ParamName, Is.EqualTo("worksheetName"));
+                Assert.That(worksheetError.Message, Is.Not.Empty);
+
+                var sizeError = Assert.Throws<ArgumentOutOfRangeException>(() =>
+                    importer.Import(stream, 0, Schema(), "customers"));
+                Assert.That(sizeError.ParamName, Is.EqualTo("maxBytes"));
+
+                var limitError = Assert.Throws<ArgumentOutOfRangeException>(() =>
+                    new XlsxReadLimits(0, 1, 1));
+                Assert.That(limitError.ParamName, Is.EqualTo("maxRows"));
             }
         }
     }
