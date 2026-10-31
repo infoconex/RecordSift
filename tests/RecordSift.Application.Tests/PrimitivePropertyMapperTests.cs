@@ -22,6 +22,16 @@ namespace RecordSift.Application.Tests
             public int? Score { get; set; }
         }
 
+        private sealed class UnsupportedDestination
+        {
+            public Guid CustomerId { get; set; }
+        }
+
+        private sealed class ReadOnlyDestination
+        {
+            public int CustomerId { get; private set; }
+        }
+
         private sealed class FakeReader : ICsvRecordReader
         {
             public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
@@ -74,6 +84,59 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.AcceptedRecords[0].Active, Is.False);
                 Assert.That(result.AcceptedRecords[0].Score, Is.EqualTo(7));
             }
+        }
+
+        [Test]
+        public void FR_010_SourceIdentifiersRemainOrdinalWhenInputDictionaryIgnoresCase()
+        {
+            var mapper = new PrimitivePropertyMapper<Customer>(
+                Schema(), CultureInfo.InvariantCulture);
+            var values = new System.Collections.Generic.Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase) {
+                    { "customer id", "10" },
+                    { "Amount", "2.5" },
+                    { "Active", "true" },
+                    { "Score", "" }
+                };
+
+            Assert.Throws<ArgumentException>(() => mapper.Map(values));
+        }
+
+        [Test]
+        public void FR_010_OptionalSourceDoesNotMatchDifferentlyCasedCallerKey()
+        {
+            var mapper = new PrimitivePropertyMapper<Customer>(
+                Schema(), CultureInfo.InvariantCulture);
+            var values = new System.Collections.Generic.Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase) {
+                    { "Customer Id", "10" },
+                    { "Amount", "2.5" },
+                    { "Active", "true" },
+                    { "score", "7" }
+                };
+
+            var record = mapper.Map(values);
+            Assert.That(record.CustomerId, Is.EqualTo(10));
+            Assert.That(record.Score, Is.Null);
+        }
+
+        [Test]
+        public void FR_010_UnsupportedReadOnlyAndWrongCaseDestinationPropertiesFailBeforeMapping()
+        {
+            var sourceSchema = Schema().SourceSchema;
+            var validName = new PropertyMappingSchema(sourceSchema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var wrongCase = new PropertyMappingSchema(sourceSchema, new[] {
+                new SourcePropertyMapping("Customer Id", "customerId")
+            });
+
+            Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<Customer>(
+                wrongCase, CultureInfo.InvariantCulture));
+            Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<UnsupportedDestination>(
+                validName, CultureInfo.InvariantCulture));
+            Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<ReadOnlyDestination>(
+                validName, CultureInfo.InvariantCulture));
         }
     }
 }

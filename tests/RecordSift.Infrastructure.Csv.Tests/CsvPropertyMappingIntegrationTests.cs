@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
@@ -16,6 +17,42 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             public string CustomerId { get; set; }
             public string Name { get; set; }
+        }
+
+        private sealed class NumericCustomer
+        {
+            public int CustomerId { get; set; }
+            public string Name { get; set; }
+        }
+
+        [Test]
+        public void FR_010_SC01_RealCsvMapsDifferentlyNamedHeadersToTypedProperties()
+        {
+            var sourceSchema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Full Name", true)
+            });
+            var mapping = new PropertyMappingSchema(sourceSchema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId"),
+                new SourcePropertyMapping("Full Name", "Name")
+            });
+            var mapper = new PrimitivePropertyMapper<NumericCustomer>(
+                mapping, CultureInfo.InvariantCulture);
+            var importer = new CsvImporter<NumericCustomer>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+
+            using (var source = new StringReader(
+                "Full Name,Customer Id\r\nAlice,41\r\nBob,42"))
+            {
+                var result = importer.Import(source, 2048, sourceSchema,
+                    CsvHeaderPolicy.WithHeader, "fixture-typed");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.AcceptedRecords[0].CustomerId, Is.EqualTo(41));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.AcceptedRecords[1].CustomerId, Is.EqualTo(42));
+                Assert.That(result.Diagnostics, Is.Empty);
+            }
         }
 
         [Test]
