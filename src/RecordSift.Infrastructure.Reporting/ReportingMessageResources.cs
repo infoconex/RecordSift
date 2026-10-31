@@ -9,6 +9,7 @@ namespace RecordSift.Infrastructure.Reporting
         private static readonly ResourceManager s_catalog = new ResourceManager(
             "RecordSift.Resources.ReportingMessages", typeof(ReportingMessageResources).Assembly);
 
+        internal static string CsvInvalidDelimiter => Get("Csv_InvalidDelimiter");
         internal static string ImportCompleted => Get("Outcome_ImportCompleted");
         internal static string ImportCompletedWithRejections => Get("Outcome_ImportCompletedWithRejections");
         internal static string ImportEmpty => Get("Outcome_ImportEmpty");
