@@ -14,6 +14,14 @@ namespace RecordSift.Application.Importing.Csv
     /// </summary>
     public static class CsvTableReader
     {
+        /// <summary>Reads raw CSV records through the supplied port and applies header or explicit positional binding; errors return a failed table without partial rows or bindings.</summary>
+        /// <param name="reader">Replaceable reader owned by the caller; vendor types are not exposed.</param>
+        /// <param name="source">Caller-owned TextReader, which is not disposed by this importer or reader.</param>
+        /// <param name="maxCharacters">Positive maximum number of decoded UTF-16 characters the CSV reader may consume.</param>
+        /// <param name="schema">Declared source columns and required-value constraints.</param>
+        /// <param name="policy">Explicit header policy, not inferred from content.</param>
+        /// <param name="positions">Required explicit zero-based indexes for nonempty headerless CSV; incompatible with header mode.</param>
+        /// <param name="options">Optional parser options; null selects comma delimiter.</param>
         public static CsvTableResult Read(ICsvRecordReader reader, TextReader source, int maxCharacters,
             ImportSchema schema, CsvHeaderPolicy policy,
             IEnumerable<SourceColumnPosition> positions = null, CsvReadOptions options = null)

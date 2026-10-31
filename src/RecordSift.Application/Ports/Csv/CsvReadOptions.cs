@@ -11,11 +11,14 @@ namespace RecordSift.Application.Ports.Csv
         /// <summary>Deterministic comma-delimited baseline; no ambient settings.</summary>
         public static CsvReadOptions Default { get; } = new CsvReadOptions(DefaultDelimiter);
 
+        /// <summary>Defines a CSV field delimiter for already-decoded text; invalid delimiters are reported as source diagnostics when read.</summary>
+        /// <param name="delimiter">Single CSV separator character; validation is deferred to IsValid.</param>
         public CsvReadOptions(string delimiter)
         {
             Delimiter = delimiter;
         }
 
+        /// <summary>Gets the configured CSV delimiter; must be one allowed character for a valid configuration.</summary>
         public string Delimiter { get; private set; }
 
         /// <summary>
