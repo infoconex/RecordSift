@@ -2,15 +2,15 @@
 
 **Import, validate, and report on structured data.**
 
-RecordSift is an open-source .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
+RecordSift is a public-source .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
 
 ## Project status
 
-**Release 0.1 is under development; there is no published NuGet package yet.** The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. Release acceptance and modernization requirements remain in progress.
+**Release 0.1 is undergoing unpublished release-candidate validation; no public NuGet package or release is available.** A RecordSift distribution license has not been approved (issue #186), so do not assume public redistribution rights. The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. All targeted functional and Windows-scoped nonfunctional acceptance is complete; packaging, clean-consumer verification, license approval and promotion are separate release gates.
 
 ## Public API quick start (.NET Framework 4.8)
 
-Reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). Define a record type with public writable properties:
+For source development, reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). An unpublished five-assembly NuGet candidate is available for local internal verification only, not public redistribution. Define a record type with public writable properties:
 
 ```csharp
 public sealed class Customer
@@ -87,6 +87,11 @@ The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/Publ
 
 ## Development baseline
 
+- [Release-candidate readiness assessment](docs/engineering/release-0.1-readiness.md)
+- [Candidate consumer guide](docs/release/0.1-consumer-guide.md)
+- [Candidate release notes and known limitations](docs/release/0.1-release-notes.md)
+- [Release verification and promotion checklist](docs/release/0.1-release-checklist.md)
+- [Dependency and licensing inventory](docs/release/0.1-dependencies.md)
 - [Historical net48 build and test instructions](docs/engineering/baseline.md)
 - [Requirements, specifications, and engineering documentation](docs/README.md)
 - [Functional requirements](docs/requirements/functional.md)
