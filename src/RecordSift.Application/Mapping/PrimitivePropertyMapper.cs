@@ -165,13 +165,13 @@ namespace RecordSift.Application.Mapping
                     continue;
                 }
 
+                object converted;
                 try
                 {
                     FieldConversionRule customRule;
-                    var converted = _customConverters.TryGetValue(sourceName, out customRule)
+                    converted = _customConverters.TryGetValue(sourceName, out customRule)
                         ? ConvertCustom(customRule, value, _properties[i].PropertyType)
                         : _converter.Convert(value, _properties[i].PropertyType);
-                    _properties[i].SetValue(record, converted, null);
                 }
                 catch (FormatException)
                 {
@@ -181,10 +181,15 @@ namespace RecordSift.Application.Mapping
                 {
                     throw new FieldConversionException(sourceName);
                 }
+
+                try
+                {
+                    _properties[i].SetValue(record, converted, null);
+                }
                 catch (TargetInvocationException)
                 {
-                    // Public setters may reject converted values. Keep the failure
-                    // tied to its source field without exposing setter exception text.
+                    // Preserve the established classification for a destination setter
+                    // rejecting the assigned value, not converter programming failures.
                     throw new FieldConversionException(sourceName);
                 }
             }
