@@ -19,8 +19,11 @@ namespace RecordSift.Domain.Results
             Diagnostics = diagnostics;
         }
 
+        /// <summary>Gets whether processing completed or failed on a source/schema condition.</summary>
         public ImportStatus Status { get; private set; }
+        /// <summary>Gets processed, accepted and rejected logical record counts.</summary>
         public ImportSummary Summary { get; private set; }
+        /// <summary>Gets a read-only snapshot of structured source and record errors.</summary>
         public IReadOnlyList<ImportDiagnostic> Diagnostics { get; private set; }
 
         /// <summary>Processing finished, possibly with rejected data records.</summary>

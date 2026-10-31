@@ -47,12 +47,15 @@ namespace RecordSift.Domain.Diagnostics
             PhysicalLine = physicalLine;
         }
 
+        /// <summary>Gets whether this error applies to one data record or to the source as a whole.</summary>
         public DiagnosticScope Scope { get; private set; }
         /// <summary>One-based logical data-record ordinal, excluding headers; null for source errors.</summary>
         public int? Row { get; private set; }
         /// <summary>Trusted source-column metadata when known (name or stable positional identifier).</summary>
         public string Field { get; private set; }
+        /// <summary>Gets the stable registered machine-readable diagnostic code.</summary>
         public string Code { get; private set; }
+        /// <summary>Gets the invariant, resource-backed safe message for the registered diagnostic code.</summary>
         public string Message { get; private set; }
         /// <summary>Optional worksheet name supplied by a source reader.</summary>
         public string Worksheet { get; private set; }
@@ -61,11 +64,22 @@ namespace RecordSift.Domain.Diagnostics
         /// <summary>Optional one-based physical CSV line, only when reliably known.</summary>
         public int? PhysicalLine { get; private set; }
 
+        /// <summary>Creates a record-level diagnostic at a one-based logical row; optional source coordinates are retained when reliable.</summary>
+        /// <param name="row">One-based logical data-row ordinal; absent for source-level errors.</param>
+        /// <param name="field">Optional trusted source-field metadata; null indicates no field.</param>
+        /// <param name="code">Registered, correctly scoped diagnostic code.</param>
         public static ImportDiagnostic ForRecord(int row, string field, string code)
         {
             return ForRecord(row, field, code, null, null, null);
         }
 
+        /// <summary>Creates a record-level diagnostic at a one-based logical row; optional source coordinates are retained when reliable.</summary>
+        /// <param name="row">One-based logical data-row ordinal; absent for source-level errors.</param>
+        /// <param name="field">Optional trusted source-field metadata; null indicates no field.</param>
+        /// <param name="code">Registered, correctly scoped diagnostic code.</param>
+        /// <param name="worksheet">Optional worksheet identifier from the source reader.</param>
+        /// <param name="physicalRow">Optional one-based XLSX source-row location.</param>
+        /// <param name="physicalLine">Optional one-based CSV physical line when reliable.</param>
         public static ImportDiagnostic ForRecord(int row, string field, string code,
             string worksheet, int? physicalRow, int? physicalLine)
         {
@@ -74,11 +88,20 @@ namespace RecordSift.Domain.Diagnostics
                 code, worksheet, physicalRow, physicalLine);
         }
 
+        /// <summary>Creates a source-level diagnostic without a logical row; optional source coordinates are retained when reliable.</summary>
+        /// <param name="field">Optional trusted source-field metadata; null indicates no field.</param>
+        /// <param name="code">Registered, correctly scoped diagnostic code.</param>
         public static ImportDiagnostic ForSource(string field, string code)
         {
             return ForSource(field, code, null, null, null);
         }
 
+        /// <summary>Creates a source-level diagnostic without a logical row; optional source coordinates are retained when reliable.</summary>
+        /// <param name="field">Optional trusted source-field metadata; null indicates no field.</param>
+        /// <param name="code">Registered, correctly scoped diagnostic code.</param>
+        /// <param name="worksheet">Optional worksheet identifier from the source reader.</param>
+        /// <param name="physicalRow">Optional one-based XLSX source-row location.</param>
+        /// <param name="physicalLine">Optional one-based CSV physical line when reliable.</param>
         public static ImportDiagnostic ForSource(string field, string code,
             string worksheet, int? physicalRow, int? physicalLine)
         {
