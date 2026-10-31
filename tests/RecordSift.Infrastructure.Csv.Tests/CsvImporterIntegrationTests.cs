@@ -766,5 +766,65 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_RealCsvCancellationRetainsValidatedPrefixAndReaderOwnership()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var source = new StringReader("Id,Name\r\n1,Alice\r\n2,Bob\r\n3,Carol"))
+            {
+                var mapped = 0;
+                var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                    values => {
+                        mapped++;
+                        var result = new Customer {
+                            Id = int.Parse(values["Id"], CultureInfo.InvariantCulture),
+                            Name = values["Name"]
+                        };
+                        if (mapped == 1) cancellation.Cancel();
+                        return result;
+                    });
+                var result = importer.Import(source, 4096, Schema(),
+                    CsvHeaderPolicy.WithHeader, "fr032-real-csv",
+                    null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(mapped, Is.EqualTo(1));
+                Assert.That(source.Peek(), Is.EqualTo(-1));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_PreCanceledRealCsvDoesNotReadSource()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var source = new StringReader("Id,Name\r\n1,Alice"))
+            {
+                cancellation.Cancel();
+                var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                    values => new Customer {
+                        Id = int.Parse(values["Id"], CultureInfo.InvariantCulture),
+                        Name = values["Name"]
+                    });
+                var result = importer.Import(source, 4096, Schema(),
+                    CsvHeaderPolicy.WithHeader, "fr032-pre-canceled",
+                    null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(source.Peek(), Is.EqualTo((int)'I'));
+            }
+        }
     }
 }
