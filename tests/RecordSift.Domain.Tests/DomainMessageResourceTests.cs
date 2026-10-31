@@ -23,6 +23,7 @@ namespace RecordSift.Domain.Tests
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { DiagnosticCodes.SourceUnreadable, "The source could not be read." },
+                { DiagnosticCodes.SourceDecodingFailed, "The source text could not be decoded with the configured encoding." },
                 { DiagnosticCodes.SourceLimitExceeded, "The source exceeded the configured read limit." },
                 { DiagnosticCodes.RequiredHeaderMissing, "A required source header is missing." },
                 { DiagnosticCodes.RequiredColumnMissing, "A required source column is missing." },

@@ -52,6 +52,7 @@ RESX_IDENTITY = "RecordSift.Resources.DomainMessages.resources"
 ADAPTER_SOURCE = "CsvRecordReaderAdapter.cs"
 ADAPTER_FILES = (
     "CsvRecordReaderAdapter.cs",
+    "CsvStreamImporterAdapter.cs",
     "CharacterLimitedTextReader.cs",
     "MalformedCsvException.cs",
     "CharacterLimitExceededException.cs",
@@ -61,6 +62,7 @@ def verify_adapter_source_ownership(sources):
     errors = []
     for file, expected_type in (
         ("CsvRecordReaderAdapter.cs", "CsvRecordReaderAdapter"),
+        ("CsvStreamImporterAdapter.cs", "CsvStreamImporterAdapter"),
         ("CharacterLimitedTextReader.cs", "CharacterLimitedTextReader"),
         ("MalformedCsvException.cs", "MalformedCsvException"),
         ("CharacterLimitExceededException.cs", "CharacterLimitExceededException"),
@@ -225,7 +227,7 @@ def verify_layout():
         root = project(adapter_project)
         graph["RecordSift.Infrastructure.Csv"] = dependencies(root)
         if set(includes(root, "Compile")) != set(ADAPTER_FILES) or len(includes(root, "Compile")) != len(ADAPTER_FILES):
-            errors.append("Infrastructure project must explicitly compile the four focused CSV sources")
+            errors.append("Infrastructure project must compile all explicitly owned CSV sources")
         sources = {file: (INFRASTRUCTURE / file).read_text(encoding="utf-8")
                    for file in ADAPTER_FILES if (INFRASTRUCTURE / file).is_file()}
         errors.extend(verify_adapter_source_ownership(sources))

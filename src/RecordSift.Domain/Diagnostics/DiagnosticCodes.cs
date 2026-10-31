@@ -6,6 +6,7 @@ namespace RecordSift.Domain.Diagnostics
     public static class DiagnosticCodes
     {
         public const string SourceUnreadable = "SOURCE_UNREADABLE";
+        public const string SourceDecodingFailed = "SOURCE_DECODING_FAILED";
         public const string SourceLimitExceeded = "SOURCE_LIMIT_EXCEEDED";
         public const string RequiredHeaderMissing = "REQUIRED_HEADER_MISSING";
         public const string RequiredColumnMissing = "REQUIRED_COLUMN_MISSING";
@@ -24,7 +25,8 @@ namespace RecordSift.Domain.Diagnostics
 
         public static bool IsSourceCode(string code)
         {
-            return code == SourceUnreadable || code == SourceLimitExceeded ||
+            return code == SourceUnreadable || code == SourceDecodingFailed ||
+                   code == SourceLimitExceeded ||
                    code == RequiredHeaderMissing ||
                    code == MalformedSource || code == RequiredColumnMissing ||
                    code == AmbiguousColumn || code == InvalidColumnPosition ||
@@ -42,6 +44,7 @@ namespace RecordSift.Domain.Diagnostics
             switch (code)
             {
                 case SourceUnreadable: return DomainMessageResources.Get(SourceUnreadable);
+                case SourceDecodingFailed: return DomainMessageResources.Get(SourceDecodingFailed);
                 case SourceLimitExceeded: return DomainMessageResources.Get(SourceLimitExceeded);
                 case RequiredHeaderMissing: return DomainMessageResources.Get(RequiredHeaderMissing);
                 case RequiredColumnMissing: return DomainMessageResources.Get(RequiredColumnMissing);
