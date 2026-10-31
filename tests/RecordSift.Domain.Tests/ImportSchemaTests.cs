@@ -166,5 +166,27 @@ namespace RecordSift.Domain.Tests
             Assert.That(result.IsSuccessful, Is.True);
             Assert.That(result.Bindings[0].SourceIndex, Is.EqualTo(2));
         }
+
+        [Test]
+        public void FR_017_SC01_RequiredValuePolicyReportsBlankFieldsWithSourceProvenance()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, true),
+                new ExpectedColumn("Notes", false)
+            });
+            var values = new Dictionary<string, string>(StringComparer.Ordinal) {
+                { "Id", " " }, { "Name", "" }, { "Notes", "" }
+            };
+
+            var errors = schema.ValidateRequiredValues(values, 2, 5);
+
+            Assert.That(errors, Has.Count.EqualTo(2));
+            Assert.That(errors[0].Code, Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+            Assert.That(errors[0].Field, Is.EqualTo("Id"));
+            Assert.That(errors[0].Row, Is.EqualTo(2));
+            Assert.That(errors[0].PhysicalLine, Is.EqualTo(5));
+            Assert.That(errors[1].Field, Is.EqualTo("Name"));
+        }
     }
 }
