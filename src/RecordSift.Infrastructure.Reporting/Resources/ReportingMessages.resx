@@ -7,6 +7,9 @@
   <data name="Outcome_ImportCompleted" xml:space="preserve"><value>Import completed.</value></data>
   <data name="Outcome_ImportCompletedWithRejections" xml:space="preserve"><value>Import completed with rejected records.</value></data>
   <data name="Outcome_ImportEmpty" xml:space="preserve"><value>Import completed. No data records found.</value></data>
+  <data name="Outcome_ImportCanceled" xml:space="preserve"><value>Import canceled. Only processed records are included.</value></data>
+  <data name="Readable_CanceledSummary" xml:space="preserve"><value>Import canceled: {0} processed, {1} accepted, {2} rejected, {3} errors.</value></data>
+  <data name="Readable_CanceledSingleErrorSummary" xml:space="preserve"><value>Import canceled: {0} processed, {1} accepted, {2} rejected, {3} error.</value></data>
   <data name="Outcome_ImportStopped" xml:space="preserve"><value>Import stopped after a validation failure; only a prefix of the input was validated.</value></data>
   <data name="Readable_StoppedSummary" xml:space="preserve"><value>Import stopped: {0} processed, {1} accepted, {2} rejected, {3} errors.</value></data>
   <data name="Readable_StoppedSingleErrorSummary" xml:space="preserve"><value>Import stopped: {0} processed, {1} accepted, {2} rejected, {3} error.</value></data>

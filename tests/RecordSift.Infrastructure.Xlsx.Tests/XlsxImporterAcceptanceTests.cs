@@ -736,5 +736,108 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(result.Diagnostics, Is.Empty);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_RealXlsxCancellationKeepsPrefixAndCallerOwnedStream()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var mapped = 0;
+                var importer = new XlsxImporter<Customer>(
+                    new XlsxWorksheetReaderAdapter(), values => {
+                        mapped++;
+                        var record = new Customer {
+                            Name = values["Name"],
+                            Id = int.Parse(values["Id"], CultureInfo.InvariantCulture)
+                        };
+                        if (mapped == 1) cancellation.Cancel();
+                        return record;
+                    });
+                var result = importer.Import(stream, 4096, Schema(), "fr032-xlsx",
+                    null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(mapped, Is.EqualTo(1));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_PreCanceledXlsxDoesNotConsumeWorkbook()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                cancellation.Cancel();
+                var result = CreateImporter().Import(stream, 4096, Schema(),
+                    "fr032-pre-canceled-xlsx", null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(stream.Position, Is.Zero);
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_RealXlsxCancellationDuringTypedMappingRetainsProcessedPrefix()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var importer = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(),
+                    values => {
+                        var result = new Customer {
+                            Name = values["Name"],
+                            Id = int.Parse(values["Id"], CultureInfo.InvariantCulture)
+                        };
+                        cancellation.Cancel();
+                        return result;
+                    });
+                var outcome = importer.Import(stream, 4096, Schema(), "fr032-xlsx",
+                    null, null, false, cancellation.Token);
+                Assert.That(outcome.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(outcome.Summary.ProcessedCount, Is.EqualTo(1));
+                Assert.That(outcome.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(outcome.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(outcome.Diagnostics, Is.Empty);
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_PreCanceledXlsxSkipsSourceReadAndRetainsCallerStream()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                cancellation.Cancel();
+                var result = CreateImporter().Import(stream, 4096, Schema(),
+                    "fr032-pre-canceled", null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(stream.Position, Is.Zero);
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
     }
 }

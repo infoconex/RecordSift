@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
@@ -67,6 +68,43 @@ namespace RecordSift.Application.Importing
             string emptyMessage, string completedMessage, string rejectedMessage,
             bool failFast, string stoppedMessage)
         {
+            return Process(rows, bindings, schema, sourceId, mapRecord, rangeRules,
+                identifierRule, customRules, emptyMessage, completedMessage,
+                rejectedMessage, failFast, stoppedMessage, CancellationToken.None, null);
+        }
+
+        /// <summary>Processes a source with optional fail-fast validation and cooperative cancellation at logical record checkpoints.</summary>
+        /// <param name="rows">Already-parsed logical records.</param>
+        /// <param name="bindings">Bound column indexes.</param>
+        /// <param name="schema">Source schema.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="mapRecord">Converts bound fields to accepted CLR records.</param>
+        /// <param name="rangeRules">Optional converted value constraints.</param>
+        /// <param name="identifierRule">Optional duplicate-key constraint.</param>
+        /// <param name="customRules">Optional typed predicates.</param>
+        /// <param name="emptyMessage">Trusted empty import text.</param>
+        /// <param name="completedMessage">Trusted success text.</param>
+        /// <param name="rejectedMessage">Trusted rejected-row text.</param>
+        /// <param name="failFast">Stop validation after the first record error.</param>
+        /// <param name="stoppedMessage">Trusted fail-fast text when enabled.</param>
+        /// <param name="cancellationToken">Caller-owned cooperative cancellation signal, checked at record boundaries.</param>
+        /// <param name="canceledMessage">Trusted cancellation text, required for cancellable calls.</param>
+        /// <typeparam name="T">Accepted CLR record type.</typeparam>
+        public static TypedImportResult<T> Process<T>(
+            IReadOnlyList<ImportDataRow> rows,
+            IReadOnlyList<SourceColumnBinding> bindings,
+            ImportSchema schema, string sourceId,
+            Func<IReadOnlyDictionary<string, string>, T> mapRecord,
+            IEnumerable<FieldRangeRule<T>> rangeRules,
+            DuplicateIdentifierRule<T> identifierRule,
+            IEnumerable<RecordValidationRule<T>> customRules,
+            string emptyMessage, string completedMessage, string rejectedMessage,
+            bool failFast, string stoppedMessage, CancellationToken cancellationToken,
+            string canceledMessage)
+        {
+            if (string.IsNullOrWhiteSpace(canceledMessage) &&
+                cancellationToken.CanBeCanceled)
+                throw new ArgumentException(nameof(canceledMessage));
             if (failFast && string.IsNullOrWhiteSpace(stoppedMessage))
                 throw new ArgumentException(nameof(stoppedMessage));
             if (rows == null) throw new ArgumentNullException(nameof(rows));
@@ -78,11 +116,17 @@ namespace RecordSift.Application.Importing
             var diagnostics = new List<ImportDiagnostic>();
             var processedCount = 0;
             var stopped = false;
+            var canceled = false;
             var checkDuplicate = identifierRule == null
                 ? null : identifierRule.CreateValidator();
 
             foreach (var row in rows)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    canceled = true;
+                    break;
+                }
                 processedCount++;
                 var values = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (var binding in bindings)
@@ -237,10 +281,13 @@ namespace RecordSift.Application.Importing
                     accepted.Add(record);
             }
 
-            var message = stopped ? stoppedMessage : processedCount == 0 ? emptyMessage
+            canceled = canceled || cancellationToken.IsCancellationRequested;
+            var message = canceled ? canceledMessage : stopped ? stoppedMessage
+                : processedCount == 0 ? emptyMessage
                 : diagnostics.Count == 0 ? completedMessage : rejectedMessage;
-            var result = stopped
-                ? ImportResult.Stopped(processedCount, diagnostics)
+            var result = canceled
+                ? ImportResult.Canceled(processedCount, diagnostics)
+                : stopped ? ImportResult.Stopped(processedCount, diagnostics)
                 : ImportResult.Completed(processedCount, diagnostics);
             return new TypedImportResult<T>(sourceId, result, accepted, message);
         }

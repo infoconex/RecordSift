@@ -176,5 +176,46 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(json, Does.Not.Contain("private-status"));
             Assert.That((string)report["message"], Does.Contain("stopped"));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_CanceledImportUsesSeparateJsonVersionWithSafeMessageAndPartialCounts()
+        {
+            var result = new TypedImportResult<string>("cancel-safe",
+                ImportResult.Canceled(2, new[] {
+                    ImportDiagnostic.ForRecord(1, "Name", DiagnosticCodes.ValidationFailed)
+                }), new[] { "private-accepted" }, "private-status");
+            var json = new JsonImportResultSerializerAdapter().Serialize(result);
+            var report = Parse(json);
+            Assert.That(report["schemaVersion"], Is.EqualTo("1.2"));
+            Assert.That(report["status"], Is.EqualTo("Canceled"));
+            Assert.That(Fields(report["summary"])["processedCount"], Is.EqualTo(2));
+            Assert.That(Fields(report["summary"])["acceptedCount"], Is.EqualTo(1));
+            Assert.That(Fields(report["summary"])["rejectedCount"], Is.EqualTo(1));
+            Assert.That(json, Does.Not.Contain("private-accepted"));
+            Assert.That(json, Does.Not.Contain("private-status"));
+            Assert.That((string)report["message"], Does.Contain("canceled"));
+        }
+
+        [Test]
+        [Property("Requirement", "FR-032")]
+        public void CanceledOutcomeUsesVersionedJsonAndSanitizedPartialSummary()
+        {
+            var result = new TypedImportResult<string>("fr032-report",
+                ImportResult.Canceled(2, new[] {
+                    ImportDiagnostic.ForRecord(2, "Name", DiagnosticCodes.ValidationFailed)
+                }), new[] { "private-record" }, "private-message");
+            var json = new JsonImportResultSerializerAdapter().Serialize(result);
+            var report = Parse(json);
+            Assert.That(report["schemaVersion"], Is.EqualTo("1.2"));
+            Assert.That(report["status"], Is.EqualTo("Canceled"));
+            Assert.That(Fields(report["summary"])["processedCount"], Is.EqualTo(2));
+            Assert.That(Fields(report["summary"])["rejectedCount"], Is.EqualTo(1));
+            Assert.That(json, Does.Not.Contain("private-record"));
+            Assert.That(json, Does.Not.Contain("private-message"));
+            Assert.That((string)report["message"], Does.Contain("canceled"));
+        }
     }
 }

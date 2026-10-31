@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using RecordSift.Application.Importing;
 using RecordSift.Application.Messages;
 using RecordSift.Application.Ports.Xlsx;
@@ -69,6 +70,23 @@ namespace RecordSift.Application.Importing.Xlsx
             ImportSchema schema, string sourceId, XlsxReadLimits limits,
             string worksheetName, bool failFast)
         {
+            return Import(source, maxBytes, schema, sourceId, limits, worksheetName,
+                failFast, CancellationToken.None);
+        }
+
+        /// <summary>Imports an XLSX worksheet with cooperative cancellation before and after eager workbook parsing and between record validations.</summary>
+        /// <param name="source">Caller-owned workbook stream.</param>
+        /// <param name="maxBytes">Positive workbook byte budget.</param>
+        /// <param name="schema">Declared source schema.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="limits">Optional worksheet input limits.</param>
+        /// <param name="worksheetName">Optional exact worksheet selection.</param>
+        /// <param name="failFast">Stop record validation at the first error.</param>
+        /// <param name="cancellationToken">Cooperative cancellation signal; eager parser execution cannot be interrupted.</param>
+        public TypedImportResult<T> Import(Stream source, int maxBytes,
+            ImportSchema schema, string sourceId, XlsxReadLimits limits,
+            string worksheetName, bool failFast, CancellationToken cancellationToken)
+        {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (schema == null) throw new ArgumentNullException(nameof(schema));
             if (maxBytes < 1) throw new ArgumentOutOfRangeException(nameof(maxBytes));
@@ -76,10 +94,13 @@ namespace RecordSift.Application.Importing.Xlsx
                 throw new ArgumentException(DomainMessageResources.DiagnosticWorksheetBlank,
                     nameof(worksheetName));
 
+            if (cancellationToken.IsCancellationRequested) return CanceledResult(sourceId);
+
             // Bounded input and row/cell limits are explicitly independent of CSV.
             var budget = limits ?? XlsxReadLimits.Default;
             var raw = _reader.Read(source, maxBytes,
                 budget.MaxRows, budget.MaxColumns, budget.MaxCellCharacters, worksheetName);
+            if (cancellationToken.IsCancellationRequested) return CanceledResult(sourceId);
             if (!raw.IsSuccessful)
                 return Failed(sourceId, raw.Error);
 
@@ -94,6 +115,8 @@ namespace RecordSift.Application.Importing.Xlsx
             var rows = new List<ImportDataRow>();
             for (var i = 1; i < raw.Records.Count; i++)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    return CanceledResult(sourceId);
                 var record = raw.Records[i];
                 foreach (var column in binding.Bindings)
                     if (column.SourceIndex >= record.Fields.Count)
@@ -107,7 +130,15 @@ namespace RecordSift.Application.Importing.Xlsx
                 sourceId, _mapRecord, _rangeRules, _identifierRule, _customRules,
                 CsvMessageResources.ImportNoDataRecords, CsvMessageResources.ImportCompleted,
                 CsvMessageResources.ImportCompletedWithErrors, failFast,
-                CsvMessageResources.ImportStopped);
+                CsvMessageResources.ImportStopped, cancellationToken,
+                CsvMessageResources.ImportCanceled);
+        }
+
+        private static TypedImportResult<T> CanceledResult(string sourceId)
+        {
+            return new TypedImportResult<T>(sourceId,
+                ImportResult.Canceled(0, new ImportDiagnostic[0]),
+                new T[0], CsvMessageResources.ImportCanceled);
         }
 
         private static TypedImportResult<T> Failed(string sourceId, ImportDiagnostic error)

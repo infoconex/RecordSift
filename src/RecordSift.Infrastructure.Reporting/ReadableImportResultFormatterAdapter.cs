@@ -22,7 +22,11 @@ namespace RecordSift.Infrastructure.Reporting
                 throw new ArgumentNullException(nameof(result));
 
             var hasOneError = result.Diagnostics.Count == 1;
-            var header = result.Status == ImportStatus.Stopped
+            var header = result.Status == ImportStatus.Canceled
+                ? (hasOneError
+                    ? ReportingMessageResources.ReadableCanceledSingleErrorSummary
+                    : ReportingMessageResources.ReadableCanceledSummary)
+                : result.Status == ImportStatus.Stopped
                 ? (hasOneError
                     ? ReportingMessageResources.ReadableStoppedSingleErrorSummary
                     : ReportingMessageResources.ReadableStoppedSummary)

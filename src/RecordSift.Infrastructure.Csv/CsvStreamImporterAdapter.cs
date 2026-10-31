@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Messages;
 using RecordSift.Application.Ports.Csv;
@@ -62,6 +63,28 @@ namespace RecordSift.Infrastructure.Csv
             IEnumerable<SourceColumnPosition> positions, CsvReadOptions options,
             bool failFast)
         {
+            return Import(source, maxCharacters, encoding, schema, policy, sourceId,
+                strictDecoding, positions, options, failFast, CancellationToken.None);
+        }
+
+        /// <summary>Decodes CSV with cooperative cancellation, retaining caller ownership of the binary stream.</summary>
+        /// <param name="source">Caller-owned source stream.</param>
+        /// <param name="maxCharacters">Positive decoded character budget.</param>
+        /// <param name="encoding">Explicit caller-selected text encoding.</param>
+        /// <param name="schema">Declared schema.</param>
+        /// <param name="policy">CSV header policy.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="strictDecoding">Strict malformed-byte policy.</param>
+        /// <param name="positions">Optional positional bindings.</param>
+        /// <param name="options">Optional parser options.</param>
+        /// <param name="failFast">Stop validation after first failed row.</param>
+        /// <param name="cancellationToken">Cooperative cancellation signal observed before and after source read and between rows.</param>
+        public TypedImportResult<T> Import(Stream source, int maxCharacters,
+            Encoding encoding, ImportSchema schema, CsvHeaderPolicy policy,
+            string sourceId, bool strictDecoding,
+            IEnumerable<SourceColumnPosition> positions, CsvReadOptions options,
+            bool failFast, CancellationToken cancellationToken)
+        {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (encoding == null) throw new ArgumentNullException(nameof(encoding));
 
@@ -76,7 +99,8 @@ namespace RecordSift.Infrastructure.Csv
                 using (var reader = new StreamReader(source, selectedEncoding, false,
                     StreamReaderBufferSize, true))
                     return _importer.Import(reader, maxCharacters, schema,
-                        policy, sourceId, positions, options, failFast);
+                        policy, sourceId, positions, options, failFast,
+                        cancellationToken);
             }
             catch (DecoderFallbackException)
             {

@@ -19,6 +19,7 @@ namespace RecordSift.Infrastructure.Reporting
     {
         private const string JsonSchemaVersion = "1.0";
         private const string StoppedJsonSchemaVersion = "1.1";
+        private const string CanceledJsonSchemaVersion = "1.2";
 
         /// <summary>Projects the existing import result to stable schema-version 1.0 JSON. Accepted CLR records and caller-defined messages are omitted; rooted paths and file-URI source IDs are redacted, but arbitrary caller metadata is not scrubbed.</summary>
         /// <param name="result">Existing in-memory typed result; null throws an argument exception.</param>
@@ -46,8 +47,10 @@ namespace RecordSift.Infrastructure.Reporting
 
             var report = new ReportContract
             {
-                SchemaVersion = result.Status == ImportStatus.Stopped
-                    ? StoppedJsonSchemaVersion : JsonSchemaVersion,
+                SchemaVersion = result.Status == ImportStatus.Canceled
+                    ? CanceledJsonSchemaVersion
+                    : result.Status == ImportStatus.Stopped
+                        ? StoppedJsonSchemaVersion : JsonSchemaVersion,
                 SourceId = SafeSourceIdentifier(result.SourceId),
                 Status = result.Status.ToString(),
                 Message = SafeStatusMessage(result),
@@ -82,6 +85,8 @@ namespace RecordSift.Infrastructure.Reporting
         // Caller-supplied messages can contain arbitrary record values; never export them by default.
         private static string SafeStatusMessage<T>(TypedImportResult<T> result)
         {
+            if (result.Status == ImportStatus.Canceled)
+                return ReportingMessageResources.ImportCanceled;
             if (result.Status == ImportStatus.Stopped)
                 return ReportingMessageResources.ImportStopped;
             if (result.Status == ImportStatus.Failed)
