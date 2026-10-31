@@ -54,6 +54,21 @@ namespace RecordSift.Application.Importing.Xlsx
             ImportSchema schema, string sourceId, XlsxReadLimits limits = null,
             string worksheetName = null)
         {
+            return Import(source, maxBytes, schema, sourceId, limits, worksheetName, false);
+        }
+
+        /// <summary>Imports XLSX with an opt-in fail-fast record validation policy, keeping caller ownership of the source stream.</summary>
+        /// <param name="source">Caller-owned workbook stream.</param>
+        /// <param name="maxBytes">Positive source byte budget.</param>
+        /// <param name="schema">Declared canonical source schema.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="limits">Optional worksheet input limits.</param>
+        /// <param name="worksheetName">Optional exact worksheet selection.</param>
+        /// <param name="failFast">When true, stop later record validation after the first failed row; workbook reading remains eager.</param>
+        public TypedImportResult<T> Import(Stream source, int maxBytes,
+            ImportSchema schema, string sourceId, XlsxReadLimits limits,
+            string worksheetName, bool failFast)
+        {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (schema == null) throw new ArgumentNullException(nameof(schema));
             if (maxBytes < 1) throw new ArgumentOutOfRangeException(nameof(maxBytes));
@@ -91,7 +106,8 @@ namespace RecordSift.Application.Importing.Xlsx
             return RecordValidationPipeline.Process(rows, binding.Bindings, schema,
                 sourceId, _mapRecord, _rangeRules, _identifierRule, _customRules,
                 CsvMessageResources.ImportNoDataRecords, CsvMessageResources.ImportCompleted,
-                CsvMessageResources.ImportCompletedWithErrors);
+                CsvMessageResources.ImportCompletedWithErrors, failFast,
+                CsvMessageResources.ImportStopped);
         }
 
         private static TypedImportResult<T> Failed(string sourceId, ImportDiagnostic error)
