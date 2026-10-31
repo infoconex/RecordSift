@@ -499,7 +499,7 @@ namespace RecordSift.Application.Tests
                 new[] { new FieldConversionRule("Customer Id", (raw, culture) =>
                 {
                     if (raw == "secret-invalid")
-                        throw new InvalidOperationException("private-converter-detail " + raw);
+                        throw new FormatException("private-converter-detail " + raw);
                     return Guid.Parse(raw);
                 }) });
             var importer = new CsvImporter<CustomGuidCustomer>(new ScenarioReader(
