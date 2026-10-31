@@ -16,6 +16,7 @@
   <data name="REQUIRED_FIELD_MISSING" xml:space="preserve"><value>A required field is missing.</value></data>
   <data name="CONVERSION_FAILED" xml:space="preserve"><value>A field could not be converted.</value></data>
   <data name="VALIDATION_FAILED" xml:space="preserve"><value>A field failed validation.</value></data>
+  <data name="FIELD_LENGTH_OUT_OF_RANGE" xml:space="preserve"><value>The field length is outside the configured range.</value></data>
   <data name="Argument_ColumnDeclarationNull" xml:space="preserve"><value>Column declarations cannot contain null.</value></data>
   <data name="Argument_ColumnNamesDuplicate" xml:space="preserve"><value>Declared column names must be unique (ordinal match).</value></data>
   <data name="Argument_PositionMappingNull" xml:space="preserve"><value>Position mappings cannot contain null.</value></data>
@@ -32,6 +33,7 @@
   <data name="Argument_CompletedSourceError" xml:space="preserve"><value>A completed import cannot contain fatal source errors.</value></data>
   <data name="Argument_FailedWithoutSourceError" xml:space="preserve"><value>A failed import must identify a source-level error.</value></data>
   <data name="Argument_ExpectedColumnName" xml:space="preserve"><value>Expected column name must be nonempty.</value></data>
+  <data name="Argument_FieldLengthMinimumExceedsMaximum" xml:space="preserve"><value>Minimum field length cannot exceed maximum field length.</value></data>
   <data name="Argument_SourcePositionName" xml:space="preserve"><value>Declared column name must be nonempty.</value></data>
   <data name="Argument_BoundColumnName" xml:space="preserve"><value>Bound column name must be nonempty.</value></data>
   <data name="Argument_UnknownDiagnosticCode" xml:space="preserve"><value>Unknown diagnostic code.</value></data>
