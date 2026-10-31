@@ -8,13 +8,13 @@ namespace RecordSift.Domain.Schema
     /// A null field identifies a whole-record rule. Failures use the registered,
     /// sanitized Domain validation diagnostic rather than arbitrary input text.
     /// </summary>
+    /// <typeparam name="T">Type of already-converted records inspected by this rule.</typeparam>
     public sealed class RecordValidationRule<T>
     {
         private readonly Func<T, bool> _isValid;
 
         /// <summary>Creates a predicate-based record rule; null field identifies a record-wide error, while blank nonnull field is invalid.</summary>
         /// <param name="field">Source field named in any failure diagnostic.</param>
-        /// <param name="T">Value supplied for this contract.</param>
         /// <param name="isValid">Predicate returning true for an accepted record.</param>
         public RecordValidationRule(string field, Func<T, bool> isValid)
         {

@@ -8,6 +8,7 @@ namespace RecordSift.Domain.Schema
     /// The caller supplies an explicit typed selector; no parser, reflection or
     /// source-format dependency is part of this Domain contract.
     /// </summary>
+    /// <typeparam name="T">Type of already-converted records inspected by this rule.</typeparam>
     public sealed class FieldRangeRule<T>
     {
         private readonly Func<T, bool> _outsideRange;
@@ -23,7 +24,6 @@ namespace RecordSift.Domain.Schema
 
         /// <summary>Creates a typed decimal interval rule with independently inclusive or exclusive bounds; at least one valid bound is required.</summary>
         /// <param name="field">Source field named in any failure diagnostic.</param>
-        /// <param name="T">Value supplied for this contract.</param>
         /// <param name="selector">Typed record accessor evaluated for validation.</param>
         /// <param name="minimum">Optional lower bound; at least one bound must be specified.</param>
         /// <param name="minimumInclusive">Whether equality with the lower bound is accepted.</param>
@@ -57,7 +57,6 @@ namespace RecordSift.Domain.Schema
 
         /// <summary>Creates a typed DateTime interval rule with independently inclusive or exclusive bounds; at least one valid bound is required.</summary>
         /// <param name="field">Source field named in any failure diagnostic.</param>
-        /// <param name="T">Value supplied for this contract.</param>
         /// <param name="selector">Typed record accessor evaluated for validation.</param>
         /// <param name="minimum">Optional lower bound; at least one bound must be specified.</param>
         /// <param name="minimumInclusive">Whether equality with the lower bound is accepted.</param>
