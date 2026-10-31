@@ -67,7 +67,7 @@ jobs:
             adapter = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
             reporting = 'tests\RecordSift.Infrastructure.Reporting.Tests\bin\Release\RecordSift.Infrastructure.Reporting.Tests.dll'
           }
-          foreach ($layer in @('domain', 'application', 'adapter', 'reporting')) {
+          foreach ($layer in @('domain', 'application', 'adapter', 'reporting', 'xlsx')) {
             if (-not (Test-Path $assemblies[$layer])) { throw "Test assembly missing: $($assemblies[$layer])" }
           }
           $domainOutput = Split-Path -Parent $assemblies.domain
@@ -86,7 +86,7 @@ jobs:
           $filter = $env:NUNIT_WHERE
           if (-not [string]::IsNullOrWhiteSpace($filter)) {
             Write-Host "Manual targeted NUnit selection: $filter"
-            & $runner $assemblies.domain $assemblies.application $assemblies.adapter $assemblies.reporting "--where=$filter" "--result=TestResults/nunit-targeted.xml;format=nunit3" --noheader
+            & $runner $assemblies.domain $assemblies.application $assemblies.adapter $assemblies.reporting $assemblies.xlsx "--where=$filter" "--result=TestResults/nunit-targeted.xml;format=nunit3" --noheader
             if ($LASTEXITCODE -ne 0) { throw "Targeted NUnit failed: $LASTEXITCODE" }
             [xml]$targeted = Get-Content TestResults/nunit-targeted.xml
             $selected = [int]$targeted.'test-run'.total
@@ -98,7 +98,7 @@ jobs:
           } else {
             $counts = @{}
             $failures = 0
-            foreach ($layer in @('domain', 'application', 'adapter', 'reporting')) {
+            foreach ($layer in @('domain', 'application', 'adapter', 'reporting', 'xlsx')) {
               & $runner $assemblies[$layer] "--result=TestResults/nunit-$layer.xml;format=nunit3" --noheader
               if ($LASTEXITCODE -ne 0) { throw "$layer NUnit failed: $LASTEXITCODE" }
               [xml]$report = Get-Content "TestResults/nunit-$layer.xml"
@@ -106,7 +106,7 @@ jobs:
               $failures += [int]$report.'test-run'.failed
               if ($counts[$layer] -lt 1) { throw "$layer NUnit suite has no tests." }
             }
-            $total = $counts.domain + $counts.application + $counts.adapter + $counts.reporting
+            $total = $counts.domain + $counts.application + $counts.adapter + $counts.reporting + $counts.xlsx
             if ($failures -ne 0 -or $total -lt 126) {
               throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), reporting=$($counts.reporting), failed=$failures."
             }
