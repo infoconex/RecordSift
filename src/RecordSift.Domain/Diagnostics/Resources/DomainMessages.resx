@@ -59,6 +59,7 @@
   <data name="Argument_ConversionRuleNull" xml:space="preserve"><value>Field conversion rules cannot contain null.</value></data>
   <data name="Argument_ConversionRuleDuplicate" xml:space="preserve"><value>Each source field can have only one custom converter.</value></data>
   <data name="Argument_ConversionRuleUndeclared" xml:space="preserve"><value>A field converter refers to a source column without a property mapping.</value></data>
+  <data name="Argument_StoppedWithoutRecordError" xml:space="preserve"><value>A stopped import requires a rejected record and no source-level failure.</value></data>
   <data name="Argument_PatternRuleNull" xml:space="preserve"><value>Pattern rules cannot contain null.</value></data>
   <data name="Argument_PatternRuleDuplicate" xml:space="preserve"><value>A source field cannot declare multiple regex patterns.</value></data>
   <data name="Argument_PatternRuleUndeclared" xml:space="preserve"><value>A regex rule refers to an undeclared source field.</value></data>
