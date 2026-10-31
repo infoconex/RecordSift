@@ -10,6 +10,8 @@
   <data name="Outcome_ImportFailed" xml:space="preserve"><value>Import failed.</value></data>
   <data name="Readable_CompletedSummary" xml:space="preserve"><value>Import completed: {0} processed, {1} accepted, {2} rejected, {3} errors.</value></data>
   <data name="Readable_FailedSummary" xml:space="preserve"><value>Import failed: {0} processed, {1} accepted, {2} rejected, {3} errors.</value></data>
+  <data name="Readable_CompletedSingleErrorSummary" xml:space="preserve"><value>Import completed: {0} processed, {1} accepted, {2} rejected, {3} error.</value></data>
+  <data name="Readable_FailedSingleErrorSummary" xml:space="preserve"><value>Import failed: {0} processed, {1} accepted, {2} rejected, {3} error.</value></data>
   <data name="Readable_NoRecords" xml:space="preserve"><value>No data records found.</value></data>
   <data name="Readable_RecordIssue" xml:space="preserve"><value>Record {0}: [{1}] {2}</value></data>
   <data name="Readable_RecordFieldIssue" xml:space="preserve"><value>Record {0}, field {1}: [{2}] {3}</value></data>

@@ -83,6 +83,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(emptyText, Does.Contain("No data records found"));
             Assert.That(emptyText, Does.Not.Contain("Import failed"));
             Assert.That(failedText, Does.Contain("Import failed"));
+            Assert.That(failedText, Does.Contain("1 error."));
             Assert.That(failedText, Does.Contain("required source header is missing"));
             Assert.That(failedText, Does.Contain(DiagnosticCodes.RequiredHeaderMissing));
             Assert.That(failedText, Does.Not.Contain("No data records found"));

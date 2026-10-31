@@ -18,9 +18,14 @@ namespace RecordSift.Infrastructure.Reporting
             if (result == null)
                 throw new ArgumentNullException(nameof(result));
 
+            var hasOneError = result.Diagnostics.Count == 1;
             var header = result.Status == ImportStatus.Failed
-                ? ReportingMessageResources.ReadableFailedSummary
-                : ReportingMessageResources.ReadableCompletedSummary;
+                ? (hasOneError
+                    ? ReportingMessageResources.ReadableFailedSingleErrorSummary
+                    : ReportingMessageResources.ReadableFailedSummary)
+                : (hasOneError
+                    ? ReportingMessageResources.ReadableCompletedSingleErrorSummary
+                    : ReportingMessageResources.ReadableCompletedSummary);
             var builder = new StringBuilder(string.Format(CultureInfo.InvariantCulture,
                 header,
                 result.Summary.ProcessedCount,

@@ -16,6 +16,8 @@ namespace RecordSift.Infrastructure.Reporting
 
         internal static string ReadableCompletedSummary => Get("Readable_CompletedSummary");
         internal static string ReadableFailedSummary => Get("Readable_FailedSummary");
+        internal static string ReadableCompletedSingleErrorSummary => Get("Readable_CompletedSingleErrorSummary");
+        internal static string ReadableFailedSingleErrorSummary => Get("Readable_FailedSingleErrorSummary");
         internal static string ReadableNoRecords => Get("Readable_NoRecords");
         internal static string ReadableRecordIssue => Get("Readable_RecordIssue");
         internal static string ReadableRecordFieldIssue => Get("Readable_RecordFieldIssue");
