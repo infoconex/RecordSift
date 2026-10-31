@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading;
 using RecordSift.Application.Importing;
 using RecordSift.Application.Messages;
 using RecordSift.Application.Ports.Csv;
@@ -136,8 +137,33 @@ namespace RecordSift.Application.Importing.Csv
             IEnumerable<SourceColumnPosition> positions, CsvReadOptions options,
             bool failFast)
         {
+            return Import(source, maxCharacters, schema, policy, sourceId,
+                positions, options, failFast, CancellationToken.None);
+        }
+
+        /// <summary>Imports CSV with cooperative cancellation before source parsing and at logical record checkpoints.</summary>
+        /// <param name="source">Caller-owned decoded text reader; never disposed here.</param>
+        /// <param name="maxCharacters">Positive decoded source character budget.</param>
+        /// <param name="schema">Declared source schema.</param>
+        /// <param name="policy">Explicit CSV header policy.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="positions">Optional positional column mapping.</param>
+        /// <param name="options">Optional parser settings.</param>
+        /// <param name="failFast">Whether record validation stops at the first error.</param>
+        /// <param name="cancellationToken">Cancellation checked before parsing, after eager source read and between validation records.</param>
+        public TypedImportResult<T> Import(TextReader source, int maxCharacters,
+            ImportSchema schema, CsvHeaderPolicy policy, string sourceId,
+            IEnumerable<SourceColumnPosition> positions, CsvReadOptions options,
+            bool failFast, CancellationToken cancellationToken)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (schema == null) throw new ArgumentNullException(nameof(schema));
+            if (maxCharacters < 1) throw new ArgumentOutOfRangeException(nameof(maxCharacters));
+            if (cancellationToken.IsCancellationRequested) return CanceledResult(sourceId);
+
             var table = CsvTableReader.Read(_reader, source, maxCharacters,
                 schema, policy, positions, options);
+            if (cancellationToken.IsCancellationRequested) return CanceledResult(sourceId);
             if (table.Status == ImportStatus.Failed)
             {
                 var message = ContainsMissingHeader(table.Diagnostics)
@@ -149,7 +175,11 @@ namespace RecordSift.Application.Importing.Csv
 
             var rows = new List<ImportDataRow>();
             foreach (var row in table.DataRows)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return CanceledResult(sourceId);
                 rows.Add(new ImportDataRow(row.Row, row.Fields, null, null, row.PhysicalLine));
+            }
 
             var emptyMessage = policy == CsvHeaderPolicy.WithHeader
                 ? CsvMessageResources.ImportNoDataRecords
@@ -158,7 +188,15 @@ namespace RecordSift.Application.Importing.Csv
                 sourceId, _mapRecord, _rangeRules, _identifierRule, _customRules,
                 emptyMessage, CsvMessageResources.ImportCompleted,
                 CsvMessageResources.ImportCompletedWithErrors, failFast,
-                CsvMessageResources.ImportStopped);
+                CsvMessageResources.ImportStopped, cancellationToken,
+                CsvMessageResources.ImportCanceled);
+        }
+
+        private static TypedImportResult<T> CanceledResult(string sourceId)
+        {
+            return new TypedImportResult<T>(sourceId,
+                ImportResult.Canceled(0, new ImportDiagnostic[0]),
+                new T[0], CsvMessageResources.ImportCanceled);
         }
 
         private static bool ContainsMissingHeader(IEnumerable<ImportDiagnostic> diagnostics)
