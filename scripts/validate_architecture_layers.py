@@ -39,6 +39,7 @@ TEST_PROJECT_REFERENCES = {
     ],
     "RecordSift.Infrastructure.Reporting.Tests": [
         "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        "RecordSift.Infrastructure.Csv.csproj",
         "RecordSift.Infrastructure.Reporting.csproj",
     ],
     "RecordSift.Infrastructure.Csv.Tests": [
