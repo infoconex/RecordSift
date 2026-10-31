@@ -389,5 +389,34 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 CultureInfo.CurrentUICulture = originalUiCulture;
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-006")]
+        [Property("Scenario", "NFR-006-SC01")]
+        [Property("Scenario", "NFR-006-SC02")]
+        public void NFR_006_SC01_SC02_CorruptXlsxReportsAtomicSanitizedSourceDiagnostic()
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(
+                "Not a ZIP package: /private/secret-workbook.xlsx");
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, 4096, Schema(), "corrupt-source");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Diagnostics[0].Row, Is.Null);
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.Null);
+                Assert.That(result.Diagnostics[0].PhysicalRow, Is.Null);
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("secret-workbook"));
+                Assert.That(result.Message, Does.Not.Contain("secret-workbook"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
     }
 }

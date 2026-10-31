@@ -598,5 +598,70 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("WXYZ"));
             Assert.That(result.AcceptedRecords[2].Name, Is.EqualTo(" AB "));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-006")]
+        [Property("Scenario", "NFR-006-SC01")]
+        [Property("Scenario", "NFR-006-SC02")]
+        public void NFR_006_SC01_SC02_MalformedCsvAfterValidRowReportsSafeSourceLocationAtomically()
+        {
+            const string Sensitive = "private-token-2468";
+            var result = Import("Id,Name\r\n1,Alice\r\n2,\"" + Sensitive + "\r\nunfinished");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.MalformedSource));
+            Assert.That(result.Diagnostics[0].Row, Is.Null);
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[0].Message, Is.Not.Empty);
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain(Sensitive));
+            Assert.That(result.Message, Does.Not.Contain(Sensitive));
+        }
+
+        private sealed class UnreadableCsvTextReader : TextReader
+        {
+            public override int Read(char[] buffer, int index, int count)
+            {
+                throw new IOException("Secret file: /private/customer-data.csv");
+            }
+
+            public override int Read()
+            {
+                throw new IOException("Secret file: /private/customer-data.csv");
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-006")]
+        [Property("Scenario", "NFR-006-SC01")]
+        [Property("Scenario", "NFR-006-SC02")]
+        public void NFR_006_SC01_SC02_UnreadableCsvStreamReturnsSafeSourceFailure()
+        {
+            var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                values => new Customer { Name = values["Name"] });
+            using (var source = new UnreadableCsvTextReader())
+            {
+                var result = importer.Import(source, 4096, Schema(),
+                    CsvHeaderPolicy.WithHeader, "read-error");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceUnreadable));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.Null);
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("/private/customer-data.csv"));
+                Assert.That(result.Message, Does.Not.Contain("/private/customer-data.csv"));
+            }
+        }
     }
 }
