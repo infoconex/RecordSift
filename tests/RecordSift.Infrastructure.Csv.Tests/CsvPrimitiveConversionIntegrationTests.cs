@@ -242,5 +242,67 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-setter-detail"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-027")]
+        [Property("Scenario", "FR-027-SC01")]
+        public void FR_027_SC01_RealCsvPreservesAcceptedOrderAcrossMultipleRejectedRecords()
+        {
+            var result = Import(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,\"12,50\",31/12/2025,true,\r\n" +
+                "invalid-id,\"1,50\",31/12/2025,true,\r\n" +
+                "3,\"7,25\",01/01/2026,false,8\r\n" +
+                "4,invalid-amount,01/01/2026,true,\r\n" +
+                "5,\"5,50\",02/01/2026,true,2");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(5));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(3));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(3));
+            Assert.That(result.AcceptedRecords[2].Id, Is.EqualTo(5));
+            Assert.That(result.AcceptedRecords[1].Amount, Is.EqualTo(7.25m));
+            Assert.That(result.AcceptedRecords[2].Score, Is.EqualTo(2));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[1].Row, Is.EqualTo(4));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[1].PhysicalLine, Is.EqualTo(5));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("invalid-id"));
+            Assert.That(result.Diagnostics[1].Message, Does.Not.Contain("invalid-amount"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-027")]
+        [Property("Scenario", "FR-027-SC02")]
+        public void FR_027_SC02_RealCsvReportsDiagnosticsWithoutAnyAcceptedRecords()
+        {
+            var result = Import(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "invalid-id,\"1,50\",31/12/2025,true,\r\n" +
+                "2,invalid-amount,01/01/2026,false,\r\n" +
+                "3,\"3,00\",not-a-date,true,8");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(3));
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(3));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[1].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[2].Row, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[1].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[2].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("invalid-id"));
+            Assert.That(result.Diagnostics[1].Message, Does.Not.Contain("invalid-amount"));
+            Assert.That(result.Diagnostics[2].Message, Does.Not.Contain("not-a-date"));
+        }
     }
 }
