@@ -13,6 +13,19 @@ namespace RecordSift.Application.Importing
     /// </summary>
     public static class RecordValidationPipeline
     {
+        /// <summary>Applies required-value, length, conversion, range, custom and duplicate checks to already-bound logical data rows in that order; rejected rows are excluded from accepted records.</summary>
+        /// <param name="rows">Already-parsed logical data rows in source order.</param>
+        /// <param name="bindings">Resolved zero-based field indexes for declared columns.</param>
+        /// <param name="schema">Declared source field schema used for header matching.</param>
+        /// <param name="sourceId">Nonblank opaque source identifier supplied by the caller.</param>
+        /// <param name="mapRecord">Maps exact-case input string fields into a CLR record.</param>
+        /// <param name="rangeRules">Optional range checks for already-converted records.</param>
+        /// <param name="identifierRule">Optional duplicate-key rule with independent validator state per import.</param>
+        /// <param name="customRules">Optional custom predicates evaluated after conversion and range checks.</param>
+        /// <param name="emptyMessage">Result text for an empty processed data set.</param>
+        /// <param name="completedMessage">Result text when every record is accepted.</param>
+        /// <param name="rejectedMessage">Result text when one or more records are rejected.</param>
+        /// <typeparam name="T">Accepted CLR record type.</typeparam>
         public static TypedImportResult<T> Process<T>(
             IReadOnlyList<ImportDataRow> rows,
             IReadOnlyList<SourceColumnBinding> bindings,
