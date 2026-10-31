@@ -214,16 +214,16 @@ jobs:
             throw "NUnit metadata filter regression: matched=$selected, failed=$failed."
           }
           Write-Host "NUnit metadata filter selected $selected real CSV integration acceptance test(s)."
-      - name: Prove CS1591 rejects an undocumented public member
-        shell: pwsh
-        run: |
-          & .\scripts\verify_xml_documentation.ps1 -Negative
       - name: Build and verify unpublished net48 NuGet candidate
         shell: pwsh
         run: |
           # Local validation only: do not upload nupkg artifacts or publish to any feed.
           & .\scripts\build_release_candidate.ps1 -OutputDirectory (Join-Path $env:RUNNER_TEMP 'RecordSift-Internal-Candidate')
           if ($LASTEXITCODE -ne 0) { throw "Internal candidate packaging failed: $LASTEXITCODE" }
+      - name: Prove CS1591 rejects an undocumented public member
+        shell: pwsh
+        run: |
+          & .\scripts\verify_xml_documentation.ps1 -Negative
       - name: Upload NUnit XML evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
