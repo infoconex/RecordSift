@@ -41,6 +41,7 @@
     <Compile Include="CsvHeaderPolicyTests.cs" />
     <Compile Include="CsvImporterIntegrationTests.cs" />
     <Compile Include="CsvPropertyMappingIntegrationTests.cs" />
+    <Compile Include="CsvPrimitiveConversionIntegrationTests.cs" />
     <Compile Include="CsvDelimiterTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
