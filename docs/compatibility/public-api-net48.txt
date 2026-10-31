@@ -247,6 +247,7 @@ property RecordSift.Application.Messages.CsvMessageResources System.String Impor
 property RecordSift.Application.Messages.CsvMessageResources System.String ImportFailed[] {get,-}
 property RecordSift.Application.Messages.CsvMessageResources System.String ImportMissingHeader[] {get,-}
 property RecordSift.Application.Messages.CsvMessageResources System.String ImportNoDataRecords[] {get,-}
+property RecordSift.Application.Messages.CsvMessageResources System.String ImportStopped[] {get,-}
 property RecordSift.Application.Messages.CsvMessageResources System.String ParserErrorScope[] {get,-}
 property RecordSift.Application.Messages.CsvMessageResources System.String ReaderHeaderConflict[] {get,-}
 property RecordSift.Application.Ports.Csv.CsvParseResult System.Boolean IsSuccessful[] {get,-}
@@ -313,6 +314,7 @@ property RecordSift.Domain.Diagnostics.DomainMessageResources System.String Rang
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String RecordValidationRuleNull[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String SourceDiagnosticHasRow[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String SourcePositionName[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String StoppedWithoutRecordError[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String UnknownDiagnosticCode[] {get,-}
 property RecordSift.Domain.Diagnostics.FieldConversionException System.String Field[] {get,-}
 property RecordSift.Domain.Diagnostics.ImportDiagnostic RecordSift.Domain.Diagnostics.DiagnosticScope Scope[] {get,-}
