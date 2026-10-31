@@ -34,6 +34,7 @@ base RecordSift.Domain.Results.ImportSummary : System.Object
 base RecordSift.Domain.Results.TypedImportResult<T> : System.Object
 base RecordSift.Domain.Schema.DuplicateIdentifierRule<T> : System.Object
 base RecordSift.Domain.Schema.ExpectedColumn : System.Object
+base RecordSift.Domain.Schema.FieldConversionRule : System.Object
 base RecordSift.Domain.Schema.FieldRangeRule<T> : System.Object
 base RecordSift.Domain.Schema.ImportSchema : System.Object
 base RecordSift.Domain.Schema.PrimitiveFieldConverter : System.Object
@@ -55,6 +56,7 @@ constructor RecordSift.Application.Importing.Csv.CsvImporter<T>(RecordSift.Appli
 constructor RecordSift.Application.Importing.ImportDataRow(System.Int32 row, System.Collections.Generic.IEnumerable<System.String> fields, System.String worksheet optional=null, System.Nullable<System.Int32> physicalRow optional=null, System.Nullable<System.Int32> physicalLine optional=null)
 constructor RecordSift.Application.Importing.Xlsx.XlsxImporter<T>(RecordSift.Application.Ports.Xlsx.IXlsxWorksheetReader reader, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules optional=null, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule optional=null, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules optional=null)
 constructor RecordSift.Application.Mapping.PrimitivePropertyMapper<T>(RecordSift.Domain.Schema.PropertyMappingSchema schema, System.Globalization.CultureInfo culture)
+constructor RecordSift.Application.Mapping.PrimitivePropertyMapper<T>(RecordSift.Domain.Schema.PropertyMappingSchema schema, System.Globalization.CultureInfo culture, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldConversionRule> customConverters)
 constructor RecordSift.Application.Mapping.StringPropertyMapper<T>(RecordSift.Domain.Schema.PropertyMappingSchema schema)
 constructor RecordSift.Application.Ports.Csv.CsvReadOptions(System.String delimiter)
 constructor RecordSift.Application.Ports.Csv.CsvRecord(System.Int32 sourceRecordNumber, System.Int32 physicalLine, System.Collections.Generic.IEnumerable<System.String> fields)
@@ -69,6 +71,7 @@ constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.B
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength, System.Collections.Generic.IEnumerable<System.String> aliases, System.String defaultValue)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.String defaultValue)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Collections.Generic.IEnumerable<System.String> aliases)
+constructor RecordSift.Domain.Schema.FieldConversionRule(System.String field, System.Func<System.String, System.Globalization.CultureInfo, System.Object> convert)
 constructor RecordSift.Domain.Schema.ImportSchema(System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.ExpectedColumn> columns)
 constructor RecordSift.Domain.Schema.PrimitiveFieldConverter(System.Globalization.CultureInfo culture)
 constructor RecordSift.Domain.Schema.PropertyMappingSchema(RecordSift.Domain.Schema.ImportSchema sourceSchema, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourcePropertyMapping> mappings)
@@ -179,6 +182,7 @@ method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.
 method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Failed(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
 method RecordSift.Domain.Schema.DuplicateIdentifierRule<T> instance ordinary System.Func<T, System.Int32, System.Nullable<System.Int32>, RecordSift.Domain.Diagnostics.ImportDiagnostic> CreateValidator()
 method RecordSift.Domain.Schema.DuplicateIdentifierRule<T> static ordinary RecordSift.Domain.Schema.DuplicateIdentifierRule<T> ForKey<TKey>(System.String field, System.Func<T, TKey> selector, System.Collections.Generic.IEqualityComparer<TKey> comparer optional=null)
+method RecordSift.Domain.Schema.FieldConversionRule instance ordinary System.Object Convert(System.String value, System.Globalization.CultureInfo culture)
 method RecordSift.Domain.Schema.FieldRangeRule<T> instance ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic Validate(T record, System.Int32 row, System.Nullable<System.Int32> physicalLine optional=null)
 method RecordSift.Domain.Schema.FieldRangeRule<T> static ordinary RecordSift.Domain.Schema.FieldRangeRule<T> Date(System.String field, System.Func<T, System.DateTime> selector, System.Nullable<System.DateTime> minimum, System.Boolean minimumInclusive, System.Nullable<System.DateTime> maximum, System.Boolean maximumInclusive)
 method RecordSift.Domain.Schema.FieldRangeRule<T> static ordinary RecordSift.Domain.Schema.FieldRangeRule<T> Numeric(System.String field, System.Func<T, System.Decimal> selector, System.Nullable<System.Decimal> minimum, System.Boolean minimumInclusive, System.Nullable<System.Decimal> maximum, System.Boolean maximumInclusive)
@@ -259,6 +263,9 @@ property RecordSift.Domain.Diagnostics.DomainMessageResources System.String Colu
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ColumnNamesDuplicate[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String CompletedSourceError[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionInvalidValue[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionRuleDuplicate[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionRuleNull[] {get,-}
+property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionRuleUndeclared[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String ConversionUnsupportedType[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticCodeNotRecord[] {get,-}
 property RecordSift.Domain.Diagnostics.DomainMessageResources System.String DiagnosticCodeNotSource[] {get,-}
@@ -322,6 +329,7 @@ property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> M
 property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MinimumLength[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.String DefaultValue[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.String Name[] {get,-}
+property RecordSift.Domain.Schema.FieldConversionRule System.String Field[] {get,-}
 property RecordSift.Domain.Schema.FieldRangeRule<T> System.String Field[] {get,-}
 property RecordSift.Domain.Schema.ImportSchema System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.ExpectedColumn> Columns[] {get,-}
 property RecordSift.Domain.Schema.PropertyMappingSchema RecordSift.Domain.Schema.ImportSchema SourceSchema[] {get,-}
@@ -368,6 +376,7 @@ type RecordSift.Domain.Results.ImportSummary kind=class modifier=sealed
 type RecordSift.Domain.Results.TypedImportResult<T> kind=class modifier=sealed
 type RecordSift.Domain.Schema.DuplicateIdentifierRule<T> kind=class modifier=sealed
 type RecordSift.Domain.Schema.ExpectedColumn kind=class modifier=sealed
+type RecordSift.Domain.Schema.FieldConversionRule kind=class modifier=sealed
 type RecordSift.Domain.Schema.FieldRangeRule<T> kind=class modifier=sealed
 type RecordSift.Domain.Schema.ImportSchema kind=class modifier=sealed
 type RecordSift.Domain.Schema.PrimitiveFieldConverter kind=class modifier=sealed

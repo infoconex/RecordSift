@@ -56,6 +56,9 @@
   <data name="Argument_PropertyMappingEmpty" xml:space="preserve"><value>At least one property mapping must be declared.</value></data>
   <data name="Argument_PropertyMappingUnsupportedDestination" xml:space="preserve"><value>Mapped destination must be a public writable string property.</value></data>
   <data name="Argument_PropertyMappingRequiredSourceMissing" xml:space="preserve"><value>A required mapped source column is missing from the supplied record.</value></data>
+  <data name="Argument_ConversionRuleNull" xml:space="preserve"><value>Field conversion rules cannot contain null.</value></data>
+  <data name="Argument_ConversionRuleDuplicate" xml:space="preserve"><value>Each source field can have only one custom converter.</value></data>
+  <data name="Argument_ConversionRuleUndeclared" xml:space="preserve"><value>A field converter refers to a source column without a property mapping.</value></data>
   <data name="Argument_ConversionInvalidValue" xml:space="preserve"><value>The field value cannot be converted to the destination type.</value></data>
   <data name="Argument_ConversionUnsupportedType" xml:space="preserve"><value>The destination type is not supported for primitive field conversion.</value></data>
   <data name="Argument_PropertyMappingUnsupportedMember" xml:space="preserve"><value>Mapped destination must be a public writable supported property.</value></data>

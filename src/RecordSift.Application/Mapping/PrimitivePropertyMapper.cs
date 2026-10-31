@@ -14,6 +14,8 @@ namespace RecordSift.Application.Mapping
     {
         private readonly PropertyMappingSchema _schema;
         private readonly PrimitiveFieldConverter _converter;
+        private readonly CultureInfo _culture;
+        private readonly IReadOnlyDictionary<string, FieldConversionRule> _customConverters;
         private readonly IReadOnlyList<PropertyInfo> _properties;
         private readonly IReadOnlyList<bool> _required;
 
@@ -21,15 +23,52 @@ namespace RecordSift.Application.Mapping
         /// <param name="schema">Declared source field schema used for header matching.</param>
         /// <param name="culture">Explicit parsing culture, defensively snapshotted.</param>
         public PrimitivePropertyMapper(PropertyMappingSchema schema, CultureInfo culture)
-            : this(schema, culture, false)
+            : this(schema, culture, false, null)
+        {
+        }
+
+        /// <summary>Creates an explicit-culture mapper with opt-in, format-neutral per-field converters. Rules are snapshotted and validated before import.</summary>
+        /// <param name="schema">Declared canonical source-to-destination mappings.</param>
+        /// <param name="culture">Explicit conversion culture, copied into a read-only snapshot.</param>
+        /// <param name="customConverters">Optional independent rules keyed by exact-case canonical source field; duplicates, unknown fields and null rules are invalid.</param>
+        public PrimitivePropertyMapper(PropertyMappingSchema schema, CultureInfo culture,
+            IEnumerable<FieldConversionRule> customConverters)
+            : this(schema, culture, false, customConverters)
         {
         }
 
         internal PrimitivePropertyMapper(PropertyMappingSchema schema, CultureInfo culture,
             bool stringOnly)
+            : this(schema, culture, stringOnly, null)
+        {
+        }
+
+        private PrimitivePropertyMapper(PropertyMappingSchema schema, CultureInfo culture,
+            bool stringOnly, IEnumerable<FieldConversionRule> customConverters)
         {
             if (schema == null) throw new ArgumentNullException(nameof(schema));
             _converter = new PrimitiveFieldConverter(culture);
+            _culture = CultureInfo.ReadOnly((CultureInfo)culture.Clone());
+
+            var mappedSources = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var mapping in schema.Mappings)
+                mappedSources.Add(mapping.SourceColumnName);
+            var registered = new Dictionary<string, FieldConversionRule>(StringComparer.Ordinal);
+            if (customConverters != null)
+                foreach (var rule in customConverters)
+                {
+                    if (rule == null)
+                        throw new ArgumentException(
+                            DomainMessageResources.ConversionRuleNull, nameof(customConverters));
+                    if (!mappedSources.Contains(rule.Field))
+                        throw new ArgumentException(
+                            DomainMessageResources.ConversionRuleUndeclared, nameof(customConverters));
+                    if (registered.ContainsKey(rule.Field))
+                        throw new ArgumentException(
+                            DomainMessageResources.ConversionRuleDuplicate, nameof(customConverters));
+                    registered.Add(rule.Field, rule);
+                }
+            _customConverters = new ReadOnlyDictionary<string, FieldConversionRule>(registered);
 
             var requiredSources = new HashSet<string>(StringComparer.Ordinal);
             var configuredDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -61,7 +100,8 @@ namespace RecordSift.Application.Mapping
 
                 if (resolved == null || resolved.GetSetMethod() == null ||
                     resolved.GetIndexParameters().Length != 0 ||
-                    !_converter.IsSupported(resolved.PropertyType) ||
+                    (!_converter.IsSupported(resolved.PropertyType) &&
+                        !_customConverters.ContainsKey(mapping.SourceColumnName)) ||
                     (stringOnly && resolved.PropertyType != typeof(string)))
                     throw new ArgumentException(
                         stringOnly ? DomainMessageResources.PropertyMappingUnsupportedDestination :
@@ -74,7 +114,11 @@ namespace RecordSift.Application.Mapping
                     // before any input rows are accepted; never expose the default value.
                     try
                     {
-                        _converter.Convert(rawDefault, resolved.PropertyType);
+                        FieldConversionRule customRule;
+                        if (_customConverters.TryGetValue(mapping.SourceColumnName, out customRule))
+                            ConvertCustom(customRule, rawDefault, resolved.PropertyType);
+                        else
+                            _converter.Convert(rawDefault, resolved.PropertyType);
                     }
                     catch (FormatException)
                     {
@@ -121,10 +165,13 @@ namespace RecordSift.Application.Mapping
                     continue;
                 }
 
+                object converted;
                 try
                 {
-                    var converted = _converter.Convert(value, _properties[i].PropertyType);
-                    _properties[i].SetValue(record, converted, null);
+                    FieldConversionRule customRule;
+                    converted = _customConverters.TryGetValue(sourceName, out customRule)
+                        ? ConvertCustom(customRule, value, _properties[i].PropertyType)
+                        : _converter.Convert(value, _properties[i].PropertyType);
                 }
                 catch (FormatException)
                 {
@@ -134,14 +181,44 @@ namespace RecordSift.Application.Mapping
                 {
                     throw new FieldConversionException(sourceName);
                 }
+
+                try
+                {
+                    _properties[i].SetValue(record, converted, null);
+                }
                 catch (TargetInvocationException)
                 {
-                    // Public setters may reject converted values. Keep the failure
-                    // tied to its source field without exposing setter exception text.
+                    // Preserve the established classification for a destination setter
+                    // rejecting the assigned value, not converter programming failures.
                     throw new FieldConversionException(sourceName);
                 }
             }
             return record;
+        }
+
+        private object ConvertCustom(FieldConversionRule rule, string value, Type destinationType)
+        {
+            object converted;
+            try
+            {
+                converted = rule.Convert(value, _culture);
+            }
+            catch (FormatException)
+            {
+                // Expected data rejections are record-specific; never retain untrusted messages.
+                throw new FieldConversionException(rule.Field);
+            }
+            catch (OverflowException)
+            {
+                throw new FieldConversionException(rule.Field);
+            }
+
+            var target = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+            if ((converted == null && destinationType.IsValueType &&
+                    Nullable.GetUnderlyingType(destinationType) == null) ||
+                (converted != null && !target.IsInstanceOfType(converted)))
+                throw new InvalidOperationException(DomainMessageResources.ConversionUnsupportedType);
+            return converted;
         }
     }
 }
