@@ -27,6 +27,10 @@ This document defines the externally observable **JSON import report** for a sin
 
 Existing Completed/Failed reports continue to serialize as `schemaVersion: "1.0"`, preserving all seven frozen compatibility fixtures and the existing [v1.0 schema](schemas/import-result.schema.json). An opt-in fail-fast import that terminates validation at its first rejected record uses `schemaVersion: "1.1"` with `status: "Stopped"`, following the separately versioned [stopped-result schema](schemas/import-result-stopped.schema.json). No other fields, diagnostic codes or object shapes change. A stopped result includes the first rejected logical row, accurate prefix counts and its sanitized record diagnostic, and cannot be confused with a fully processed `Completed` result or fatal source-level `Failed` result. Version 1.1 is emitted only for the new stopped outcome in FR-031; cancellation (FR-032) remains separately tracked.
 
+## Cooperative cancellation extension — JSON version 1.2 (FR-032)
+
+Caller-requested cancellation returns Domain `Canceled` status with true partial record counts, any record diagnostics generated before cancellation and ordered accepted records from the completed prefix only. Cancellation itself creates no error diagnostic. The reporting adapter emits `schemaVersion: "1.2"` and `status: "Canceled"`, validated by the separately versioned [canceled-result JSON schema](schemas/import-result-canceled.schema.json). Existing `Completed`/`Failed` v1.0 and fail-fast `Stopped` v1.1 JSON reports remain unchanged and retain their golden fixtures. Cancellation is not a failed source, not a fully completed import, and does not promise interruptible I/O during the existing bounded eager CSV/XLSX source-reading stage.
+
 ## Summary fields (all required)
 
 | Field | Type | Meaning |
