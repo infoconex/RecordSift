@@ -200,5 +200,49 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Does.Not.Contain("private-customer-name"));
         }
 
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-014")]
+        [Property("Scenario", "FR-014-SC01")]
+        public void FR_014_SC01_RealCsvAliasPopulatesCanonicalMappedTypedCustomer()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true, new[] { "Client Number" }),
+                new ExpectedColumn("Full Name", true)
+            });
+            var result = ImportNumericCustomers(
+                "Full Name,Client Number\r\nAlice,41\r\nBob,42", schema);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].CustomerId, Is.EqualTo(41));
+            Assert.That(result.AcceptedRecords[1].CustomerId, Is.EqualTo(42));
+            Assert.That(result.Diagnostics, Is.Empty);
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-014")]
+        [Property("Scenario", "FR-014-SC02")]
+        public void FR_014_SC02_RealCsvAliasCollisionFailsWithoutLeakingSourceValues()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true, new[] { "Client Number" }),
+                new ExpectedColumn("Full Name", true)
+            });
+            var result = ImportNumericCustomers(
+                "Customer Id,Client Number,Full Name\r\n41,99,Sensitive Customer", schema);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Customer Id"));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.AmbiguousColumn));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("Sensitive Customer"));
+        }
+
     }
 }
