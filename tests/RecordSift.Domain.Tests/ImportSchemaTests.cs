@@ -277,5 +277,82 @@ namespace RecordSift.Domain.Tests
                 new Dictionary<string, string> { { "Note", "A" } }, 2, 5)[0].Code,
                 Is.EqualTo(DiagnosticCodes.FieldLengthOutOfRange));
         }
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-014")]
+        [Property("Scenario", "FR-014-SC01")]
+        public void FR_014_SC01_DeclaredAliasBindsToCanonicalFieldWithOriginalSourceIndex()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("CustomerId", true, new[] { "Client Number", "Customer Number" }),
+                new ExpectedColumn("Name", true)
+            });
+
+            var bound = schema.BindHeaders(new[] { "Name", "Client Number" });
+
+            Assert.That(bound.IsSuccessful, Is.True);
+            Assert.That(bound.Bindings, Has.Count.EqualTo(2));
+            Assert.That(bound.Bindings[0].Name, Is.EqualTo("CustomerId"));
+            Assert.That(bound.Bindings[0].SourceIndex, Is.EqualTo(1));
+            Assert.That(bound.Bindings[1].SourceIndex, Is.Zero);
+            Assert.That(bound.Diagnostics, Is.Empty);
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-014")]
+        [Property("Scenario", "FR-014-SC02")]
+        public void FR_014_SC02_AliasAndCanonicalOrTwoAliasesRejectAtomically()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("CustomerId", true, new[] { "Client Number", "Customer Number" }),
+                new ExpectedColumn("Name", true)
+            });
+
+            foreach (var headers in new[] {
+                new[] { "CustomerId", "Client Number", "Name" },
+                new[] { "Client Number", "Customer Number", "Name" },
+                new[] { "Client Number", "Client Number", "Name" }
+            })
+            {
+                var bound = schema.BindHeaders(headers);
+                Assert.That(bound.IsSuccessful, Is.False);
+                Assert.That(bound.Bindings, Is.Empty);
+                Assert.That(bound.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(bound.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.AmbiguousColumn));
+                Assert.That(bound.Diagnostics[0].Field, Is.EqualTo("CustomerId"));
+                Assert.That(bound.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            }
+        }
+
+        [Test]
+        public void AliasesAreOrdinalDistinctImmutableAndCannotCollideWithAnotherDeclaration()
+        {
+            var aliases = new List<string> { "Client Number" };
+            var column = new ExpectedColumn("CustomerId", true, aliases);
+            aliases.Add("Extra");
+            Assert.That(column.Aliases, Is.EquivalentTo(new[] { "Client Number" }));
+            Assert.That(((IList<string>)column.Aliases).IsReadOnly, Is.True);
+
+            var schema = new ImportSchema(new[] { column });
+            Assert.That(schema.BindHeaders(new[] { "client number" }).IsSuccessful, Is.False);
+            Assert.That(schema.BindHeaders(new[] { "CustomerId" }).IsSuccessful, Is.True);
+            Assert.Throws<ArgumentException>(() =>
+                new ExpectedColumn("CustomerId", true, new[] { "Client Number", "Client Number" }));
+            Assert.Throws<ArgumentException>(() =>
+                new ExpectedColumn("CustomerId", true, new[] { "CustomerId" }));
+            Assert.Throws<ArgumentException>(() =>
+                new ExpectedColumn("CustomerId", true, new string[] { null }));
+            Assert.Throws<ArgumentException>(() =>
+                new ImportSchema(new[] {
+                    column, new ExpectedColumn("Client Number", true)
+                }));
+            Assert.Throws<ArgumentException>(() =>
+                new ImportSchema(new[] {
+                    column, new ExpectedColumn("Name", true, new[] { "Client Number" })
+                }));
+        }
+
     }
 }
