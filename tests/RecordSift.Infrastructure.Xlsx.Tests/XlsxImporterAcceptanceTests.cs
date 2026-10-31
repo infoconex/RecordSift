@@ -199,5 +199,41 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-003")]
+        [Property("Scenario", "NFR-003-SC01")]
+        public void NFR_003_SC01_ImportsTypedXlsxOnRunnerWithoutExcelInstallation()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = CreateImporter().Import(stream, 4096, Schema(), "excel-free");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-003")]
+        [Property("Scenario", "NFR-003-SC02")]
+        public void NFR_003_SC02_ReaderUsesOpenXmlWithoutOfficeAutomation()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var limits = XlsxReadLimits.Default;
+                var result = new XlsxWorksheetReaderAdapter().Read(stream, 4096,
+                    limits.MaxRows, limits.MaxColumns, limits.MaxCellCharacters);
+                Assert.That(result.IsSuccessful, Is.True);
+                Assert.That(result.Worksheet, Is.EqualTo("Customers"));
+                Assert.That(result.Records, Has.Count.GreaterThan(1));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
     }
 }

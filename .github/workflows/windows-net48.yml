@@ -138,6 +138,37 @@ jobs:
             }
             Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), reporting NUnit=$($counts.reporting), XLSX NUnit=$($counts.xlsx), total=$total failed=$failures."
           }
+      - name: Verify NFR-003 on an Office-free Windows runner
+        shell: pwsh
+        run: |
+          $excelCom = [Type]::GetTypeFromProgID('Excel.Application')
+          if ($null -ne $excelCom) { throw 'Excel COM registration exists; runner is not Office-free.' }
+          if (Get-Command 'EXCEL.EXE' -ErrorAction SilentlyContinue) {
+            throw 'Excel executable is on PATH; runner is not Office-free.'
+          }
+          $officeExecutables = @(
+            'C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE',
+            'C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE'
+          )
+          foreach ($path in $officeExecutables) {
+            if (Test-Path $path) { throw "Excel installed: $path" }
+          }
+          $files = Get-ChildItem src -Recurse -File | Where-Object {
+            $_.Extension -in @('.cs', '.csproj', '.config')
+          }
+          $automation = $files | Select-String -Pattern 'Microsoft\.Office\.Interop|Interop\.Excel|Excel\.Application|Marshal\.GetActiveObject|Activator\.CreateInstance\s*\(\s*.*Excel|Office\.dll'
+          if ($automation) {
+            throw "Office/COM automation dependency detected in production source or project metadata."
+          }
+          $reader = 'tests\RecordSift.Infrastructure.Xlsx.Tests\bin\Release\RecordSift.Infrastructure.Xlsx.Tests.dll'
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          & $runner $reader "--where=Requirement == 'NFR-003'" "--result=TestResults/nunit-office-free.xml;format=nunit3" --noheader
+          if ($LASTEXITCODE -ne 0) { throw "NFR-003 Office-free acceptance failed: $LASTEXITCODE" }
+          [xml]$result = Get-Content TestResults/nunit-office-free.xml
+          if ([int]$result.'test-run'.total -ne 2 -or [int]$result.'test-run'.failed -ne 0) {
+            throw 'NFR-003 must pass both scenario tests on Office-free Windows.'
+          }
+          Write-Host 'Verified absent Excel COM registration/executable and Office dependencies; NFR-003 acceptance 2/2.'
       - name: Verify NFR-002 CSV and XLSX acceptance with blocked outbound network
         shell: pwsh
         run: |
