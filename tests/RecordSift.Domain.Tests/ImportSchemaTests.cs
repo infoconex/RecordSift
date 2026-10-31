@@ -364,5 +364,63 @@ namespace RecordSift.Domain.Tests
             Assert.That(new ExpectedColumn("Note", false).DefaultValue, Is.Null);
         }
 
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-023")]
+        [Property("Scenario", "FR-023-SC01")]
+        public void FR_023_SC01_NonmatchingPatternReportsFieldAndPhysicalLine()
+        {
+            var schema = new ImportSchema(
+                new[] { new ExpectedColumn("Code", true) },
+                new[] { new FieldPatternRule("Code", "^[A-Z]{2}[0-9]{2}$") });
+            var values = new Dictionary<string, string> { { "Code", "private-invalid-code" } };
+
+            var errors = schema.ValidatePatterns(values, 3, 7);
+
+            Assert.That(errors, Has.Count.EqualTo(1));
+            Assert.That(errors[0].Code, Is.EqualTo(DiagnosticCodes.ValidationFailed));
+            Assert.That(errors[0].Field, Is.EqualTo("Code"));
+            Assert.That(errors[0].Row, Is.EqualTo(3));
+            Assert.That(errors[0].PhysicalLine, Is.EqualTo(7));
+            Assert.That(errors[0].Message, Does.Not.Contain("private-invalid-code"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-023")]
+        [Property("Scenario", "FR-023-SC02")]
+        public void FR_023_SC02_MatchingPatternAndAbsentOptionalFieldHaveNoDiagnostic()
+        {
+            var schema = new ImportSchema(
+                new[] { new ExpectedColumn("Code", true), new ExpectedColumn("Note", false) },
+                new[] { new FieldPatternRule("Code", "^[A-Z]{2}[0-9]{2}$"),
+                    new FieldPatternRule("Note", "^n[0-9]+$") });
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                { "Code", "AB12" }
+            }, 1), Is.Empty);
+        }
+
+        [Test]
+        public void RegexRuleConfigurationIsBoundedValidAndOrdinal()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                new FieldPatternRule("Code", "(unclosed"));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new FieldPatternRule("Code", "^A$", TimeSpan.Zero));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new FieldPatternRule("Code", "^A$", TimeSpan.FromDays(1)));
+            var rule = new FieldPatternRule("Code", "^(a+)+$", TimeSpan.FromMilliseconds(1));
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Code", true) }, new[] { rule });
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                { "Code", new string('a', 2000) + "!" }
+            }, 1), Has.Count.EqualTo(1));
+            Assert.Throws<ArgumentException>(() => new ImportSchema(
+                new[] { new ExpectedColumn("Code", true) },
+                new[] { new FieldPatternRule("Unknown", "^X$") }));
+            Assert.Throws<ArgumentException>(() => new ImportSchema(
+                new[] { new ExpectedColumn("Code", true) },
+                new[] { new FieldPatternRule("Code", "^A$"), new FieldPatternRule("Code", "^B$") }));
+        }
+
     }
 }
