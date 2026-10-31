@@ -138,6 +138,36 @@ jobs:
             }
             Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), reporting NUnit=$($counts.reporting), XLSX NUnit=$($counts.xlsx), total=$total failed=$failures."
           }
+      - name: Verify NFR-002 CSV and XLSX acceptance with blocked outbound network
+        shell: pwsh
+        run: |
+          # Dependencies have already been restored and the assemblies built.
+          # --inprocess ensures tests execute inside the firewall-blocked runner,
+          # rather than in an unrestricted nunit-agent process.
+          $runner = (Resolve-Path 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe').Path
+          $profiles = Get-NetFirewallProfile -ErrorAction Stop
+          if (-not ($profiles | Where-Object { $_.Enabled })) {
+            throw 'No enabled Windows Firewall profile; cannot claim offline evidence.'
+          }
+          $ruleName = 'RecordSift-NFR-002-OffLine-NUnit'
+          New-NetFirewallRule -DisplayName $ruleName -Direction Outbound -Action Block -Program $runner -Profile Any -Enabled True -ErrorAction Stop | Out-Null
+          try {
+            $rule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction Stop
+            if ($rule.Action -ne 'Block' -or $rule.Direction -ne 'Outbound' -or -not $rule.Enabled) {
+              throw 'NFR-002 outbound firewall restriction was not established.'
+            }
+            $csv = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+            $xlsx = 'tests\RecordSift.Infrastructure.Xlsx.Tests\bin\Release\RecordSift.Infrastructure.Xlsx.Tests.dll'
+            & $runner $csv $xlsx --inprocess "--where=Requirement == 'NFR-002'" "--result=TestResults/nunit-offline.xml;format=nunit3" --noheader
+            if ($LASTEXITCODE -ne 0) { throw "Offline NFR-002 NUnit failed: $LASTEXITCODE" }
+            [xml]$result = Get-Content 'TestResults/nunit-offline.xml'
+            if ([int]$result.'test-run'.total -lt 2 -or [int]$result.'test-run'.failed -ne 0) {
+              throw 'NFR-002 must execute both CSV and XLSX acceptance checks offline.'
+            }
+            Write-Host "NFR-002 restricted-process acceptance: $($result.'test-run'.total) passed."
+          } finally {
+            Remove-NetFirewallRule -DisplayName $ruleName -ErrorAction Stop
+          }
       - name: Verify combined NUnit category and scenario property filtering
         shell: pwsh
         run: |
