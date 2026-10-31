@@ -25,7 +25,7 @@ namespace RecordSift.Application.Messages
         /// <summary>Gets an invariant resource-backed get message.</summary>
         public static string ImportFailed => Get("Outcome_ImportFailed");
         /// <summary>Gets a sanitized description of partial validation stopped on a record error.</summary>
-        internal static string ImportStopped => Get("Outcome_ImportStopped");
+        public static string ImportStopped => Get("Outcome_ImportStopped");
         /// <summary>Gets an invariant resource-backed get message.</summary>
         public static string ReaderHeaderConflict => Get("Argument_ReaderHeaderConflict");
         /// <summary>Gets an invariant resource-backed get message.</summary>
