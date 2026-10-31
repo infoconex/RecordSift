@@ -210,5 +210,36 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.Diagnostics[2].Row, Is.EqualTo(4));
             }
         }
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-015")]
+        [Property("Scenario", "FR-015-SC01")]
+        public void FR_015_SC01_ApplicationFakeReaderAppliesDefaultOnlyToMissingOptionalField()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true),
+                new ExpectedColumn("Nickname", false, false, "Unknown")
+            });
+            var raw = CsvParseResult.Success(new[] {
+                new CsvRecord(1, 1, new[] { "Id" }),
+                new CsvRecord(2, 2, new[] { "1" })
+            });
+            var importer = new CsvImporter<Customer>(new FakeReader(raw),
+                values => new Customer {
+                    Id = int.Parse(values["Id"], CultureInfo.InvariantCulture),
+                    Name = values["Nickname"]
+                });
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 1024, schema,
+                    CsvHeaderPolicy.WithHeader, "default-source");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Unknown"));
+                Assert.That(result.Diagnostics, Is.Empty);
+            }
+        }
+
     }
 }

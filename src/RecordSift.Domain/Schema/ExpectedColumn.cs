@@ -37,6 +37,17 @@ namespace RecordSift.Domain.Schema
         {
         }
 
+        /// <summary>Declares an optional source field with a literal raw-string default used only when the field is absent.</summary>
+        /// <param name="name">Canonical source field identifier.</param>
+        /// <param name="isRequired">Source column presence policy; required columns still require their heading.</param>
+        /// <param name="isValueRequired">Whether any supplied value must be nonblank.</param>
+        /// <param name="defaultValue">Nullable raw value used only for an absent optional field; null disables the default.</param>
+        public ExpectedColumn(string name, bool isRequired, bool isValueRequired,
+            string defaultValue)
+            : this(name, isRequired, isValueRequired, null, null, null, defaultValue)
+        {
+        }
+
         /// <summary>Defines a source column with independently configured presence, value-required and inclusive raw string-length constraints.</summary>
         /// <param name="name">Exact-case source field name.</param>
         /// <param name="isRequired">Whether the column must appear in the source.</param>
@@ -58,6 +69,20 @@ namespace RecordSift.Domain.Schema
         /// <param name="aliases">Optional alternate headings; duplicates and blanks are invalid.</param>
         public ExpectedColumn(string name, bool isRequired, bool isValueRequired,
             int? minimumLength, int? maximumLength, IEnumerable<string> aliases)
+            : this(name, isRequired, isValueRequired, minimumLength, maximumLength, aliases, null)
+        {
+        }
+
+        /// <summary>Declares the complete source-column policy, including exact-case aliases and an opt-in raw-string default.</summary>
+        /// <param name="name">Canonical source field identifier.</param>
+        /// <param name="isRequired">Whether source column presence is required; defaults do not waive that requirement.</param>
+        /// <param name="isValueRequired">Whether any present or defaulted value must be nonblank.</param>
+        /// <param name="minimumLength">Optional inclusive UTF-16 minimum length.</param>
+        /// <param name="maximumLength">Optional inclusive UTF-16 maximum length.</param>
+        /// <param name="aliases">Optional exact-case alternate headings; duplicates and blanks are invalid.</param>
+        /// <param name="defaultValue">Raw default applied only if this column is optional and absent; null disables.</param>
+        public ExpectedColumn(string name, bool isRequired, bool isValueRequired,
+            int? minimumLength, int? maximumLength, IEnumerable<string> aliases, string defaultValue)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException(DomainMessageResources.ExpectedColumnName, nameof(name));
@@ -90,12 +115,15 @@ namespace RecordSift.Domain.Schema
             MinimumLength = minimumLength;
             MaximumLength = maximumLength;
             Aliases = new ReadOnlyCollection<string>(declaredAliases);
+            DefaultValue = defaultValue;
         }
 
         /// <summary>Gets the exact-case source column identifier.</summary>
         public string Name { get; private set; }
         /// <summary>Gets immutable, ordinal, exact-case alternative source headings.</summary>
         public IReadOnlyList<string> Aliases { get; private set; }
+        /// <summary>Gets a configured raw default for an absent optional source field; null means no default.</summary>
+        public string DefaultValue { get; private set; }
         /// <summary>Gets whether the source column must exist in the header or positional mapping.</summary>
         public bool IsRequired { get; private set; }
         /// <summary>Gets whether a present record value must contain non-whitespace characters.</summary>

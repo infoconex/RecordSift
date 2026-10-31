@@ -32,10 +32,13 @@ namespace RecordSift.Application.Mapping
             _converter = new PrimitiveFieldConverter(culture);
 
             var requiredSources = new HashSet<string>(StringComparer.Ordinal);
+            var configuredDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var column in schema.SourceSchema.Columns)
             {
                 if (column.IsRequired)
                     requiredSources.Add(column.Name);
+                else if (column.DefaultValue != null)
+                    configuredDefaults.Add(column.Name, column.DefaultValue);
             }
 
             var properties = new List<PropertyInfo>();
@@ -63,6 +66,27 @@ namespace RecordSift.Application.Mapping
                     throw new ArgumentException(
                         stringOnly ? DomainMessageResources.PropertyMappingUnsupportedDestination :
                             DomainMessageResources.PropertyMappingUnsupportedMember, nameof(schema));
+
+                string rawDefault;
+                if (configuredDefaults.TryGetValue(mapping.SourceColumnName, out rawDefault))
+                {
+                    // Validate against the actual destination type and configured culture
+                    // before any input rows are accepted; never expose the default value.
+                    try
+                    {
+                        _converter.Convert(rawDefault, resolved.PropertyType);
+                    }
+                    catch (FormatException)
+                    {
+                        throw new ArgumentException(
+                            DomainMessageResources.ConversionInvalidValue, nameof(schema));
+                    }
+                    catch (OverflowException)
+                    {
+                        throw new ArgumentException(
+                            DomainMessageResources.ConversionInvalidValue, nameof(schema));
+                    }
+                }
 
                 properties.Add(resolved);
                 required.Add(requiredSources.Contains(mapping.SourceColumnName));

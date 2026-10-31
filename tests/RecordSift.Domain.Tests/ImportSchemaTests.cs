@@ -354,5 +354,15 @@ namespace RecordSift.Domain.Tests
                 }));
         }
 
+        [Test]
+        public void ConfiguredOptionalDefaultIsRetainedWithoutRewritingExistingColumnPolicies()
+        {
+            var declared = new ExpectedColumn("Note", false, false, "Not supplied");
+            Assert.That(declared.DefaultValue, Is.EqualTo("Not supplied"));
+            Assert.That(declared.IsRequired, Is.False);
+            Assert.That(declared.IsValueRequired, Is.False);
+            Assert.That(new ExpectedColumn("Note", false).DefaultValue, Is.Null);
+        }
+
     }
 }

@@ -244,5 +244,58 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("Sensitive Customer"));
         }
 
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-015")]
+        [Property("Scenario", "FR-015-SC01")]
+        public void FR_015_SC01_RealCsvAbsentOptionalHeaderAppliesConfiguredTypedDefault()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Full Name", false, false, "Unknown")
+            });
+            var result = ImportNumericCustomers("Customer Id\r\n41\r\n42", schema);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Unknown"));
+            Assert.That(result.AcceptedRecords[1].CustomerId, Is.EqualTo(42));
+            Assert.That(result.Diagnostics, Is.Empty);
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-015")]
+        [Property("Scenario", "FR-015-SC02")]
+        public void FR_015_SC02_RealCsvPresentDataAndBlankPresentValueDoNotUseDefault()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Full Name", false, false, "Unknown")
+            });
+            var result = ImportNumericCustomers(
+                "Customer Id,Full Name\r\n41,Alice\r\n42,", schema);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo(string.Empty));
+            Assert.That(result.Diagnostics, Is.Empty);
+        }
+
+        [Test]
+        public void InvalidTypedDefaultIsRejectedWhenConfiguredPropertyMapperIsConstructed()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", false, false, "not-an-integer")
+            });
+            var mappings = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            Assert.Throws<ArgumentException>(() =>
+                new PrimitivePropertyMapper<NumericCustomer>(mappings, CultureInfo.InvariantCulture));
+        }
+
     }
 }
