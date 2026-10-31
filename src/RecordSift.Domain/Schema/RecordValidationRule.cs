@@ -12,6 +12,10 @@ namespace RecordSift.Domain.Schema
     {
         private readonly Func<T, bool> _isValid;
 
+        /// <summary>Creates a predicate-based record rule; null field identifies a record-wide error, while blank nonnull field is invalid.</summary>
+        /// <param name="field">Source field named in any failure diagnostic.</param>
+        /// <param name="T">Value supplied for this contract.</param>
+        /// <param name="isValid">Predicate returning true for an accepted record.</param>
         public RecordValidationRule(string field, Func<T, bool> isValid)
         {
             if (field != null && string.IsNullOrWhiteSpace(field))
@@ -23,6 +27,7 @@ namespace RecordSift.Domain.Schema
             _isValid = isValid;
         }
 
+        /// <summary>Gets the optional source field associated with this rule, or null for whole-record checks.</summary>
         public string Field { get; private set; }
 
         /// <summary>

@@ -19,8 +19,11 @@ namespace RecordSift.Domain.Schema
             Diagnostics = new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic>(diagnostics));
         }
 
+        /// <summary>Gets whether every required declaration was resolved without binding errors.</summary>
         public bool IsSuccessful { get; private set; }
+        /// <summary>Gets bound source indexes in declaration order; empty on any binding failure.</summary>
         public IReadOnlyList<SourceColumnBinding> Bindings { get; private set; }
+        /// <summary>Gets a read-only snapshot of source-scope binding errors.</summary>
         public IReadOnlyList<ImportDiagnostic> Diagnostics { get; private set; }
     }
 }

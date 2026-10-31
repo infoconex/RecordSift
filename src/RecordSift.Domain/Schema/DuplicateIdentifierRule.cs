@@ -19,6 +19,7 @@ namespace RecordSift.Domain.Schema
             _createValidator = createValidator;
         }
 
+        /// <summary>Gets the source field reported for a repeated identifier.</summary>
         public string Field { get; private set; }
 
         /// <summary>
