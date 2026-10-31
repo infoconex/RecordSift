@@ -37,6 +37,14 @@ try {
             throw "Unpinned or missing NuGet dependency: $($package.Key) version $($package.Value)"
         }
     }
+    $installedRoot = Join-Path $packages 'RecordSift.0.1.0-rc.1'
+    foreach ($notice in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
+        $file = Join-Path $installedRoot $notice
+        if (-not (Test-Path -LiteralPath $file)) { throw "Installed NuGet package missing $notice" }
+        if ((Get-Content -LiteralPath $file -Raw) -cne (Get-Content -LiteralPath (Join-Path $root $notice) -Raw)) {
+            throw "Installed NuGet package notice $notice does not match reviewed source."
+        }
+    }
     $lib = Join-Path $packages 'RecordSift.0.1.0-rc.1\lib\net48'
     $components = @('Domain', 'Application', 'Infrastructure.Csv', 'Infrastructure.Reporting', 'Infrastructure.Xlsx')
     foreach ($component in $components) {

@@ -10,6 +10,7 @@
     <projectUrl>https://github.com/infoconex/RecordSift</projectUrl>
     <repository type="git" url="https://github.com/infoconex/RecordSift.git" branch="release/0.1" />
     <readme>README.md</readme>
+    <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>csv xlsx validation import diagnostics net48 windows</tags>
     <dependencies>
@@ -32,5 +33,7 @@
     <file src="lib\net48\*.dll" target="lib/net48/" />
     <file src="lib\net48\*.xml" target="lib/net48/" />
     <file src="README.md" target="" />
+    <file src="LICENSE" target="LICENSE" />
+    <file src="THIRD-PARTY-NOTICES.md" target="THIRD-PARTY-NOTICES.md" />
   </files>
 </package>
