@@ -359,5 +359,48 @@ namespace RecordSift.Infrastructure.Csv.Tests
             }
         }
 
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-023")]
+        [Property("Scenario", "FR-023-SC01")]
+        public void FR_023_SC01_RealCsvPatternViolationRejectsOnlyInvalidRowWithProvenance()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Full Name", true)
+            }, new[] { new FieldPatternRule("Full Name", "^[A-Z][a-z]+$") });
+            var result = ImportNumericCustomers(
+                "Customer Id,Full Name\r\n1,Alice\r\n2,private-invalid\r\n3,Bob", schema);
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ValidationFailed));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Full Name"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-invalid"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-023")]
+        [Property("Scenario", "FR-023-SC02")]
+        public void FR_023_SC02_RealCsvMatchingPatternPreservesAllValidTypedRecords()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Full Name", true)
+            }, new[] { new FieldPatternRule("Full Name", "^[A-Z][a-z]+$") });
+            var result = ImportNumericCustomers(
+                "Customer Id,Full Name\r\n1,Alice\r\n2,Bob", schema);
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Diagnostics, Is.Empty);
+        }
+
     }
 }
