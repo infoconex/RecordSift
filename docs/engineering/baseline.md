@@ -8,24 +8,25 @@ This is a **deliberately constructed, historical-style** project configuration f
 - NuGet CLI (`nuget.exe`) available on PATH; internet access for the initial package restore.
 - No .NET SDK-style project tooling, Excel installation, or external service is required.
 
-## Restore, build and execute the baseline tests
+## Restore, build and execute the current net48 solution
 
-From the repository root in PowerShell (using a Developer PowerShell command prompt where `msbuild` is on PATH):
+The **original issue #57 smoke tests are historical**, and the former `tests/RecordSift.Tests` project has been replaced. Do not copy the obsolete initial smoke-test path into current release instructions.
+
+From the repository root on Windows (Visual Studio Developer PowerShell or equivalent):
 
 ```powershell
-nuget restore .\RecordSift.sln -NonInteractive -PackagesDirectory packages
+nuget restore .\RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
 msbuild .\RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU'
-New-Item -ItemType Directory -Force -Path .\TestResults | Out-Null
-.\packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe .\tests\RecordSift.Tests\bin\Release\RecordSift.Tests.dll '--result=TestResults/nunit-results.xml;format=nunit3'
+.\scripts\run_tests.ps1 -Verification Acceptance
 ```
 
-All commands must succeed; the resulting `TestResults/nunit-results.xml` must contain at least three tests and zero failures. Windows release-branch CI from issue #64 runs the same commands on PRs, release pushes and manual dispatch, and uploads NUnit XML evidence.
+For full release acceptance, the [Windows build/test workflow](../../.github/workflows/windows-net48.yml) executes **five** NUnit assemblies (Domain, Application, CSV, Reporting and XLSX), public API/JSON compatibility, XML docs, Office-free and offline checks, pinned-dependency security audit and unpublished NuGet packaging. The [independent installed-package workflow](../../.github/workflows/verify-rc-consumer.yml) tests both `0.1.0-rc.1` and `0.1.0` local packages on Windows/net48. The accepted baseline is **379/379 NUnit** and **425 compiled public API entries**; see [readiness](release-0.1-readiness.md) for the exact passing SHA and CI evidence.
 
-## Current architecture (after engineering issues #95, #97 and #99)
+## Current architecture (after the release 0.1 engineering migrations)
 
-The original issue #57 `src/RecordSift` entry below is **historical**, not a current build path. The live historical-format solution now contains `src/RecordSift.Domain`, `src/RecordSift.Application` and `src/RecordSift.Infrastructure.Csv` as separate net48 assemblies. The tests are also separate: vendor-independent `tests/RecordSift.Tests` and real-adapter `tests/RecordSift.Infrastructure.Csv.Tests`. Follow the current Windows workflow for the complete two-suite NUnit and dependency-audit commands. The legacy flat `RecordSift` public namespace is superseded by [ADR 0015](decisions/0015-layer-aligned-public-namespaces.md).
+The initial issue #57 `src/RecordSift` directory and `tests/RecordSift.Tests` project described below are **historical**, not current build paths. The active solution has five physical production assemblies: `RecordSift.Domain`, `RecordSift.Application`, `RecordSift.Infrastructure.Csv`, `RecordSift.Infrastructure.Xlsx` and `RecordSift.Infrastructure.Reporting`. Five corresponding NUnit assemblies isolate Domain, Application, CSV, XLSX and Reporting tests. See [architecture](architecture.md), [ADR 0013](decisions/0013-physical-domain-application-infrastructure-assemblies.md), and [current testing strategy](../testing/strategy.md).
 
-## Project structure and versioned dependencies
+## Original issue #57 project structure and dependency inventory (historical only)
 
 | Path | Purpose |
 | --- | --- |
@@ -45,8 +46,8 @@ The PR for issue #57 must link an observed Windows workflow run and report actua
 
 ## Observed initial baseline evidence
 
-Issue #57 was squash-merged after a successful Windows build and **3 of 3** NUnit baseline tests in [Actions run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680). The requirement scenarios are still Planned; assembly smoke tests cannot certify CSV/XLSX behavior.
+Issue #57 was squash-merged after a successful Windows build and **3 of 3** NUnit baseline tests in [Actions run #41017804680](https://github.com/infoconex/RecordSift/actions/runs/41017804680). At that initial milestone the requirement scenarios were still Planned; assembly smoke tests did not certify CSV/XLSX behavior. Those scenarios were subsequently verified in release 0.1, as recorded in [traceability](../testing/traceability.md).
 
 ## Issue #85 CSV adapter addition
 
-The initial issue #57 dependency inventory above is historical evidence; it is not the current total after CSV adapter integration. Issue #85 adds the independent traditional `src/RecordSift.CsvHelperAdapter` project and its pinned CSV runtime dependency graph; core `RecordSift` remains free of NuGet parser packages. See [ADR 0008](decisions/0008-csvhelper-isolated-adapter.md) for the current design and [PR #87](https://github.com/infoconex/RecordSift/pull/87) for observed verification.
+The initial issue #57 dependency inventory above is historical evidence; it is not the current total after CSV adapter integration. Issue #85 originally added the historical `src/RecordSift.CsvHelperAdapter` project and pinned CSV dependency graph; [ADR 0013](decisions/0013-physical-domain-application-infrastructure-assemblies.md) and [ADR 0014](decisions/0014-infrastructure-csv-adapter-naming.md) subsequently reorganized it as `RecordSift.Infrastructure.Csv`. See [ADR 0008](decisions/0008-csvhelper-isolated-adapter.md) for its original vendor-isolation decision and [PR #87](https://github.com/infoconex/RecordSift/pull/87) for observed verification.
