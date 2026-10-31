@@ -329,5 +329,55 @@ namespace RecordSift.Application.Tests
                 new PrimitivePropertyMapper<ReadOnlyDestination>(
                     mapping, CultureInfo.InvariantCulture));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-027")]
+        [Property("Scenario", "FR-027-SC01")]
+        public void FR_027_SC01_FakeReaderKeepsValidOrdersInSourceOrderAcrossRejectedRows()
+        {
+            var result = ImportOrders(new[] {
+                new CsvRecord(1, 1, new[] { "Id", "Amount", "Order Date" }),
+                new CsvRecord(2, 2, new[] { "1", "1,50", "31/12/2025" }),
+                new CsvRecord(3, 3, new[] { "invalid-id", "2,50", "31/12/2025" }),
+                new CsvRecord(4, 4, new[] { "3", "3,50", "01/01/2026" }),
+                new CsvRecord(5, 5, new[] { "4", "not-a-number", "01/01/2026" }),
+                new CsvRecord(6, 6, new[] { "5", "5,50", "02/01/2026" })
+            });
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(5));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(3));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(3));
+            Assert.That(result.AcceptedRecords[2].Id, Is.EqualTo(5));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[1].Row, Is.EqualTo(4));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-027")]
+        [Property("Scenario", "FR-027-SC02")]
+        public void FR_027_SC02_FakeReaderExcludesEveryRejectedOrder()
+        {
+            var result = ImportOrders(new[] {
+                new CsvRecord(1, 1, new[] { "Id", "Amount", "Order Date" }),
+                new CsvRecord(2, 2, new[] { "invalid-id", "1,50", "31/12/2025" }),
+                new CsvRecord(3, 3, new[] { "2", "invalid-amount", "01/01/2026" })
+            });
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Id"));
+            Assert.That(result.Diagnostics[1].Field, Is.EqualTo("Amount"));
+        }
     }
 }
