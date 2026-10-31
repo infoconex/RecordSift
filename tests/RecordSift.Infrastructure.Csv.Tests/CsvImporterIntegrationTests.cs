@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
+using RecordSift.Application.Mapping;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
@@ -110,5 +111,140 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("Secret Customer"));
         }
+        private static TypedImportResult<Customer> ImportWithDeclaredMapping(string csv,
+            CsvHeaderPolicy policy = CsvHeaderPolicy.WithHeader)
+        {
+            var schema = Schema();
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Name", "Name")
+            });
+            var mapper = new PrimitivePropertyMapper<Customer>(
+                mapping, CultureInfo.InvariantCulture);
+            var importer = new CsvImporter<Customer>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+            using (var source = new StringReader(csv))
+                return importer.Import(source, 4096, schema, policy, "fr001-mapped");
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC01")]
+        public void FR_001_SC01_RealCsvUsesDeclaredMappingForThreeTypedCustomers()
+        {
+            var result = ImportWithDeclaredMapping(
+                "Id,Name\r\n1,Alice\r\n2,Bob\r\n3,Carol");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.SourceId, Is.EqualTo("fr001-mapped"));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(3));
+            Assert.That(result.AcceptedRecords[0], Is.TypeOf<Customer>());
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+            Assert.That(result.AcceptedRecords[2].Id, Is.EqualTo(3));
+            Assert.That(result.AcceptedRecords[2].Name, Is.EqualTo("Carol"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC02")]
+        public void FR_001_SC02_RealCsvMappedHeaderOnlyCompletesWithInformation()
+        {
+            var result = ImportWithDeclaredMapping("Id,Name\r\n");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.Message, Does.Contain("No data records"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC03")]
+        public void FR_001_SC03_RealCsvMappedMalformedQuoteFailsWithoutPartialRecords()
+        {
+            var result = ImportWithDeclaredMapping(
+                "Id,Name\r\n1,Alice\r\n2,\"unfinished");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+            Assert.That(result.SourceId, Is.EqualTo("fr001-mapped"));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.MalformedSource));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC04")]
+        public void FR_001_SC04_RealCsvMappedQuotedDelimiterAndNewlineRemainFieldValues()
+        {
+            var result = ImportWithDeclaredMapping(
+                "Id,Name\r\n1,\"Alice, Jr.\"\r\n2,\"Bob\r\nTwo\"");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice, Jr."));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob\r\nTwo"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC05")]
+        public void FR_001_SC05_RealCsvMappedEmptyHeaderlessCompletesWithoutErrors()
+        {
+            var result = ImportWithDeclaredMapping("", CsvHeaderPolicy.WithoutHeader);
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.Message, Does.Contain("no records").IgnoreCase);
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC06")]
+        public void FR_001_SC06_RealCsvMappedEmptyHeadedSourceFailsWithSchemaDiagnostic()
+        {
+            var result = ImportWithDeclaredMapping("");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.RequiredHeaderMissing));
+            Assert.That(result.Message, Is.Not.Empty);
+        }
+
     }
 }
