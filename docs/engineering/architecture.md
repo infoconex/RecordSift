@@ -108,3 +108,7 @@ Domain diagnostics and business-validation messages are defined by [ADR 0010](de
 ## XLSX reading and shared typed validation (FR-002)
 
 The Application's `RecordValidationPipeline` processes normalized `ImportDataRow` values from both CSV and XLSX. CSV retains its existing importer and header behavior, while an XLSX-specific `IXlsxWorksheetReader` port handles binary workbook sources. The isolated `RecordSift.Infrastructure.Xlsx` adapter uses pinned ExcelDataReader without leaking vendor types. Existing Domain schema validators and reporting contracts are reused; reliable worksheet and physical-row coordinates are attached to Domain diagnostics. See [ADR 0032](decisions/0032-xlsx-reader-shared-validation.md).
+
+## Release 0.1 platform independence boundary (NFR-009)
+
+The [platform-dependency review](platform-dependencies-net48.md) records NFR-009-SC01 inspection of all production project references, selected source APIs and adapter packages. The library uses RecordSift-owned Application ports and has no reviewed direct Office/COM, Windows Registry, P/Invoke or process-launch integration requirement. The historical .NET Framework 4.8 build and Windows runners remain deliberate release constraints. NFR-009-SC02 requires a separate portable target/framework and multi-operating-system execution matrix; architecture isolation or an Office-free Windows test cannot substitute for that evidence.
