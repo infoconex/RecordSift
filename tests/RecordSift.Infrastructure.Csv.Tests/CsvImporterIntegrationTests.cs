@@ -715,5 +715,25 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 }
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-008")]
+        [Property("Scenario", "NFR-008-SC02")]
+        public void NFR_008_SC02_CsvExpressionsScriptsAndShellLikeStringsRemainLiteralData()
+        {
+            var result = Import("Id,Name\r\n1,=1+1\r\n2,<script>harmless()</script>\r\n3,cmd.exe /c echo marker");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("=1+1"));
+            Assert.That(result.AcceptedRecords[1].Name,
+                Is.EqualTo("<script>harmless()</script>"));
+            Assert.That(result.AcceptedRecords[2].Name,
+                Is.EqualTo("cmd.exe /c echo marker"));
+        }
     }
 }
