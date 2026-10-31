@@ -459,6 +459,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
             Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
             Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Message, Is.Not.Empty);
+            Assert.That(result.Diagnostics[0].Message,
+                Does.Not.Contain("31/12/2025"));
         }
 
         [Test]
