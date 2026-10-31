@@ -4,7 +4,7 @@ This directory is the **authoritative source of expected behavior** for RecordSi
 
 - [Functional scenarios](functional/) — 39 Markdown files, one per `FR-001` through `FR-039`.
 - [Nonfunctional scenarios](non-functional/) — 10 Markdown files, one per `NFR-001` through `NFR-010`.
-- [Scenario-level traceability](../testing/traceability.md) — 109 specified scenarios, their GitHub issues, test mappings and observed execution evidence (five FR-030 summary-unit and two FR-011 conversion scenarios Automated; remaining 102 Planned).
+- [Scenario-level traceability](../testing/traceability.md) — 109 specified scenarios, their GitHub issues, test mappings and observed execution evidence; this matrix is the sole source of scenario verification status.
 - [Functional requirements](../requirements/functional.md) and [Nonfunctional requirements](../requirements/non-functional.md).
 - [TDD and testing strategy](../testing/strategy.md).
 
@@ -12,7 +12,7 @@ This directory is the **authoritative source of expected behavior** for RecordSi
 
 Every `docs/scenarios/functional/FR-###.md` file should contain, in order:
 
-1. **Metadata:** requirement ID, GitHub issue, priority, and verification planning status.
+1. **Metadata:** requirement ID, GitHub issue, priority, and specification maturity. Legacy functional-specification planning labels are not evidence of scenario execution; the traceability matrix owns that status.
 2. **Purpose:** the user/developer problem addressed by the requirement.
 3. **Functional requirement:** a precise, affirmative "RecordSift shall" contract.
 4. **Inputs and outputs:** source information, configuration and observable results/errors.
@@ -21,6 +21,8 @@ Every `docs/scenarios/functional/FR-###.md` file should contain, in order:
 7. **Open design decisions:** unresolved choices to settle during the issue, rather than guessing in code.
 8. **Acceptance scenarios:** versioned `FR-###-SC##` headings with Given/When/Then clauses.
 9. **Verification notes:** how scenarios become executable test evidence.
+
+**Nonfunctional specification metadata:** NFR documents use **Specification status: Maintained** irrespective of which scenarios have passed. This describes the lifecycle of the normative specification, not the execution of acceptance tests. Refer to the per-scenario matrix for Planned/Automated/Manual/Blocked states. Functional specifications currently retain their legacy planning-only metadata; do not interpret it as current test status.
 
 The index at `docs/requirements/functional.md` stays concise. Avoid duplicating the full requirement text in GitHub issues: link to the authoritative Markdown. Nonfunctional documents retain their current scenario format pending a separate specification review.
 
@@ -34,7 +36,7 @@ The index at `docs/requirements/functional.md` stays concise. Avoid duplicating 
 2. Write testable **Given**, **When**, and **Then** clauses. Distinguish success, failure, boundary, privacy, and platform cases where relevant.
 3. Record important inputs and measurable outcomes; avoid locking in unspecified implementation details. Resolve open design decisions through the relevant implementation issue or a separate decision record.
 4. In the same PR, update the [traceability matrix](../testing/traceability.md) for each added, changed, or deprecated scenario.
-5. Start with failing automated tests where feasible. Change status from **Planned** only when linked verification methods and actual observed evidence exist.
+5. Classify the change as acceptance verification, a genuine defect correction, or new capability per the [testing strategy](../testing/strategy.md). Start with an intentionally failing test only for missing or defective behavior. Change scenario status in the **traceability matrix** from **Planned** only when linked verification methods and observed evidence exist.
 6. Follow the one-issue-per-branch workflow; target `release/0.1` and squash merge reviewed changes. A requirement issue remains open until its applicable acceptance and quality checks are met.
 
 ## Release scope and deferred scenarios
