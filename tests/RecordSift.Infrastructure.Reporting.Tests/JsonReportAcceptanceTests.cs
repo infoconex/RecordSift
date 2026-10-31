@@ -157,5 +157,24 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(error["field"], Is.Null);
             Assert.That(error.ContainsKey("physicalLine"), Is.False);
         }
+
+        [Test]
+        [Property("Requirement", "FR-031")]
+        public void StoppedOutcomeUsesVersionedJsonStatusAndSanitizedMessage()
+        {
+            var stopped = new TypedImportResult<string>("fr031-report",
+                ImportResult.Stopped(2, new[] {
+                    ImportDiagnostic.ForRecord(2, "Name",
+                        DiagnosticCodes.ValidationFailed, null, null, 3)
+                }), new[] { "private-accepted" }, "private-status");
+            var json = new JsonImportResultSerializerAdapter().Serialize(stopped);
+            var report = Parse(json);
+            Assert.That(report["schemaVersion"], Is.EqualTo("1.1"));
+            Assert.That(report["status"], Is.EqualTo("Stopped"));
+            Assert.That(Fields(report["summary"])["processedCount"], Is.EqualTo(2));
+            Assert.That(json, Does.Not.Contain("private-accepted"));
+            Assert.That(json, Does.Not.Contain("private-status"));
+            Assert.That((string)report["message"], Does.Contain("stopped"));
+        }
     }
 }
