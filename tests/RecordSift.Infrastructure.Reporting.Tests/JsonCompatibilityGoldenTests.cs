@@ -58,7 +58,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_SuccessfulImportPreservesVersionAndSummary()
@@ -70,7 +70,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_RejectedRecordsPreserveAllOrderedDiagnostics()
@@ -86,7 +86,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_SourceFailurePreservesExplicitNullRowAndField()
@@ -99,7 +99,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_EmptyCompletedImportPreservesZeroCounters()
@@ -111,7 +111,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_CsvPhysicalLineRemainsOptionalProvenance()
@@ -125,7 +125,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_XlsxWorksheetAndPhysicalRowRemainStable()
@@ -139,7 +139,7 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
-        [Property("Verification", "Regression")]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-010")]
         [Property("Scenario", "NFR-010-SC02")]
         public void NFR_010_SC02_XlsxSourceFailureRetainsWorksheetWithoutPhysicalRow()
