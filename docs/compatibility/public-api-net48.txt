@@ -47,6 +47,7 @@ base RecordSift.Domain.Schema.SourceColumnPosition : System.Object
 base RecordSift.Domain.Schema.SourcePropertyMapping : System.Object
 base RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : System.Object
 base RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> : System.Object
+base RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter : System.Object
 base RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter : System.Object
 base RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter : System.Object
 base RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter : System.Object
@@ -84,6 +85,8 @@ constructor RecordSift.Domain.Schema.SourceColumnPosition(System.String name, Sy
 constructor RecordSift.Domain.Schema.SourcePropertyMapping(System.String sourceColumnName, System.String propertyName)
 constructor RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter()
 constructor RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T>(RecordSift.Application.Importing.Csv.CsvImporter<T> importer)
+constructor RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter()
+constructor RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter(System.Char delimiter)
 constructor RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter()
 constructor RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter()
 constructor RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter()
@@ -140,6 +143,7 @@ interface RecordSift.Domain.Results.ImportStatus : System.IComparable
 interface RecordSift.Domain.Results.ImportStatus : System.IConvertible
 interface RecordSift.Domain.Results.ImportStatus : System.IFormattable
 interface RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : RecordSift.Application.Ports.Csv.ICsvRecordReader
+interface RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter : RecordSift.Application.Ports.Reporting.IImportResultSerializer
 interface RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter : RecordSift.Application.Ports.Reporting.IImportResultSerializer
 interface RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter : RecordSift.Application.Ports.Reporting.IImportResultFormatter
 interface RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter : RecordSift.Application.Ports.Xlsx.IXlsxWorksheetReader
@@ -214,6 +218,7 @@ method RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter instance virtual Rec
 method RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxCharacters, System.Text.Encoding encoding, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Boolean strictDecoding optional=True, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions optional=null, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
 method RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxCharacters, System.Text.Encoding encoding, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Boolean strictDecoding, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast)
 method RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxCharacters, System.Text.Encoding encoding, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Boolean strictDecoding, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast, System.Threading.CancellationToken cancellationToken)
+method RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter instance virtual System.String Serialize<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
 method RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter instance virtual System.String Serialize<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
 method RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter instance virtual System.String Format<T>(RecordSift.Domain.Results.TypedImportResult<T> result)
 method RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter instance virtual RecordSift.Application.Ports.Xlsx.XlsxReadResult Read(System.IO.Stream source, System.Int32 maxBytes, System.Int32 maxRows, System.Int32 maxColumns, System.Int32 maxCellCharacters, System.String worksheetName optional=null)
@@ -417,6 +422,7 @@ type RecordSift.Domain.Schema.SourceColumnPosition kind=class modifier=sealed
 type RecordSift.Domain.Schema.SourcePropertyMapping kind=class modifier=sealed
 type RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter kind=class modifier=sealed
 type RecordSift.Infrastructure.Csv.CsvStreamImporterAdapter<T> kind=class modifier=sealed
+type RecordSift.Infrastructure.Reporting.CsvImportResultSerializerAdapter kind=class modifier=sealed
 type RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter kind=class modifier=sealed
 type RecordSift.Infrastructure.Reporting.ReadableImportResultFormatterAdapter kind=class modifier=sealed
 type RecordSift.Infrastructure.Xlsx.XlsxWorksheetReaderAdapter kind=class modifier=sealed

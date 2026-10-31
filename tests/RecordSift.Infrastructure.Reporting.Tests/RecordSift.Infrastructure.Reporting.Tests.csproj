@@ -25,6 +25,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.3.14.0\lib\net45\nunit.framework.dll</HintPath><Private>True</Private>
@@ -33,6 +34,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonReportAcceptanceTests.cs" />
+    <Compile Include="CsvDiagnosticReportAcceptanceTests.cs" />
     <Compile Include="JsonCompatibilityGoldenTests.cs" />
     <None Include="Fixtures\Compatibility\*.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

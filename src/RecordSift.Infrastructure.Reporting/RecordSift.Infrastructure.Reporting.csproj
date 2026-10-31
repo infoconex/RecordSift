@@ -34,6 +34,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonImportResultSerializerAdapter.cs" />
+    <Compile Include="CsvImportResultSerializerAdapter.cs" />
+    <Compile Include="SafeReportingSourceIdentifier.cs" />
     <Compile Include="ReadableImportResultFormatterAdapter.cs" />
     <Compile Include="ReportingMessageResources.cs" />
   </ItemGroup>

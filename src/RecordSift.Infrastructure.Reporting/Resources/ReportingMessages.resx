@@ -26,4 +26,7 @@
   <data name="Readable_PhysicalLine" xml:space="preserve"><value> (physical line {0})</value></data>
   <data name="Readable_PhysicalRow" xml:space="preserve"><value> (physical row {0})</value></data>
   <data name="Readable_Worksheet" xml:space="preserve"><value> (worksheet {0})</value></data>
+  <data name="Csv_InvalidDelimiter" xml:space="preserve">
+    <value>CSV report delimiter must not be a quote, record separator, or unsupported control character.</value>
+  </data>
 </root>
