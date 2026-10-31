@@ -112,6 +112,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("Secret Customer"));
         }
+
         private static TypedImportResult<Customer> ImportWithDeclaredMapping(string csv,
             CsvHeaderPolicy policy = CsvHeaderPolicy.WithHeader)
         {
@@ -249,6 +250,5 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].Row, Is.Null);
             Assert.That(result.Message, Is.EqualTo(CsvMessageResources.ImportMissingHeader));
         }
-
     }
 }
