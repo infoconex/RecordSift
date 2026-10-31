@@ -1,6 +1,6 @@
 # RecordSift release 0.1 — release-candidate readiness assessment
 
-**Review:** 2026-10-31. **Supported scope:** Windows only; .NET Framework 4.8; C# 7.3; NUnit 3; GitHub Actions Windows 2022 runners. **Integration branch:** release/0.1. **Verified candidate integration SHA before this documentation PR:** b56642252c8824f6d4bdcd09e0704842a3352a23. Do not confuse this review with release authorization.
+**Initial review:** 2026-10-31; **documentation acceptance revision:** 2026-10-31. **Supported scope:** Windows only; .NET Framework 4.8; C# 7.3; NUnit 3; GitHub Actions Windows 2022 runners. **Integration branch:** release/0.1. The initial pre-documentation candidate SHA was `b56642252c8824f6d4bdcd09e0704842a3352a23`; subsequent milestones below supersede that historical checkpoint. **Owner authorization:** source promotion to `main` is approved **only by SQUASH merge**, conditional on complete documentation review and green PR/postmerge CI; public tagging/package publication is **not** approved.
 
 ## Functional and nonfunctional acceptance
 
@@ -23,9 +23,9 @@ Vendor license evidence was subsequently completed in PR #190 for all eleven pin
 
 ## Documentation and release operations
 
-Issue #185 / PR #189 updates the root README, net48 installation guide and examples, complete release notes, versioned JSON/report behavior and limitations, pinned package inventory, licensing warnings, and release verification/promotion/rollback procedures. Windows #41236650556 and documentation #41236650553 passed prior to the final assessment revision. The documentation PR must undergo fresh verification and post-merge CI after this report is added.
+Issue #185 / PR #189 updates the root README, net48 installation guide and examples, complete release notes, versioned JSON/report behavior and limitations, pinned package inventory, licensing warnings, and release verification/promotion/rollback procedures. Windows #41236650556 and documentation #41236650553 passed prior to the final assessment revision. That documentation PR subsequently passed pre- and post-merge CI; its original links remain as historical evidence, not current status.
 
-No merge to main, public tag, GitHub release or package publication occurred. The release/0.1 integration branch remains the only changed integration branch. Independent authorization is mandatory for any subsequent promotion.
+At the time of the initial technical review, no merge to `main`, public tag, GitHub release or package publication had occurred. The owner subsequently authorized **source-only squash promotion**; any public tag, release or upload still requires distinct explicit authorization.
 
 ## Licensing acceptance update — 2026-10-31
 
@@ -41,14 +41,14 @@ The workflow produces **temporary local artifacts only**. It does not upload the
 
 ## Risks and classification
 
-**RECOMMENDATION: CONDITIONAL GO — technically validated unpublished release candidate, NOT yet authorized for release promotion or publication.**
+**RECOMMENDATION: GO for owner-authorized, documentation-gated SOURCE SQUASH promotion only; NO-GO for tagging, GitHub release creation or public package publication pending separate approval.**
 
-There are no *known unresolved release-blocking implementation defects* in the scope that passed the Windows candidate and installed-consumer gates. The candidate must **not** be publicly distributed or promoted until all of the following explicit conditions are satisfied:
+There are no *known unresolved release-blocking implementation defects* in the verified Windows candidate and installed-consumer scope. **Source promotion is authorized only after the comprehensive documentation audit (#196) and full release PR/main CI pass. Public distribution remains on hold** until separately approved. Apply these explicit gates:
 
 1. **Verified complete:** the owner approved MIT, copyright (c) 2026 Infoconex (#186); root LICENSE, SPDX MIT metadata and third-party notices are committed.
-2. Verify the unpublished stable `0.1.0` preflight package and independent installed consumer in Windows CI (#192). **Even if local preflight passes**, rerun Windows regression, installed-consumer, API/JSON/documentation, and fresh vulnerability checks on the **exact promoted final artifact** before publication.
-3. A final version, checksum, versioned release notes, dependency notices and promotion/rollback plan are reviewed. Release/0.1 is promoted to main and a public release/tag/package are created **only after separate explicit authorization**.
+2. **Verified complete as internal preflight:** issue #192 / PR #193 passed on integration SHA `5295fbc39ea8e2430fc57c5c74828e3d70ca9c39`; [Windows #41241688563](https://github.com/infoconex/RecordSift/actions/runs/41241688563) passed 379 tests and 425 API baseline entries, [consumer #41241688740](https://github.com/infoconex/RecordSift/actions/runs/41241688740) independently installed both unpublished RC and stable 0.1.0 identities, and [docs #41241688592](https://github.com/infoconex/RecordSift/actions/runs/41241688592) passed. Repeat full Windows regression, installed-consumer, API/JSON/documentation and fresh vulnerability checks on the **exact promoted `main` SHA**, and again on any actual final public artifact before publication.
+3. **Promotion-specific gates:** complete issue #196's all-file documentation audit, approve the reviewed `release/0.1` -> `main` PR, **squash** merge to one consolidated commit, and verify its three main-branch workflows. **Publication-specific gates:** separately authorize channel, tag, GitHub release and NuGet push, and review final stable version, final artifact hash, release notes, dependency notices and rollback plan. Passing source promotion does not satisfy publication authorization.
 
-If the license cannot be approved, CI fails on the final package or a new release-blocking defect is discovered, the decision becomes NO-GO until remediated. The six deferred Future functional requirements and cross-platform modernization are outside the approved Windows 0.1 scope, not blockers.
+If a required CI/documentation gate fails or a new release-blocking defect is found, the affected promotion/publication decision becomes NO-GO until remediated. The six deferred Future functional requirements and cross-platform modernization are outside the approved Windows 0.1 scope, not blockers.
 
 **Decision owner:** repository/release owner; this technical assessment does not authorize or execute promotion.
