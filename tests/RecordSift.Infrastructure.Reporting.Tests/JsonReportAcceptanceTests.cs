@@ -178,9 +178,10 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
         [Property("Requirement", "FR-032")]
         [Property("Scenario", "FR-032-SC01")]
-        public void CanceledImportUsesSeparateJsonVersionWithSafeMessageAndPartialCounts()
+        public void FR_032_SC01_CanceledImportUsesSeparateJsonVersionWithSafeMessageAndPartialCounts()
         {
             var result = new TypedImportResult<string>("cancel-safe",
                 ImportResult.Canceled(2, new[] {
