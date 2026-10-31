@@ -567,10 +567,13 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                                 var xml = new System.Xml.XmlDocument();
                                 xml.Load(input);
                                 var cell = xml.SelectSingleNode(
-                                    "//*[local-name()='c' and @r='B2']") as System.Xml.XmlElement;
+                                    "//*[local-name()='row' and @r='2']/*[local-name()='c'][last()]")
+                                    as System.Xml.XmlElement;
                                 Assert.That(cell, Is.Not.Null);
+                                var coordinate = cell.GetAttribute("r");
+                                Assert.That(coordinate, Is.Not.Empty);
                                 cell.RemoveAll();
-                                cell.SetAttribute("r", "B2");
+                                cell.SetAttribute("r", coordinate);
                                 var formula = xml.CreateElement("f", cell.NamespaceURI);
                                 formula.InnerText = "1+1";
                                 cell.AppendChild(formula);
