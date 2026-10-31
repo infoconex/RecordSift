@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>RecordSift</id>
+    <version>0.1.0-rc.1</version>
+    <authors>Infoconex</authors>
+    <owners>Infoconex</owners>
+    <description>Windows-only .NET Framework 4.8 CSV and XLSX imports with schemas, validation, structured diagnostics and reports.</description>
+    <summary>Import, validate and report on structured records.</summary>
+    <projectUrl>https://github.com/infoconex/RecordSift</projectUrl>
+    <repository type="git" url="https://github.com/infoconex/RecordSift.git" branch="release/0.1" />
+    <readme>README.md</readme>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>csv xlsx validation import diagnostics net48 windows</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.8">
+        <dependency id="CsvHelper" version="[33.1.0]" />
+        <dependency id="ExcelDataReader" version="[3.9.0]" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\net48\*.dll" target="lib/net48/" />
+    <file src="lib\net48\*.xml" target="lib/net48/" />
+    <file src="README.md" target="" />
+  </files>
+</package>

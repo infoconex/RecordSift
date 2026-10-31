@@ -3,9 +3,9 @@
 # RecordSift net48 compiled public API baseline; approved via reviewed pull requests.
 assembly RecordSift.Application version=0.1.0.0 culture=neutral publicKeyToken=null
 assembly RecordSift.Domain version=0.1.0.0 culture=neutral publicKeyToken=null
-assembly RecordSift.Infrastructure.Csv version=0.0.0.0 culture=neutral publicKeyToken=null
+assembly RecordSift.Infrastructure.Csv version=0.1.0.0 culture=neutral publicKeyToken=null
 assembly RecordSift.Infrastructure.Reporting version=0.1.0.0 culture=neutral publicKeyToken=null
-assembly RecordSift.Infrastructure.Xlsx version=0.0.0.0 culture=neutral publicKeyToken=null
+assembly RecordSift.Infrastructure.Xlsx version=0.1.0.0 culture=neutral publicKeyToken=null
 base RecordSift.Application.Importing.Csv.CsvDataRow : System.Object
 base RecordSift.Application.Importing.Csv.CsvHeaderPolicy : System.Enum
 base RecordSift.Application.Importing.Csv.CsvImporter<T> : System.Object
@@ -119,9 +119,9 @@ field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Resu
 field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Stopped
 fileVersion RecordSift.Application 0.1.0.0
 fileVersion RecordSift.Domain 0.1.0.0
-fileVersion RecordSift.Infrastructure.Csv 0.0.0.0
+fileVersion RecordSift.Infrastructure.Csv 0.1.0.0
 fileVersion RecordSift.Infrastructure.Reporting 0.1.0.0
-fileVersion RecordSift.Infrastructure.Xlsx 0.0.0.0
+fileVersion RecordSift.Infrastructure.Xlsx 0.1.0.0
 generic RecordSift.Application.Importing.Csv.CsvImporter<T>
 generic RecordSift.Application.Importing.Xlsx.XlsxImporter<T>
 generic RecordSift.Application.Mapping.PrimitivePropertyMapper<T> where T:class&new()
