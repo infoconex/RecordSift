@@ -23,7 +23,7 @@ namespace RecordSift.Infrastructure.Csv
             if (count == 0)
                 return 0;
             // Probe at most one character beyond the accepted budget.
-            var requested = Math.Min(count, _remaining + 1);
+            var requested = _remaining >= count ? count : _remaining + 1;
             var read = _source.Read(buffer, index, requested);
             if (read > _remaining)
                 throw new CharacterLimitExceededException();
