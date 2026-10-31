@@ -51,7 +51,7 @@ namespace RecordSift.Infrastructure.Reporting
                     ? CanceledJsonSchemaVersion
                     : result.Status == ImportStatus.Stopped
                         ? StoppedJsonSchemaVersion : JsonSchemaVersion,
-                SourceId = SafeSourceIdentifier(result.SourceId),
+                SourceId = SafeReportingSourceIdentifier.Sanitize(result.SourceId),
                 Status = result.Status.ToString(),
                 Message = SafeStatusMessage(result),
                 Summary = new SummaryContract
@@ -71,17 +71,6 @@ namespace RecordSift.Infrastructure.Reporting
             }
         }
 
-        // Avoid disclosing absolute local source paths, while preserving safe opaque IDs.
-        private static string SafeSourceIdentifier(string sourceId)
-        {
-            bool rooted = sourceId.StartsWith("/", StringComparison.Ordinal) ||
-                sourceId[0] == (char)92 ||
-                sourceId.StartsWith("file:", StringComparison.OrdinalIgnoreCase) ||
-                (sourceId.Length >= 3 && char.IsLetter(sourceId[0]) &&
-                 sourceId[1] == ':' && (sourceId[2] == '/' || sourceId[2] == (char)92));
-            return rooted ? RedactedSourceIdentifier : sourceId;
-        }
-
         // Caller-supplied messages can contain arbitrary record values; never export them by default.
         private static string SafeStatusMessage<T>(TypedImportResult<T> result)
         {
@@ -97,8 +86,6 @@ namespace RecordSift.Infrastructure.Reporting
                 ? ReportingMessageResources.ImportCompletedWithRejections
                 : ReportingMessageResources.ImportCompleted;
         }
-
-        private const string RedactedSourceIdentifier = "source-redacted";
 
         [DataContract]
         private sealed class ReportContract
