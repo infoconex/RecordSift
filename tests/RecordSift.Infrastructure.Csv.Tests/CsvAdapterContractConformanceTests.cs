@@ -11,6 +11,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
     /// CsvRecordReaderContractTests. Future adapters derive from the same suite.
     /// </summary>
     [TestFixture]
+    [Category("Component")]
     public sealed class CsvAdapterContractConformanceTests : CsvRecordReaderContractTests
     {
         protected override ICsvRecordReader CreateReader()

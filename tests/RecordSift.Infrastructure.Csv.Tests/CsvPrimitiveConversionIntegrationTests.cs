@@ -12,6 +12,7 @@ using RecordSift.Infrastructure.Csv;
 namespace RecordSift.Infrastructure.Csv.Tests
 {
     [TestFixture]
+    [Category("Integration")]
     public sealed class CsvPrimitiveConversionIntegrationTests
     {
         private sealed class Order
@@ -24,6 +25,10 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-011")]
+        [Property("Scenario", "FR-011-SC01")]
+        [Property("Scenario", "FR-011-SC02")]
         public void FR_011_SC01_SC02_RealCsvRespectsExplicitFrenchCultureAndNullableValues()
         {
             var schema = new ImportSchema(new[] {

@@ -12,6 +12,7 @@ using RecordSift.Infrastructure.Csv;
 namespace RecordSift.Infrastructure.Csv.Tests
 {
     [TestFixture]
+    [Category("Component")]
     public sealed class CsvHeaderPolicyTests
     {
         private static ImportSchema Schema()
@@ -29,6 +30,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-004")]
+        [Property("Scenario", "FR-004-SC01")]
         public void FR_004_SC01_HeadedAndHeaderlessCsvRetainIdenticalDataRows()
         {
             var headed = Read("Name,Id\nAlice,1\nBob,2", CsvHeaderPolicy.WithHeader);
@@ -50,6 +54,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-004")]
+        [Property("Scenario", "FR-004-SC02")]
         public void FR_004_SC02_MissingRequiredCsvHeaderFailsWithoutBindingAnyData()
         {
             var result = Read("Id\n1\n2", CsvHeaderPolicy.WithHeader);

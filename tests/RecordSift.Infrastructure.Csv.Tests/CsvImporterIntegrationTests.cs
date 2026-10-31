@@ -12,6 +12,7 @@ using RecordSift.Infrastructure.Csv;
 namespace RecordSift.Infrastructure.Csv.Tests
 {
     [TestFixture]
+    [Category("Integration")]
     public sealed class CsvImporterIntegrationTests
     {
         private sealed class Customer
@@ -41,6 +42,10 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC01")]
+        [Property("Scenario", "FR-001-SC04")]
         public void FR_001_SC01_SC04_RealCsvImportReturnsThreeTypedOrderedQuotedCustomers()
         {
             var result = Import("Id,Name\r\n1,\"Alice, Jr.\"\r\n2,\"Bob\r\nTwo\"\r\n3,Carol");
@@ -55,6 +60,11 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC02")]
+        [Property("Scenario", "FR-001-SC05")]
+        [Property("Scenario", "FR-001-SC06")]
         public void FR_001_SC02_SC05_SC06_RealCsvImportDistinguishesEmptyOutcomes()
         {
             var headed = Import("Id,Name\r\n");
@@ -74,6 +84,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC03")]
         public void FR_001_SC03_RealMalformedCsvFailsAtomicallyWithLocation()
         {
             var result = Import("Id,Name\r\n1,Alice\r\n2,\"unfinished");
