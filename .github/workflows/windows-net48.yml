@@ -65,8 +65,9 @@ jobs:
             domain = 'tests\RecordSift.Domain.Tests\bin\Release\RecordSift.Domain.Tests.dll'
             application = 'tests\RecordSift.Application.Tests\bin\Release\RecordSift.Application.Tests.dll'
             adapter = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+            reporting = 'tests\RecordSift.Infrastructure.Reporting.Tests\bin\Release\RecordSift.Infrastructure.Reporting.Tests.dll'
           }
-          foreach ($layer in @('domain', 'application', 'adapter')) {
+          foreach ($layer in @('domain', 'application', 'adapter', 'reporting')) {
             if (-not (Test-Path $assemblies[$layer])) { throw "Test assembly missing: $($assemblies[$layer])" }
           }
           $domainOutput = Split-Path -Parent $assemblies.domain
@@ -85,7 +86,7 @@ jobs:
           $filter = $env:NUNIT_WHERE
           if (-not [string]::IsNullOrWhiteSpace($filter)) {
             Write-Host "Manual targeted NUnit selection: $filter"
-            & $runner $assemblies.domain $assemblies.application $assemblies.adapter "--where=$filter" "--result=TestResults/nunit-targeted.xml;format=nunit3" --noheader
+            & $runner $assemblies.domain $assemblies.application $assemblies.adapter $assemblies.reporting "--where=$filter" "--result=TestResults/nunit-targeted.xml;format=nunit3" --noheader
             if ($LASTEXITCODE -ne 0) { throw "Targeted NUnit failed: $LASTEXITCODE" }
             [xml]$targeted = Get-Content TestResults/nunit-targeted.xml
             $selected = [int]$targeted.'test-run'.total
@@ -97,7 +98,7 @@ jobs:
           } else {
             $counts = @{}
             $failures = 0
-            foreach ($layer in @('domain', 'application', 'adapter')) {
+            foreach ($layer in @('domain', 'application', 'adapter', 'reporting')) {
               & $runner $assemblies[$layer] "--result=TestResults/nunit-$layer.xml;format=nunit3" --noheader
               if ($LASTEXITCODE -ne 0) { throw "$layer NUnit failed: $LASTEXITCODE" }
               [xml]$report = Get-Content "TestResults/nunit-$layer.xml"
@@ -105,11 +106,11 @@ jobs:
               $failures += [int]$report.'test-run'.failed
               if ($counts[$layer] -lt 1) { throw "$layer NUnit suite has no tests." }
             }
-            $total = $counts.domain + $counts.application + $counts.adapter
+            $total = $counts.domain + $counts.application + $counts.adapter + $counts.reporting
             if ($failures -ne 0 -or $total -lt 126) {
-              throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), failed=$failures."
+              throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), reporting=$($counts.reporting), failed=$failures."
             }
-            Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), total=$total failed=$failures."
+            Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), reporting NUnit=$($counts.reporting), total=$total failed=$failures."
           }
       - name: Verify combined NUnit category and scenario property filtering
         shell: pwsh
