@@ -38,6 +38,7 @@ namespace RecordSift.Domain.Diagnostics
         public static string DiagnosticScopeUnknown => Get("Argument_DiagnosticScopeUnknown");
         public static string DiagnosticWorksheetBlank => Get("Argument_DiagnosticWorksheetBlank");
         public static string ExpectedColumnName => Get("Argument_ExpectedColumnName");
+        public static string FieldLengthMinimumExceedsMaximum => Get("Argument_FieldLengthMinimumExceedsMaximum");
         public static string FailedWithoutSourceError => Get("Argument_FailedWithoutSourceError");
         public static string PositionMappingDuplicate => Get("Argument_PositionMappingDuplicate");
         public static string PositionMappingNull => Get("Argument_PositionMappingNull");

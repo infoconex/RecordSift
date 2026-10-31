@@ -72,6 +72,44 @@ namespace RecordSift.Domain.Schema
         }
 
         /// <summary>
+        /// Validates explicitly declared inclusive bounds for present string values.
+        /// Length counts untrimmed UTF-16 code units, independently of source format.
+        /// Absent or null optional values are not made required by length constraints.
+        /// </summary>
+        public IReadOnlyList<ImportDiagnostic> ValidateFieldLengths(
+            IReadOnlyDictionary<string, string> values, int row, int? physicalLine = null)
+        {
+            if (values == null) throw new ArgumentNullException(nameof(values));
+            if (row < 1) throw new ArgumentOutOfRangeException(nameof(row));
+            if (physicalLine.HasValue && physicalLine.Value < 1)
+                throw new ArgumentOutOfRangeException(nameof(physicalLine));
+
+            // Preserve ordinal source identifiers even if the caller uses another comparer.
+            var sourceValues = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var pair in values)
+                sourceValues.Add(pair.Key, pair.Value);
+
+            var errors = new List<ImportDiagnostic>();
+            foreach (var column in Columns)
+            {
+                if (!column.MinimumLength.HasValue && !column.MaximumLength.HasValue)
+                    continue;
+
+                string value;
+                if (!sourceValues.TryGetValue(column.Name, out value) || value == null)
+                    continue;
+
+                var length = value.Length;
+                if ((column.MinimumLength.HasValue && length < column.MinimumLength.Value) ||
+                    (column.MaximumLength.HasValue && length > column.MaximumLength.Value))
+                    errors.Add(ImportDiagnostic.ForRecord(row, column.Name,
+                        DiagnosticCodes.FieldLengthOutOfRange, null, null, physicalLine));
+            }
+
+            return new ReadOnlyCollection<ImportDiagnostic>(errors);
+        }
+
+        /// <summary>
         /// Bind to a supplied sequence of source header names, retaining declaration
         /// order and zero-based source column indices. Invalid binding yields no partial
         /// mappings, only source-scope errors for declared columns.
