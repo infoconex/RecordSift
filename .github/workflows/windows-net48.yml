@@ -111,6 +111,21 @@ jobs:
             }
             Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), total=$total failed=$failures."
           }
+      - name: Verify combined NUnit category and scenario property filtering
+        shell: pwsh
+        run: |
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          $adapter = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+          $selection = "cat == Integration && Verification == Acceptance && Requirement == 'FR-017' && Scenario == 'FR-017-SC01'"
+          & $runner $adapter "--where=$selection" "--result=TestResults/nunit-filter-smoke.xml;format=nunit3" --noheader
+          if ($LASTEXITCODE -ne 0) { throw "Metadata filter smoke run failed: $LASTEXITCODE" }
+          [xml]$filtered = Get-Content TestResults/nunit-filter-smoke.xml
+          $selected = [int]$filtered.'test-run'.total
+          $failed = [int]$filtered.'test-run'.failed
+          if ($selected -lt 1 -or $failed -ne 0) {
+            throw "NUnit metadata filter regression: matched=$selected, failed=$failed."
+          }
+          Write-Host "NUnit metadata filter selected $selected real CSV integration acceptance test(s)."
       - name: Upload NUnit XML evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
