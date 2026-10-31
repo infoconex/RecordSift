@@ -12,7 +12,7 @@ Every listed file was retrieved and reviewed for release 0.1 applicability, auth
 
 ## Findings and corrective actions
 
-1. The main [engineering index](README.md) incorrectly described implemented mapping, validation, CSV/XLSX integration, JSON fixtures and final acceptance as future work; reconciled with the release evidence, clarified historical ADRs versus current authority, and documented the separate squash-only source promotion/publication gates.
+1. The main [engineering index](../README.md) incorrectly described implemented mapping, validation, CSV/XLSX integration, JSON fixtures and final acceptance as future work; reconciled with the release evidence, clarified historical ADRs versus current authority, and documented the separate squash-only source promotion/publication gates.
 2. Fourteen completed Must-priority FR specifications retained obsolete “tests not implemented” or “acceptance outstanding” wording. Preserved required `Planned` **specification** metadata while explicitly pointing to observed Automated **execution** evidence. Deferred Future specs remain deliberately Planned.
 3. The [record-import specification](../specifications/record-import.md) still claimed unresolved XLSX/generalized validation, unsupported diagnostic severity and `WarningRowCount`, proposed JSON contracts and open design choices. Reconciled with the error-only implementation and accepted release semantics.
 4. The [testing strategy](../testing/strategy.md) referred to three rather than five NUnit suites, proposed (rather than pinned) NUnit, and a nonexistent `RecordSift.ContractTests` path; corrected to the real Reporting fixture directory and observed net48 CI.
@@ -173,6 +173,11 @@ Baseline files: **127 / 127 inventoried and reviewed**. `Blob` identifies the ex
 | `docs/scenarios/non-functional/NFR-009.md` | `29b80bf8544d` | Reviewed |
 | `docs/scenarios/non-functional/NFR-010.md` | `ffbc379489a9` | Reviewed |
 
+
+### New document created during this review
+
+| Tracked document | Reviewed baseline blob | Disposition |
+| --- | --- | --- |
 | `docs/engineering/release-0.1-documentation-audit.md` | New in #196 | Reviewed / audit ledger |
 
 ## Acceptance and remaining gates
