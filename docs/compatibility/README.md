@@ -24,4 +24,6 @@ The present approved surface and fixtures are from **net48**. Any migration to a
 
 ## Baseline CI evidence
 
-PR #151: [Windows acceptance run #41181906001](https://github.com/infoconex/RecordSift/actions/runs/41181906001) passed 375 API entries, tamper-negative coverage and 278/278 NUnit tests; [documentation run #41181905950](https://github.com/infoconex/RecordSift/actions/runs/41181905950) passed. This is net48 evidence only.
+**Latest release 0.1 evidence:** the approved net48 snapshot contains **425** exported API/metadata entries across five production assemblies; [Windows #41241688563](https://github.com/infoconex/RecordSift/actions/runs/41241688563) validated them and passed 379/379 NUnit. The package preflight used independent installed RC and stable 0.1.0 consumers. No cross-target compatibility claim is made.
+
+**Historical first baseline (375 entries):** PR #151: [Windows acceptance run #41181906001](https://github.com/infoconex/RecordSift/actions/runs/41181906001) passed 375 API entries, tamper-negative coverage and 278/278 NUnit tests; [documentation run #41181905950](https://github.com/infoconex/RecordSift/actions/runs/41181905950) passed. This is net48 evidence only.
