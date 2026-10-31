@@ -19,7 +19,7 @@ The compiled public API baseline, the seven JSON golden fixture checks (Complete
 
 The accepted Windows jobs include pinned-manifest verification and NuGet advisory audits that fail on NU1900–NU1905 warnings, plus Office-free tests, no-service runtime scenarios, bounded resource controls, public API and XML docs checks. Windows #41236757023 and clean consumer #41236757085 were successful on the latest verified integration SHA. These checks do not promise that future vulnerabilities will never be disclosed; rerun the audit before release promotion. Review of release scripts, test fixture data and versioned documentation found no intentionally embedded credentials. This review is not a comprehensive third-party secret-scanner certification. Owner signoff should cover the final repository contents and package-distribution notices.
 
-Vendor licenses identified for owner approval: CsvHelper 33.1.0 lists MS-PL OR Apache-2.0; ExcelDataReader 3.9.0 lists MIT in NuGet metadata. Review all exact transitive package licenses and attribution obligations before publishing. Source includes no approved root LICENSE text or NuGet project-license metadata. Issue #186 requires the copyright holder's explicit decision and notice review. Public source availability is not authorization to redistribute.
+Vendor license evidence was subsequently completed in PR #190 for all eleven pinned runtime packages: CsvHelper 33.1.0 uses MS-PL OR Apache-2.0; ExcelDataReader and the nine Microsoft runtime packages use MIT (older versions link the MIT CoreFX terms). The owner then approved MIT licensing for RecordSift-owned source with copyright (c) 2026 Infoconex, issue #186. The repository now contains root LICENSE, third-party notices, SPDX MIT package metadata, and package/installed-consumer verification of those files. License grant conditions still apply to consumers and to any separately redistributed third-party dependencies.
 
 ## Documentation and release operations
 
@@ -27,13 +27,19 @@ Issue #185 / PR #189 updates the root README, net48 installation guide and examp
 
 No merge to main, public tag, GitHub release or package publication occurred. The release/0.1 integration branch remains the only changed integration branch. Independent authorization is mandatory for any subsequent promotion.
 
+## Licensing acceptance update — 2026-10-31
+
+After the prior technical readiness report, PR #190 was squash-merged to `release/0.1` at `236b274b063bd049d5c6467e33a8e673bab9ffc3`. Post-merge Windows [#41239476241](https://github.com/infoconex/RecordSift/actions/runs/41239476241) passed 379 NUnit tests, package validation and dependency audit; independent consumer [#41239476254](https://github.com/infoconex/RecordSift/actions/runs/41239476254) and docs [#41239476293](https://github.com/infoconex/RecordSift/actions/runs/41239476293) passed.
+
+The owner explicitly approved MIT licensing, **Copyright (c) 2026 Infoconex**, in the development conversation on 2026-10-31. The licensing workstream adds the exact approved LICENSE, `<license type="expression">MIT</license>` NuGet metadata, version-pinned third-party notices in the package and validation scripts that reject missing or modified notices and non-MIT license expressions. **This section records intent and files, not yet post-merge CI evidence for the licensing PR**; update with the final integration SHA and successful checks before treating licensing acceptance as verified. No public release has been authorized.
+
 ## Risks and classification
 
 **RECOMMENDATION: CONDITIONAL GO — technically validated unpublished release candidate, NOT yet authorized for release promotion or publication.**
 
 There are no *known unresolved release-blocking implementation defects* in the scope that passed the Windows candidate and installed-consumer gates. The candidate must **not** be publicly distributed or promoted until all of the following explicit conditions are satisfied:
 
-1. The owner approves the RecordSift distribution license and attribution under issue #186; the approved LICENSE file and public NuGet license metadata are committed and reviewed, including third-party notices/compatibility.
+1. **Satisfied in licensing implementation, subject to green verification:** the owner approved MIT, copyright (c) 2026 Infoconex (#186); root LICENSE, SPDX MIT metadata and third-party notices are committed.
 2. The exact intended stable release package is rebuilt with approved license metadata, and all Windows regression, independent installed-consumer, API/JSON/documentation and fresh dependency-vulnerability gates pass against that final artifact.
 3. A final version, checksum, versioned release notes, dependency notices and promotion/rollback plan are reviewed. Release/0.1 is promoted to main and a public release/tag/package are created **only after separate explicit authorization**.
 
