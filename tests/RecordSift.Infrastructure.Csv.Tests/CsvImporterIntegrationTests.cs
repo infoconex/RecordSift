@@ -663,5 +663,57 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.Message, Does.Not.Contain("/private/customer-data.csv"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-007")]
+        [Property("Scenario", "NFR-007-SC01")]
+        public void NFR_007_SC01_CsvCharacterBudgetOverrunFailsAtomically()
+        {
+            const string Csv = "Id,Name\r\n1,Alice\r\n2,Bob";
+            var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                values => new Customer { Id = int.Parse(values["Id"],
+                    CultureInfo.InvariantCulture), Name = values["Name"] });
+            using (var source = new StringReader(Csv))
+            {
+                var result = importer.Import(source, Csv.Length - 1, Schema(),
+                    CsvHeaderPolicy.WithHeader, "bounded-csv");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-007")]
+        [Property("Scenario", "NFR-007-SC02")]
+        public void NFR_007_SC02_CsvExactAndMaximumIntegerBudgetsAllowValidInput()
+        {
+            const string Csv = "Id,Name\r\n1,Alice\r\n2,Bob";
+            var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                values => new Customer { Id = int.Parse(values["Id"],
+                    CultureInfo.InvariantCulture), Name = values["Name"] });
+            foreach (var maxCharacters in new[] { Csv.Length, int.MaxValue })
+            {
+                using (var source = new StringReader(Csv))
+                {
+                    var result = importer.Import(source, maxCharacters, Schema(),
+                        CsvHeaderPolicy.WithHeader, "bounded-csv");
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                    Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                    Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                    Assert.That(result.Summary.RejectedCount, Is.Zero);
+                    Assert.That(result.Diagnostics, Is.Empty);
+                    Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+                }
+            }
+        }
     }
 }
