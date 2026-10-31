@@ -23,4 +23,4 @@ This small extension avoids a second schema abstraction, mixed named/positional 
 
 ## Verification
 
-See `PositionalBindingTests` and [scenario traceability](../../testing/traceability.md). Results remain **Planned** at acceptance level pending end-to-end reader/mapping tests.
+See `PositionalBindingTests` and [scenario traceability](../../testing/traceability.md). At the time of this ADR, scenario evidence was still **Planned** pending end-to-end reader/mapping tests.
