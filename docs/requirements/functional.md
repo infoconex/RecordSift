@@ -1,6 +1,6 @@
 # Functional requirements — RecordSift
 
-**Baseline:** Release 0.1 is in implementation. FR-030 has an in-memory summary/status model and unit tests; the CSV/XLSX importer and other requirements are not yet implemented.
+**Baseline:** Release 0.1 is in implementation. Domain result summaries and an initial typed CSV importer, explicit source/property mapping, and culture-controlled primitive conversion now have automated unit/integration evidence. XLSX, complete validation, and full public import acceptance remain outstanding.
 
 **Scope:** Import CSV and XLSX into strongly typed records using a common schema, validate those records, and return consistent diagnostics plus JSON reports. Distinguish errors in source records from fatal failures to read a file.
 

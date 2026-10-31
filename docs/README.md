@@ -9,7 +9,7 @@ These pages specify the product and engineering process for **release 0.1**. In-
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (five FR-030 summary-unit scenarios automated, the remaining 104 planned; FR-028, FR-009 and FR-013 have additional unit tests, and FR-001 has raw CSV parser tests and FR-004 has headed/headerless reader component tests, but all still need full importer acceptance tests).
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (seven scenarios automated (five FR-030 summary-unit and two FR-011 conversion scenarios), the remaining 102 planned; FR-028, FR-009 and FR-013 have additional unit tests, and FR-001 has raw CSV parser tests and FR-004 has headed/headerless reader component tests, but all still need full importer acceptance tests).
 - [Draft import specification](specifications/record-import.md)
 - [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
 - [TDD and test types](testing/strategy.md)
@@ -19,7 +19,7 @@ The FR-009 source-column schema binding contract is implemented and unit-tested 
 
 The FR-013 explicit positional binding contract is implemented and unit-tested without claiming typed-record or source-reader integration.
 
-The FR-001 raw CSV reader now uses a separately packaged CsvHelper adapter behind `ICsvRecordReader`; the core keeps the parser-independent record and diagnostic contracts. The Application now offers a caller-mapped typed import slice through `CsvImporter<T>` and Domain-owned `TypedImportResult<T>`, with real-adapter integration tests. Generalized conversion/property mapping, validation and complete FR-001 acceptance remain pending. Issue #2 remains open.
+The FR-001 raw CSV reader now uses a separately packaged CsvHelper adapter behind `ICsvRecordReader`; the core keeps the parser-independent record and diagnostic contracts. The Application now offers a caller-mapped typed import slice through `CsvImporter<T>` and Domain-owned `TypedImportResult<T>`, with real-adapter integration tests. Initial format-neutral property mapping and CLR primitive conversion are now implemented; complete field validation and FR-001 acceptance remain pending. Issue #2 remains open.
 
 The FR-003 delimiter policy uses core-owned `CsvReadOptions` and source-scoped configuration diagnostics, with real adapter component tests; the end-to-end typed import scenarios are still Planned. See [ADR 0009](engineering/decisions/0009-configurable-csv-delimiters.md).
 
@@ -29,6 +29,11 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 
 - [ADR 0023 — Explicit string-property mapping](engineering/decisions/0023-explicit-string-property-mapping.md) — format-neutral Domain mapping declarations and Application string destination assignment with strict prevalidation.
 - [FR-010 issue #19](https://github.com/infoconex/RecordSift/issues/19) — first string-only implementation through [PR #115](https://github.com/infoconex/RecordSift/pull/115); broader CLR types and conversion are tracked under FR-011.
+
+## Explicit primitive conversion (FR-011)
+
+- [ADR 0024 — Explicit primitive conversion](engineering/decisions/0024-explicit-primitive-conversion.md) — Domain culture-controlled conversions, Application property mapping, and safe source-field diagnostics.
+- [FR-011 issue #4](https://github.com/infoconex/RecordSift/issues/4) — test-driven Domain, fake-reader and real CSV integration, verified in [Windows #41150035896](https://github.com/infoconex/RecordSift/actions/runs/41150035896).
 
 ## Architecture, code style and dependency isolation
 

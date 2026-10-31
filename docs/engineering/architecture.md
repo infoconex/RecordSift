@@ -66,6 +66,10 @@ The concrete `RecordSift.Infrastructure.Csv.CsvRecordReaderAdapter : RecordSift.
 
 [FR-010 issue #19](https://github.com/infoconex/RecordSift/issues/19) introduces Domain-owned `SourcePropertyMapping` and `PropertyMappingSchema` declarations, validating that mapped sources are declared and destinations are unambiguous. Application-owned `StringPropertyMapper<T>` uses only .NET Framework reflection to assign properties, validates writable string destinations on reference-type models before any import, and can be composed with the existing injected `CsvImporter<T>`. Mapping contracts are format-neutral; no Infrastructure reference, vendor parser type or new package enters Domain/Application. This intentionally limited string-only implementation is specified in [ADR 0023](decisions/0023-explicit-string-property-mapping.md); FR-011 owns type conversion.
 
+## Primitive conversion and field provenance
+
+Domain `PrimitiveFieldConverter` converts supported CLR primitive and nullable values under an explicitly provided, defensively captured culture without CSV/vendor dependencies. Application `PrimitivePropertyMapper<T>` uses Domain's conversion policy for validated CLR members; the existing public `StringPropertyMapper<T>` continues operating in string-only mode through the same implementation. `CsvImporter<T>` translates safe source-aware `FieldConversionException` failures into record diagnostics with the declared source field, logical row and reliable physical line. See [ADR 0024](decisions/0024-explicit-primitive-conversion.md).
+
 ## Replaceable source-reader contracts
 
 The CSV parser migration is tracked by [#85](https://github.com/infoconex/RecordSift/issues/85). Use a RecordSift-owned narrow port (`ICsvRecordReader`, introduced test-first) that produces existing RecordSift-owned records and diagnostics. A CSV adapter implements the port. A future XLSX reader can have its **own** source-specific port; do not force a `TextReader` contract onto binary Excel input. A format-neutral source record abstraction is worthwhile only when both adapters need it.

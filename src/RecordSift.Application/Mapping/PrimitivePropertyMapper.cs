@@ -58,7 +58,7 @@ namespace RecordSift.Application.Mapping
                     (stringOnly && resolved.PropertyType != typeof(string)))
                     throw new ArgumentException(
                         stringOnly ? DomainMessageResources.PropertyMappingUnsupportedDestination :
-                            DomainMessageResources.ConversionUnsupportedType, nameof(schema));
+                            DomainMessageResources.PropertyMappingUnsupportedMember, nameof(schema));
 
                 properties.Add(resolved);
                 required.Add(requiredSources.Contains(mapping.SourceColumnName));
