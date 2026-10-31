@@ -14,5 +14,6 @@
   <data name="Outcome_ImportNoDataRecords" xml:space="preserve"><value>Import completed. No data records found.</value></data>
   <data name="Outcome_ImportEmptySource" xml:space="preserve"><value>Import completed. Source contains no records.</value></data>
   <data name="Outcome_ImportMissingHeader" xml:space="preserve"><value>Import failed. The CSV file is empty and the required header row is missing.</value></data>
+  <data name="Outcome_ImportStopped" xml:space="preserve"><value>Import stopped after a record validation error; only the processed prefix was validated.</value></data>
   <data name="Outcome_ImportFailed" xml:space="preserve"><value>Import failed. The CSV source could not be imported.</value></data>
 </root>
