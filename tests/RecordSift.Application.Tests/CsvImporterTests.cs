@@ -409,5 +409,70 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.Diagnostics, Is.Empty);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_CancellationDuringConversionStopsLaterRowsWithCanceledStatus()
+        {
+            using (var cancel = new System.Threading.CancellationTokenSource())
+            {
+                var mapped = 0;
+                var importer = new CsvImporter<Customer>(
+                    new FakeReader(CsvParseResult.Success(new[] {
+                        new CsvRecord(1, 1, new[] { "Id", "Name" }),
+                        new CsvRecord(2, 2, new[] { "1", "Alice" }),
+                        new CsvRecord(3, 3, new[] { "2", "Bob" }),
+                        new CsvRecord(4, 4, new[] { "3", "Carol" })
+                    })), values => {
+                        mapped++;
+                        var record = MapCustomer(values);
+                        if (record.Id == 1)
+                            cancel.Cancel();
+                        return record;
+                    });
+                using (var source = new StringReader("unused"))
+                {
+                    var result = importer.Import(source, 4096, Schema(),
+                        CsvHeaderPolicy.WithHeader, "cancel-source",
+                        null, null, false, cancel.Token);
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                    Assert.That(result.Summary.ProcessedCount, Is.EqualTo(1));
+                    Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                    Assert.That(result.Summary.RejectedCount, Is.Zero);
+                    Assert.That(mapped, Is.EqualTo(1));
+                    Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                    Assert.That(result.Diagnostics, Is.Empty);
+                }
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC02")]
+        public void FR_032_SC02_UncanceledTokenCompletesEveryValidRecord()
+        {
+            using (var cancel = new System.Threading.CancellationTokenSource())
+            {
+                var importer = new CsvImporter<Customer>(new FakeReader(
+                    CsvParseResult.Success(new[] {
+                        new CsvRecord(1, 1, new[] { "Id", "Name" }),
+                        new CsvRecord(2, 2, new[] { "1", "Alice" }),
+                        new CsvRecord(3, 3, new[] { "2", "Bob" })
+                    })), MapCustomer);
+                using (var source = new StringReader("unused"))
+                {
+                    var result = importer.Import(source, 4096, Schema(),
+                        CsvHeaderPolicy.WithHeader, "no-cancel",
+                        null, null, false, cancel.Token);
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                    Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                    Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                    Assert.That(result.Diagnostics, Is.Empty);
+                }
+            }
+        }
     }
 }
