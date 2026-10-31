@@ -50,7 +50,7 @@ try {
     foreach ($file in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
         if ($entries -cnotcontains $file) { throw "Package missing $file" }
         $entry = $zip.GetEntry($file)
-        $reader = New-Object IO.StreamReader($entry.Open())
+        $reader = [IO.StreamReader]::new($entry.Open())
         try {
             $packed = $reader.ReadToEnd()
         } finally { $reader.Dispose() }
@@ -59,7 +59,7 @@ try {
     }
     $nuspecEntry = $zip.GetEntry('RecordSift.nuspec')
     if ($null -eq $nuspecEntry) { throw 'NuGet manifest missing from package.' }
-    $nuspecReader = New-Object IO.StreamReader($nuspecEntry.Open())
+    $nuspecReader = [IO.StreamReader]::new($nuspecEntry.Open())
     try { [xml]$packedNuspec = $nuspecReader.ReadToEnd() }
     finally { $nuspecReader.Dispose() }
     $license = $packedNuspec.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]/*[local-name()="license"]')
