@@ -448,5 +448,101 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.Message, Is.Not.Empty);
             }
         }
+        private sealed class CustomGuidCustomer
+        {
+            public Guid CustomerId { get; set; }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-016")]
+        [Property("Scenario", "FR-016-SC01")]
+        public void FR_016_SC01_FakeReaderUsesRegisteredConverterForUnsupportedGuidDestination()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Customer Id", true) });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var converter = new PrimitivePropertyMapper<CustomGuidCustomer>(
+                mapping, CultureInfo.InvariantCulture,
+                new[] { new FieldConversionRule("Customer Id",
+                    (raw, culture) => Guid.Parse(raw)) });
+            var importer = new CsvImporter<CustomGuidCustomer>(new ScenarioReader(
+                CsvParseResult.Success(new[] {
+                    new CsvRecord(1, 1, new[] { "Customer Id" }),
+                    new CsvRecord(2, 2, new[] { "7ed046a7-a0d2-4080-bc16-578f7c8083fe" })
+                })), converter.Map);
+
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 2048, schema,
+                    CsvHeaderPolicy.WithHeader, "guid-source");
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(result.AcceptedRecords[0].CustomerId,
+                    Is.EqualTo(Guid.Parse("7ed046a7-a0d2-4080-bc16-578f7c8083fe")));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-016")]
+        [Property("Scenario", "FR-016-SC02")]
+        public void FR_016_SC02_CustomConverterRejectionIsSanitizedAndNextRowAccepted()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Customer Id", true) });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var converter = new PrimitivePropertyMapper<CustomGuidCustomer>(
+                mapping, CultureInfo.InvariantCulture,
+                new[] { new FieldConversionRule("Customer Id", (raw, culture) =>
+                {
+                    if (raw == "secret-invalid")
+                        throw new InvalidOperationException("private-converter-detail " + raw);
+                    return Guid.Parse(raw);
+                }) });
+            var importer = new CsvImporter<CustomGuidCustomer>(new ScenarioReader(
+                CsvParseResult.Success(new[] {
+                    new CsvRecord(1, 1, new[] { "Customer Id" }),
+                    new CsvRecord(2, 2, new[] { "secret-invalid" }),
+                    new CsvRecord(3, 3, new[] { "7ed046a7-a0d2-4080-bc16-578f7c8083fe" })
+                })), converter.Map);
+
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 2048, schema,
+                    CsvHeaderPolicy.WithHeader, "guid-source");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Customer Id"));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("secret-invalid"));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-converter-detail"));
+            }
+        }
+
+        [Test]
+        public void DuplicateUnknownAndNullCustomConverterRegistrationsAreRejected()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Customer Id", true) });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var rule = new FieldConversionRule("Customer Id", (raw, culture) => Guid.Parse(raw));
+            Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<CustomGuidCustomer>(
+                mapping, CultureInfo.InvariantCulture, new[] { rule, rule }));
+            Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<CustomGuidCustomer>(
+                mapping, CultureInfo.InvariantCulture,
+                new[] { new FieldConversionRule("Unknown", (raw, culture) => Guid.Parse(raw)) }));
+            Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<CustomGuidCustomer>(
+                mapping, CultureInfo.InvariantCulture, new FieldConversionRule[] { null }));
+        }
+
     }
 }
