@@ -94,5 +94,51 @@ namespace RecordSift.Application.Tests
             Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo("1"));
             Assert.That(result.AcceptedRecords[2].Id, Is.EqualTo("3"));
         }
+
+        [Test]
+        public void InvalidRuleRegistrationFailsBeforeImport()
+        {
+            Assert.Throws<ArgumentException>(() => new CsvImporter<Customer>(
+                new Reader(), values => new Customer(), null, null,
+                new RecordValidationRule<Customer>[] { null }));
+        }
+
+        [Test]
+        public void ValidatorExceptionIsNotMisclassifiedAsRecordConversionFailure()
+        {
+            Assert.Throws<FormatException>(() => Import(new[] {
+                new RecordValidationRule<Customer>(null, x => ThrowValidationError())
+            }));
+        }
+
+        private static bool ThrowValidationError()
+        {
+            throw new FormatException();
+        }
+
+        [Test]
+        public void ExistingFieldLengthValidationPrecedesCustomRules()
+        {
+            var visited = 0;
+            var importer = new CsvImporter<Customer>(new Reader(),
+                values => new Customer { Id = values["Id"], Name = values["Name"] },
+                null, null, new[] {
+                    new RecordValidationRule<Customer>(null, x => { visited++; return true; })
+                });
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, true, null, 5)
+            });
+            using (var source = new StringReader("ignored"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "fr022-source");
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.FieldLengthOutOfRange));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(visited, Is.EqualTo(2));
+            }
+        }
     }
 }
