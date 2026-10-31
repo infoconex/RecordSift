@@ -544,5 +544,26 @@ namespace RecordSift.Application.Tests
                 mapping, CultureInfo.InvariantCulture, new FieldConversionRule[] { null }));
         }
 
+
+        [Test]
+        [Property("Requirement", "FR-016")]
+        public void UnexpectedCustomConverterProgrammingFailurePropagatesWithoutDataDiagnostic()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Customer Id", true) });
+            var mappings = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+            var mapper = new PrimitivePropertyMapper<CustomGuidCustomer>(
+                mappings, CultureInfo.InvariantCulture,
+                new[] { new FieldConversionRule("Customer Id", (raw, culture) =>
+                {
+                    throw new InvalidOperationException("internal-converter-failure");
+                }) });
+            var values = new System.Collections.Generic.Dictionary<string, string> {
+                { "Customer Id", "sensitive-value" }
+            };
+
+            Assert.Throws<InvalidOperationException>(() => mapper.Map(values));
+        }
     }
 }
