@@ -116,6 +116,23 @@ namespace RecordSift.Domain.Tests
             }
         }
 
+
+        [Test]
+        public void PublicDomainLibraryContractsMustNotExposeCompileTimeConstants()
+        {
+            var literals = typeof(ImportDiagnostic).Assembly.GetExportedTypes()
+                .SelectMany(type => type.GetFields(
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.Static |
+                    System.Reflection.BindingFlags.DeclaredOnly))
+                .Where(field => field.IsLiteral)
+                .Select(field => field.DeclaringType.FullName + "." + field.Name)
+                .ToArray();
+
+            Assert.That(literals, Is.Empty,
+                "Public compile-time constants are embedded into consuming assemblies.");
+        }
+
         [Test]
         public void NamedDomainMessagesUseInvariantResourcesRegardlessOfUICulture()
         {
