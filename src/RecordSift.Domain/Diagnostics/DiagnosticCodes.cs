@@ -14,6 +14,7 @@ namespace RecordSift.Domain.Diagnostics
         public const string InvalidColumnPosition = "INVALID_COLUMN_POSITION";
         public const string InvalidCsvDelimiter = "INVALID_CSV_DELIMITER";
         public const string MalformedSource = "MALFORMED_SOURCE";
+        public const string WorksheetNotFound = "WORKSHEET_NOT_FOUND";
         public const string RequiredFieldMissing = "REQUIRED_FIELD_MISSING";
         public const string ConversionFailed = "CONVERSION_FAILED";
         public const string ValidationFailed = "VALIDATION_FAILED";
@@ -31,7 +32,8 @@ namespace RecordSift.Domain.Diagnostics
             return code == SourceUnreadable || code == SourceDecodingFailed ||
                    code == SourceLimitExceeded ||
                    code == RequiredHeaderMissing ||
-                   code == MalformedSource || code == RequiredColumnMissing ||
+                   code == MalformedSource || code == WorksheetNotFound ||
+                   code == RequiredColumnMissing ||
                    code == AmbiguousColumn || code == InvalidColumnPosition ||
                    code == InvalidCsvDelimiter;
         }
@@ -55,6 +57,7 @@ namespace RecordSift.Domain.Diagnostics
                 case AmbiguousColumn: return DomainMessageResources.Get(AmbiguousColumn);
                 case InvalidColumnPosition: return DomainMessageResources.Get(InvalidColumnPosition);
                 case MalformedSource: return DomainMessageResources.Get(MalformedSource);
+                case WorksheetNotFound: return DomainMessageResources.Get(WorksheetNotFound);
                 case InvalidCsvDelimiter: return DomainMessageResources.Get(InvalidCsvDelimiter);
                 case RequiredFieldMissing: return DomainMessageResources.Get(RequiredFieldMissing);
                 case ConversionFailed: return DomainMessageResources.Get(ConversionFailed);
