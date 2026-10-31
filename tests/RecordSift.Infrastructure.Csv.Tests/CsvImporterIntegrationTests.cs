@@ -826,5 +826,31 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(source.Peek(), Is.EqualTo((int)'I'));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_RealCsvCancellationDuringTypedMappingPreservesPrefixAndReader()
+        {
+            using (var cancellation = new System.Threading.CancellationTokenSource())
+            using (var source = new StringReader("Id,Name\r\n1,Alice\r\n2,Bob\r\n3,Carol"))
+            {
+                var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                    fields => {
+                        var id = int.Parse(fields["Id"], CultureInfo.InvariantCulture);
+                        if (id == 1) cancellation.Cancel();
+                        return new Customer { Id = id, Name = fields["Name"] };
+                    });
+                var result = importer.Import(source, 4096, Schema(),
+                    CsvHeaderPolicy.WithHeader, "fr032-real-csv",
+                    null, null, false, cancellation.Token);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics, Is.Empty);
+            }
+        }
     }
 }
