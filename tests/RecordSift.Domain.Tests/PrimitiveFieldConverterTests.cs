@@ -128,5 +128,69 @@ namespace RecordSift.Domain.Tests
             Assert.Throws<ArgumentException>(() => converter.Convert("x", typeof(Guid)));
             Assert.Throws<ArgumentNullException>(() => new PrimitiveFieldConverter(null));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-005")]
+        [Property("Scenario", "NFR-005-SC01")]
+        public void NFR_005_SC01_ExplicitCulturesParseDecimalsAndDatesWithoutLossOrCoercion()
+        {
+            var german = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("de-DE"));
+            var french = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("fr-FR"));
+            var english = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("en-US"));
+
+            Assert.That(german.Convert("1.234,50", typeof(decimal)), Is.EqualTo(1234.50m));
+            Assert.That(german.Convert("31.12.2025", typeof(DateTime)),
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(french.Convert("12,50", typeof(decimal)), Is.EqualTo(12.50m));
+            Assert.That(french.Convert("31/12/2025", typeof(DateTime)),
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(english.Convert("1,234.50", typeof(decimal)), Is.EqualTo(1234.50m));
+            Assert.That(english.Convert("12/31/2025", typeof(DateTime)),
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(french.Convert("true", typeof(bool)), Is.True);
+            Assert.That(french.Convert("FALSE", typeof(bool)), Is.False);
+            Assert.Throws<FormatException>(() => french.Convert("vrai", typeof(bool)));
+            Assert.That(german.Convert(" ", typeof(decimal?)), Is.Null);
+            Assert.That(german.Convert("7", typeof(int?)), Is.EqualTo(7));
+            Assert.Throws<FormatException>(() => german.Convert("31/31/2025", typeof(DateTime)));
+            Assert.Throws<FormatException>(() => french.Convert(
+                "0,1234567890123456789012345678912345", typeof(decimal)));
+            Assert.Throws<FormatException>(() => german.Convert("2147483648", typeof(int)));
+            Assert.Throws<ArgumentException>(() => german.Convert("value", typeof(Guid)));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-005")]
+        [Property("Scenario", "NFR-005-SC02")]
+        public void NFR_005_SC02_DefensiveCultureSnapshotOverridesAmbientCultureAndCallerMutation()
+        {
+            var selectedCulture = new CultureInfo("fr-FR", false);
+            var converter = new PrimitiveFieldConverter(selectedCulture);
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUiCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                selectedCulture.NumberFormat.NumberDecimalSeparator = ".";
+                selectedCulture.DateTimeFormat.ShortDatePattern = "MM/dd/yyyy";
+                foreach (var name in new[] { "en-US", "de-DE", "fr-FR" })
+                {
+                    CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(name);
+                    CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(name);
+                    Assert.That(converter.Convert("12,50", typeof(decimal)),
+                        Is.EqualTo(12.50m));
+                    Assert.That(converter.Convert("31/12/2025", typeof(DateTime)),
+                        Is.EqualTo(new DateTime(2025, 12, 31)));
+                    Assert.Throws<FormatException>(() => converter.Convert(
+                        "not-a-decimal", typeof(decimal)));
+                }
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUiCulture;
+            }
+        }
     }
 }

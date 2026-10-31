@@ -300,5 +300,94 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 CultureInfo.CurrentUICulture = originalUiCulture;
             }
         }
+
+        private sealed class CulturalOrder
+        {
+            public int Id { get; set; }
+            public decimal Amount { get; set; }
+            public DateTime OrderDate { get; set; }
+        }
+
+        // A local OpenXML workbook with inline-string French decimal and date cells.
+        private const string CultureWorkbook = "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";
+
+        private static TypedImportResult<CulturalOrder> ImportCultureWorkbook()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Amount", true, true),
+                new ExpectedColumn("Order Date", true, true)
+            });
+            var properties = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Amount", "Amount"),
+                new SourcePropertyMapping("Order Date", "OrderDate")
+            });
+            var mapper = new PrimitivePropertyMapper<CulturalOrder>(
+                properties, CultureInfo.GetCultureInfo("fr-FR"));
+            var importer = new XlsxImporter<CulturalOrder>(
+                new XlsxWorksheetReaderAdapter(), mapper.Map);
+            using (var stream = new MemoryStream(Convert.FromBase64String(CultureWorkbook)))
+                return importer.Import(stream, 4096, schema, "locale-xlsx");
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-005")]
+        [Property("Scenario", "NFR-005-SC01")]
+        public void NFR_005_SC01_RealXlsxUsesExplicitFrenchDecimalAndDateConversion()
+        {
+            var result = ImportCultureWorkbook();
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Amount, Is.EqualTo(12.50m));
+            Assert.That(result.AcceptedRecords[0].OrderDate,
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(3));
+            Assert.That(result.AcceptedRecords[1].Amount, Is.EqualTo(7.25m));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].PhysicalRow, Is.EqualTo(3));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-005")]
+        [Property("Scenario", "NFR-005-SC02")]
+        public void NFR_005_SC02_RealXlsxExplicitCultureRemainsStableAcrossAmbientChanges()
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUiCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                foreach (var name in new[] { "en-US", "de-DE", "fr-FR" })
+                {
+                    CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(name);
+                    CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(name);
+                    var result = ImportCultureWorkbook();
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                    Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                    Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                    Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                    Assert.That(result.AcceptedRecords[0].Amount, Is.EqualTo(12.50m));
+                    Assert.That(result.AcceptedRecords[0].OrderDate,
+                        Is.EqualTo(new DateTime(2025, 12, 31)));
+                    Assert.That(result.AcceptedRecords[1].Amount, Is.EqualTo(7.25m));
+                    Assert.That(result.Diagnostics[0].Code,
+                        Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                    Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                    Assert.That(result.Diagnostics[0].PhysicalRow, Is.EqualTo(3));
+                }
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUiCulture;
+            }
+        }
     }
 }

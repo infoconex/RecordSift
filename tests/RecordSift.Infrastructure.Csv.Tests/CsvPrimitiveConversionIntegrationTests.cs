@@ -518,5 +518,74 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Message, Is.Not.Empty);
         }
 
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-005")]
+        [Property("Scenario", "NFR-005-SC01")]
+        public void NFR_005_SC01_RealCsvParsesFrenchDecimalAndDateAndRejectsInvalidValues()
+        {
+            var result = Import(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,\"12,50\",31/12/2025,true,\r\n" +
+                "2,\"7,25\",01/01/2026,false,9\r\n" +
+                "3,not-a-decimal,02/01/2026,true,7");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Amount, Is.EqualTo(12.50m));
+            Assert.That(result.AcceptedRecords[0].OrderDate,
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(result.AcceptedRecords[0].Score, Is.Null);
+            Assert.That(result.AcceptedRecords[1].Amount, Is.EqualTo(7.25m));
+            Assert.That(result.AcceptedRecords[1].OrderDate,
+                Is.EqualTo(new DateTime(2026, 1, 1)));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(4));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-005")]
+        [Property("Scenario", "NFR-005-SC02")]
+        public void NFR_005_SC02_RealCsvExplicitConversionRemainsStableAcrossAmbientCultures()
+        {
+            const string Csv = "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,\"12,50\",31/12/2025,true,\r\n" +
+                "2,not-a-decimal,01/01/2026,false,9";
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUiCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                foreach (var name in new[] { "en-US", "de-DE", "fr-FR" })
+                {
+                    CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(name);
+                    CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(name);
+                    var result = Import(Csv);
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                    Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                    Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                    Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                    Assert.That(result.AcceptedRecords[0].Amount, Is.EqualTo(12.50m));
+                    Assert.That(result.AcceptedRecords[0].OrderDate,
+                        Is.EqualTo(new DateTime(2025, 12, 31)));
+                    Assert.That(result.AcceptedRecords[0].Score, Is.Null);
+                    Assert.That(result.Diagnostics[0].Code,
+                        Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                    Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+                    Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                    Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+                }
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUiCulture;
+            }
+        }
     }
 }
