@@ -45,6 +45,7 @@
     <Compile Include="PropertyMappingSchemaTests.cs" />
     <Compile Include="PrimitiveFieldConverterTests.cs" />
     <Compile Include="FieldRangeRuleTests.cs" />
+    <Compile Include="DuplicateIdentifierRuleTests.cs" />
     <Compile Include="PositionalBindingTests.cs" />
     <Compile Include="DomainMessageResourceTests.cs" />
     <Compile Include="AssemblyIsolationTests.cs" />

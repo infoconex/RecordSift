@@ -42,6 +42,7 @@ namespace RecordSift.Domain.Diagnostics
         public static string RangeBoundsInvalid => Get("Argument_RangeBoundsInvalid");
         public static string RangeFieldName => Get("Argument_RangeFieldName");
         public static string RangeRuleNull => Get("Argument_RangeRuleNull");
+        public static string DuplicateFieldName => Get("Argument_DuplicateFieldName");
         public static string FailedWithoutSourceError => Get("Argument_FailedWithoutSourceError");
         public static string PositionMappingDuplicate => Get("Argument_PositionMappingDuplicate");
         public static string PositionMappingNull => Get("Argument_PositionMappingNull");

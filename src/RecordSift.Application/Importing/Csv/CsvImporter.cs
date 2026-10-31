@@ -20,6 +20,7 @@ namespace RecordSift.Application.Importing.Csv
         private readonly ICsvRecordReader _reader;
         private readonly Func<IReadOnlyDictionary<string, string>, T> _mapRecord;
         private readonly IReadOnlyList<FieldRangeRule<T>> _rangeRules;
+        private readonly DuplicateIdentifierRule<T> _identifierRule;
 
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord)
@@ -30,6 +31,14 @@ namespace RecordSift.Application.Importing.Csv
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord,
             IEnumerable<FieldRangeRule<T>> rangeRules)
+            : this(reader, mapRecord, rangeRules, null)
+        {
+        }
+
+        public CsvImporter(ICsvRecordReader reader,
+            Func<IReadOnlyDictionary<string, string>, T> mapRecord,
+            IEnumerable<FieldRangeRule<T>> rangeRules,
+            DuplicateIdentifierRule<T> identifierRule)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapRecord == null) throw new ArgumentNullException(nameof(mapRecord));
@@ -48,6 +57,7 @@ namespace RecordSift.Application.Importing.Csv
                 }
             }
             _rangeRules = new ReadOnlyCollection<FieldRangeRule<T>>(rules);
+            _identifierRule = identifierRule;
         }
 
         public TypedImportResult<T> Import(TextReader source, int maxCharacters,
@@ -68,6 +78,8 @@ namespace RecordSift.Application.Importing.Csv
 
             var accepted = new List<T>();
             var diagnostics = new List<ImportDiagnostic>();
+            var checkDuplicate = _identifierRule == null
+                ? null : _identifierRule.CreateValidator();
             foreach (var row in table.DataRows)
             {
                 var values = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -103,9 +115,18 @@ namespace RecordSift.Application.Importing.Csv
                     }
 
                     if (rangeErrors.Count != 0)
+                    {
                         diagnostics.AddRange(rangeErrors);
+                    }
                     else
-                        accepted.Add(record);
+                    {
+                        var duplicate = checkDuplicate == null
+                            ? null : checkDuplicate(record, row.Row, row.PhysicalLine);
+                        if (duplicate != null)
+                            diagnostics.Add(duplicate);
+                        else
+                            accepted.Add(record);
+                    }
                 }
                 catch (FieldConversionException error)
                 {

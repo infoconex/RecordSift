@@ -21,7 +21,7 @@ EXPECTED = {
         "Schema": ("ExpectedColumn", "ImportSchema", "SchemaBindingResult",
                    "SourceColumnBinding", "SourceColumnPosition",
                    "SourcePropertyMapping", "PropertyMappingSchema", "PrimitiveFieldConverter",
-                   "FieldRangeRule"),
+                   "FieldRangeRule", "DuplicateIdentifierRule"),
         "Results": ("ImportResult", "ImportStatus", "ImportSummary", "TypedImportResult"),
     },
     "RecordSift.Application": {
