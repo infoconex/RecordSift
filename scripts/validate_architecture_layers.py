@@ -282,7 +282,7 @@ def verify_layout():
             errors.extend(verify_namespace(file.read_text(encoding="utf-8"),
                                            reporting_name, str(file.relative_to(ROOT))))
         references = {ref.attrib.get("Include") for ref in items(reporting_project, "Reference")}
-        if references != {"System", "System.Core", "System.Runtime.Serialization"}:
+        if references != {"System", "System.Core", "System.Runtime.Serialization", "System.Xml"}:
             errors.append("Reporting may reference only approved .NET Framework assemblies")
         for forbidden in ("PackageReference", "PackageDownload", "Analyzer", "COMReference"):
             if items(reporting_project, forbidden):
