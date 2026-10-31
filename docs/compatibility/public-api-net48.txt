@@ -66,6 +66,8 @@ constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.B
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength, System.Collections.Generic.IEnumerable<System.String> aliases)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength, System.Collections.Generic.IEnumerable<System.String> aliases, System.String defaultValue)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.String defaultValue)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Collections.Generic.IEnumerable<System.String> aliases)
 constructor RecordSift.Domain.Schema.ImportSchema(System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.ExpectedColumn> columns)
 constructor RecordSift.Domain.Schema.PrimitiveFieldConverter(System.Globalization.CultureInfo culture)
@@ -318,6 +320,7 @@ property RecordSift.Domain.Schema.ExpectedColumn System.Boolean IsValueRequired[
 property RecordSift.Domain.Schema.ExpectedColumn System.Collections.Generic.IReadOnlyList<System.String> Aliases[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MaximumLength[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MinimumLength[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.String DefaultValue[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.String Name[] {get,-}
 property RecordSift.Domain.Schema.FieldRangeRule<T> System.String Field[] {get,-}
 property RecordSift.Domain.Schema.ImportSchema System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.ExpectedColumn> Columns[] {get,-}
