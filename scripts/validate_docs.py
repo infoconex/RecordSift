@@ -75,9 +75,16 @@ def scenario_specifications() -> dict[str, str]:
             content = read(relative)
             if not content.startswith(f"# {requirement} — "):
                 report(f"{relative}: incorrect document title")
-            if not re.search(r"^\*\*Verification status:\*\* Planned\b", content, re.M):
-                # The documents are planning artifacts; test status is tracked in the matrix.
-                report(f"{relative}: document must declare planning-only status")
+            if prefix == "NFR":
+                # A specification can be maintained even when its scenarios are unverified.
+                # Observed scenario status is owned by docs/testing/traceability.md.
+                if not re.search(r"^\*\*Specification status:\*\* Maintained\b", content, re.M):
+                    report(f"{relative}: NFR specification must declare maintained status")
+                if re.search(r"^\*\*Verification status:\*\*", content, re.M):
+                    report(f"{relative}: NFR specification must not duplicate scenario execution status")
+            elif not re.search(r"^\*\*Verification status:\*\* Planned\b", content, re.M):
+                # Legacy FR specification planning metadata; never interpret as execution evidence.
+                report(f"{relative}: FR specification must declare planning-only metadata")
 
             if prefix == "FR":
                 required_sections = [
