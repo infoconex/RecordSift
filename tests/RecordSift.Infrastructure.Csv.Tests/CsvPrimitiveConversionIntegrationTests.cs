@@ -24,6 +24,24 @@ namespace RecordSift.Infrastructure.Csv.Tests
             public int? Score { get; set; }
         }
 
+
+        private sealed class RestrictiveCustomer
+        {
+            public int CustomerId { get; set; }
+            private string _name;
+
+            public string Name
+            {
+                get { return _name; }
+                set
+                {
+                    if (value == "reject-me")
+                        throw new InvalidOperationException("private-setter-detail");
+                    _name = value;
+                }
+            }
+        }
+
         private static TypedImportResult<Order> Import(string csv)
         {
             var schema = new ImportSchema(new[] {
@@ -146,6 +164,83 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Is.EqualTo(0.1234567890123456789012345678m));
             Assert.That(result.AcceptedRecords[2].OrderDate,
                 Is.EqualTo(new DateTime(2026, 1, 2)));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-026")]
+        [Property("Scenario", "FR-026-SC01")]
+        public void FR_026_SC01_RealCsvMaterializesDeclaredTypedOrders()
+        {
+            var result = Import(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,\"12,50\",31/12/2025,true,\r\n" +
+                "2,\"7,25\",01/01/2026,false,8");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.AcceptedRecords[0], Is.TypeOf<Order>());
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Amount, Is.EqualTo(12.50m));
+            Assert.That(result.AcceptedRecords[0].OrderDate,
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(result.AcceptedRecords[0].Active, Is.True);
+            Assert.That(result.AcceptedRecords[0].Score, Is.Null);
+            Assert.That(result.AcceptedRecords[1], Is.TypeOf<Order>());
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[1].Amount, Is.EqualTo(7.25m));
+            Assert.That(result.AcceptedRecords[1].OrderDate,
+                Is.EqualTo(new DateTime(2026, 1, 1)));
+            Assert.That(result.AcceptedRecords[1].Active, Is.False);
+            Assert.That(result.AcceptedRecords[1].Score, Is.EqualTo(8));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-026")]
+        [Property("Scenario", "FR-026-SC02")]
+        public void FR_026_SC02_RealCsvClassifiesSetterRejectionAndKeepsValidTypedRows()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Name", true)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId"),
+                new SourcePropertyMapping("Name", "Name")
+            });
+            var mapper = new PrimitivePropertyMapper<RestrictiveCustomer>(
+                mapping, CultureInfo.InvariantCulture);
+            var importer = new CsvImporter<RestrictiveCustomer>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+
+            using (var source = new StringReader(
+                "Customer Id,Name\r\n1,Alice\r\n2,reject-me\r\n3,Bob"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "customers-integration");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.SourceId, Is.EqualTo("customers-integration"));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].CustomerId, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.AcceptedRecords[1].CustomerId, Is.EqualTo(3));
+                Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Name"));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("reject-me"));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-setter-detail"));
+            }
         }
     }
 }

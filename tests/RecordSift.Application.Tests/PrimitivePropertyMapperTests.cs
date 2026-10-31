@@ -33,6 +33,24 @@ namespace RecordSift.Application.Tests
             public int CustomerId { get; private set; }
         }
 
+
+        private sealed class RejectingCustomer
+        {
+            public int CustomerId { get; set; }
+            private string _name;
+
+            public string Name
+            {
+                get { return _name; }
+                set
+                {
+                    if (value == "reject-me")
+                        throw new InvalidOperationException("private-setter-detail");
+                    _name = value;
+                }
+            }
+        }
+
         private sealed class FakeReader : ICsvRecordReader
         {
             public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
@@ -246,6 +264,70 @@ namespace RecordSift.Application.Tests
                 validName, CultureInfo.InvariantCulture));
             Assert.Throws<ArgumentException>(() => new PrimitivePropertyMapper<ReadOnlyDestination>(
                 validName, CultureInfo.InvariantCulture));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-026")]
+        [Property("Scenario", "FR-026-SC02")]
+        public void FR_026_SC02_FakeReaderClassifiesRejectedDestinationSetterByField()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true),
+                new ExpectedColumn("Name", true)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId"),
+                new SourcePropertyMapping("Name", "Name")
+            });
+            var mapper = new PrimitivePropertyMapper<RejectingCustomer>(
+                mapping, CultureInfo.InvariantCulture);
+            var reader = new ScenarioReader(CsvParseResult.Success(new[] {
+                new CsvRecord(1, 1, new[] { "Customer Id", "Name" }),
+                new CsvRecord(2, 2, new[] { "1", "Alice" }),
+                new CsvRecord(3, 3, new[] { "2", "reject-me" }),
+                new CsvRecord(4, 4, new[] { "3", "Bob" })
+            }));
+            var importer = new CsvImporter<RejectingCustomer>(reader, mapper.Map);
+
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "customers-fake");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.AcceptedRecords[1].CustomerId, Is.EqualTo(3));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Name"));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("reject-me"));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-setter-detail"));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-026")]
+        [Property("Scenario", "FR-026-SC02")]
+        public void FR_026_SC02_RejectsUnsupportedAndUnwritableDestinationsBeforeImport()
+        {
+            var schema = Schema().SourceSchema;
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+
+            Assert.Throws<ArgumentException>(() =>
+                new PrimitivePropertyMapper<UnsupportedDestination>(
+                    mapping, CultureInfo.InvariantCulture));
+            Assert.Throws<ArgumentException>(() =>
+                new PrimitivePropertyMapper<ReadOnlyDestination>(
+                    mapping, CultureInfo.InvariantCulture));
         }
     }
 }
