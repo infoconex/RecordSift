@@ -75,5 +75,21 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.AcceptedRecords[0].Score, Is.EqualTo(7));
             }
         }
+
+        [Test]
+        public void FR_010_SourceIdentifiersRemainOrdinalWhenInputDictionaryIgnoresCase()
+        {
+            var mapper = new PrimitivePropertyMapper<Customer>(
+                Schema(), CultureInfo.InvariantCulture);
+            var values = new System.Collections.Generic.Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase) {
+                    { "customer id", "10" },
+                    { "Amount", "2.5" },
+                    { "Active", "true" },
+                    { "Score", "" }
+                };
+
+            Assert.Throws<ArgumentException>(() => mapper.Map(values));
+        }
     }
 }
