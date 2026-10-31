@@ -409,5 +409,114 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.Message, Is.Not.Empty);
             }
         }
+        private static TypedImportResult<Order> ImportRequiredOrders(string csv)
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Amount", true, true),
+                new ExpectedColumn("Order Date", true),
+                new ExpectedColumn("Active", true),
+                new ExpectedColumn("Score", false)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Amount", "Amount"),
+                new SourcePropertyMapping("Order Date", "OrderDate"),
+                new SourcePropertyMapping("Active", "Active"),
+                new SourcePropertyMapping("Score", "Score")
+            });
+            var mapper = new PrimitivePropertyMapper<Order>(
+                mapping, CultureInfo.GetCultureInfo("fr-FR"));
+            var importer = new CsvImporter<Order>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+            using (var source = new StringReader(csv))
+                return importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "diagnostic-orders");
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-028")]
+        [Property("Scenario", "FR-028-SC01")]
+        public void FR_028_SC01_RealCsvDiagnosticsIdentifySourceRowAndInvalidField()
+        {
+            var result = ImportRequiredOrders(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,   ,31/12/2025,true,\r\n" +
+                "2,\"5,50\",01/01/2026,true,");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.SourceId, Is.EqualTo("diagnostic-orders"));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(2));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[0].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Message, Is.Not.Empty);
+            Assert.That(result.Diagnostics[0].Message,
+                Does.Not.Contain("31/12/2025"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-028")]
+        [Property("Scenario", "FR-028-SC02")]
+        public void FR_028_SC02_RealCsvTwoIndependentErrorsRejectOneRecordOnce()
+        {
+            var result = ImportRequiredOrders(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                ",   ,31/12/2025,true,\r\n" +
+                "2,\"5,50\",01/01/2026,true,");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(2));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[1].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[0].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+            Assert.That(result.Diagnostics[1].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Id"));
+            Assert.That(result.Diagnostics[1].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[1].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[1].PhysicalLine, Is.EqualTo(2));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-028")]
+        [Property("Scenario", "FR-028-SC03")]
+        public void FR_028_SC03_RealCsvMissingHeaderFailsWithoutRejectedRow()
+        {
+            var result = ImportRequiredOrders("");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+            Assert.That(result.SourceId, Is.EqualTo("diagnostic-orders"));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            Assert.That(result.Diagnostics[0].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredHeaderMissing));
+            Assert.That(result.Diagnostics[0].Row, Is.Null);
+            Assert.That(result.Message, Is.Not.Empty);
+        }
+
     }
 }
