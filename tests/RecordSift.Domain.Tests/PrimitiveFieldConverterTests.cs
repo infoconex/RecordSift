@@ -77,6 +77,50 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-018")]
+        [Property("Scenario", "FR-018-SC01")]
+        public void FR_018_SC01_InvalidNumericAndDateValuesFailWithSafeMessages()
+        {
+            var converter = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("en-US"));
+
+            foreach (var invalid in new[] { "not-a-decimal", "79228162514264337593543950336" })
+            {
+                var error = Assert.Throws<FormatException>(() =>
+                    converter.Convert(invalid, typeof(decimal)));
+                Assert.That(error.Message, Does.Not.Contain(invalid));
+            }
+
+            var dateError = Assert.Throws<FormatException>(() =>
+                converter.Convert("not-a-date", typeof(DateTime)));
+            Assert.That(dateError.Message, Does.Not.Contain("not-a-date"));
+            Assert.Throws<FormatException>(() =>
+                converter.Convert("2147483648", typeof(int)));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-018")]
+        [Property("Scenario", "FR-018-SC02")]
+        public void FR_018_SC02_ExactNumbersAndDatesPreserveConfiguredCulture()
+        {
+            var french = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("fr-FR"));
+            var english = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("en-US"));
+
+            Assert.That(french.Convert("12,50", typeof(decimal)), Is.EqualTo(12.50m));
+            Assert.That(french.Convert("31/12/2025", typeof(DateTime)),
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(english.Convert("1,234.5000", typeof(decimal)),
+                Is.EqualTo(1234.5m));
+            Assert.That(english.Convert("0.1234567890123456789012345678", typeof(decimal)),
+                Is.EqualTo(0.1234567890123456789012345678m));
+            Assert.That(english.Convert("0.0000000000000000000000000001", typeof(decimal)),
+                Is.EqualTo(0.0000000000000000000000000001m));
+            Assert.That(english.Convert("0.12345678901234567890123456780000", typeof(decimal)),
+                Is.EqualTo(0.1234567890123456789012345678m));
+        }
+
+        [Test]
         public void MissingNonnullableValueAndUnsupportedTargetsDoNotCoerceDefaults()
         {
             var converter = new PrimitiveFieldConverter(CultureInfo.InvariantCulture);
