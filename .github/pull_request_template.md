@@ -40,4 +40,4 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] SOLID responsibilities, Microsoft C# naming/style (`.editorconfig`) and net48/C# 7.3 language compatibility reviewed.
 - [ ] Any third-party dependency is confined to an adapter/test assembly; exact version, license, framework compatibility, audit/CI inventory and ADR reviewed.
 
-**Merge policy:** squash merge issue PRs into `release/0.1`. Do not merge incomplete releases into `main`.
+**Merge policy:** squash merge issue PRs into `release/0.1`. The separately authorized release-promotion PR must also **SQUASH merge into `main`** (one consolidated release commit), after green Windows full test/security/API, independent NuGet consumer (RC and stable) and documentation PR checks. Reverify those gates on the exact resulting `main` SHA. **No release tag, GitHub release or public package publication** without a distinct owner authorization.
