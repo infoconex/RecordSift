@@ -65,6 +65,8 @@ constructor RecordSift.Domain.Results.TypedImportResult<T>(System.String sourceI
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired)
 constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Boolean isValueRequired, System.Nullable<System.Int32> minimumLength, System.Nullable<System.Int32> maximumLength, System.Collections.Generic.IEnumerable<System.String> aliases)
+constructor RecordSift.Domain.Schema.ExpectedColumn(System.String name, System.Boolean isRequired, System.Collections.Generic.IEnumerable<System.String> aliases)
 constructor RecordSift.Domain.Schema.ImportSchema(System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.ExpectedColumn> columns)
 constructor RecordSift.Domain.Schema.PrimitiveFieldConverter(System.Globalization.CultureInfo culture)
 constructor RecordSift.Domain.Schema.PropertyMappingSchema(RecordSift.Domain.Schema.ImportSchema sourceSchema, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourcePropertyMapping> mappings)
@@ -313,6 +315,7 @@ property RecordSift.Domain.Results.TypedImportResult<T> System.String SourceId[]
 property RecordSift.Domain.Schema.DuplicateIdentifierRule<T> System.String Field[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.Boolean IsRequired[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.Boolean IsValueRequired[] {get,-}
+property RecordSift.Domain.Schema.ExpectedColumn System.Collections.Generic.IReadOnlyList<System.String> Aliases[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MaximumLength[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.Nullable<System.Int32> MinimumLength[] {get,-}
 property RecordSift.Domain.Schema.ExpectedColumn System.String Name[] {get,-}

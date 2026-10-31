@@ -25,6 +25,10 @@ namespace RecordSift.Domain.Schema
                 if (!names.Add(column.Name))
                     throw new ArgumentException(DomainMessageResources.ColumnNamesDuplicate,
                         nameof(columns));
+                foreach (var alias in column.Aliases)
+                    if (!names.Add(alias))
+                        throw new ArgumentException(DomainMessageResources.ColumnNamesDuplicate,
+                            nameof(columns));
                 snapshot.Add(column);
             }
             Columns = new ReadOnlyCollection<ExpectedColumn>(snapshot);
@@ -178,7 +182,7 @@ namespace RecordSift.Domain.Schema
             return new SchemaBindingResult(foundBindings, errors);
         }
 
-        /// <summary>Binds declared columns to exact-case header names, preserving declaration order and zero-based source indexes; missing required or ambiguous names fail atomically.</summary>
+        /// <summary>Binds canonical or explicitly aliased exact-case headings, preserving declaration order and zero-based source indexes; multiple matching names fail atomically.</summary>
         /// <param name="sourceHeaders">Header field names in physical source order; matching is ordinal and case-sensitive.</param>
         public SchemaBindingResult BindHeaders(IEnumerable<string> sourceHeaders)
         {
@@ -205,21 +209,31 @@ namespace RecordSift.Domain.Schema
             var errors = new List<ImportDiagnostic>();
             foreach (var declared in Columns)
             {
+                var matches = new List<int>();
                 List<int> found;
-                if (!positions.TryGetValue(declared.Name, out found))
+                if (positions.TryGetValue(declared.Name, out found))
+                    matches.AddRange(found);
+                foreach (var alias in declared.Aliases)
+                    if (positions.TryGetValue(alias, out found))
+                        matches.AddRange(found);
+
+                if (matches.Count == 0)
                 {
                     if (declared.IsRequired)
                         errors.Add(ImportDiagnostic.ForSource(declared.Name,
                             DiagnosticCodes.RequiredColumnMissing));
                 }
-                else if (found.Count != 1)
+                else if (matches.Count != 1)
                 {
+                    // A canonical heading has no precedence over a configured alias.
+                    // Even equal record values cannot make two source columns unambiguous.
                     errors.Add(ImportDiagnostic.ForSource(declared.Name,
                         DiagnosticCodes.AmbiguousColumn));
                 }
                 else
                 {
-                    foundBindings.Add(new SourceColumnBinding(declared.Name, found[0]));
+                    // Use the canonical field identifier for all downstream mapping and validation.
+                    foundBindings.Add(new SourceColumnBinding(declared.Name, matches[0]));
                 }
             }
 
