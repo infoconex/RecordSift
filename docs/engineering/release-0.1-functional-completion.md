@@ -3,7 +3,7 @@
 **Review date:** 2026-10-31  
 **Integration branch:** `release/0.1`  
 **Target:** Windows only, C# 7.3, .NET Framework 4.8, NUnit 3  
-**Status:** All targeted functional acceptance scenarios verified on the integration branch. Release packaging, promotion and distribution have not been authorized.
+**Status as of the functional-completion milestone:** All targeted functional acceptance scenarios verified on the integration branch. Packaging and source promotion were not yet authorized **at that milestone**; they were addressed subsequently. See the [current release-readiness assessment](release-0.1-readiness.md) for internal stable-package acceptance, approved squash-only promotion and the separate publication gate.
 
 ## Scope and acceptance inventory
 
@@ -47,4 +47,4 @@ CSV reporting exports only diagnostic metadata, not accepted record objects or c
 
 ## Recommended next milestone
 
-**Release 0.1 — Release Candidate Validation and Distribution Readiness.** Freeze the accepted Windows/net48 feature scope, verify reproducible clean-build and package consumption, run the complete Windows acceptance/security/compatibility gates against the intended distribution, review packaging/version/docs/licenses and produce an explicit go/no-go decision. Leave Future features deferred. Only promote `release/0.1` to `main` after explicit authorization.
+**Historical next milestone (subsequently completed): Release 0.1 — Release Candidate Validation and Distribution Readiness.** Freeze the accepted Windows/net48 feature scope, verify reproducible clean-build and package consumption, run the complete Windows acceptance/security/compatibility gates against the intended distribution, review packaging/version/docs/licenses and produce an explicit go/no-go decision. Leave Future features deferred. Only promote `release/0.1` to `main` after explicit authorization.
