@@ -1,12 +1,15 @@
 # Run a standalone C# 7.3/.NET Framework 4.8 consumer from a local NuGet install.
 [CmdletBinding()]
-param([Parameter(Mandatory = $true)][string]$CandidateDirectory)
+param(
+    [Parameter(Mandatory = $true)][string]$CandidateDirectory,
+    [ValidateSet('0.1.0-rc.1', '0.1.0')][string]$PackageVersion = '0.1.0-rc.1'
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $feed = [IO.Path]::GetFullPath($CandidateDirectory)
-if (-not (Test-Path -LiteralPath (Join-Path $feed 'RecordSift.0.1.0-rc.1.nupkg'))) {
+if (-not (Test-Path -LiteralPath (Join-Path $feed "RecordSift.$PackageVersion.nupkg"))) {
     throw 'Unpublished local candidate is missing.'
 }
 $work = Join-Path $env:RUNNER_TEMP ('RecordSift-Consumer-' + [guid]::NewGuid().ToString('N'))
@@ -16,7 +19,7 @@ New-Item -ItemType Directory -Force -Path $packages, $output | Out-Null
 try {
     $nuget = (Get-Command nuget -ErrorAction Stop).Source
     # Include nuget.org only to resolve the candidate's pinned third-party package dependencies.
-    & $nuget install RecordSift -Version '0.1.0-rc.1' -Framework net48 -OutputDirectory $packages -Source "$feed;https://api.nuget.org/v3/index.json" -NonInteractive -NoCache
+    & $nuget install RecordSift -Version $PackageVersion -Framework net48 -OutputDirectory $packages -Source "$feed;https://api.nuget.org/v3/index.json" -NonInteractive -NoCache
     if ($LASTEXITCODE -ne 0) { throw 'Clean NuGet install failed.' }
     $expectedPackages = @{
         CsvHelper = '33.1.0'
@@ -37,7 +40,7 @@ try {
             throw "Unpinned or missing NuGet dependency: $($package.Key) version $($package.Value)"
         }
     }
-    $installedRoot = Join-Path $packages 'RecordSift.0.1.0-rc.1'
+    $installedRoot = Join-Path $packages "RecordSift.$PackageVersion"
     foreach ($notice in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
         $file = Join-Path $installedRoot $notice
         if (-not (Test-Path -LiteralPath $file)) { throw "Installed NuGet package missing $notice" }
@@ -45,7 +48,7 @@ try {
             throw "Installed NuGet package notice $notice does not match reviewed source."
         }
     }
-    $lib = Join-Path $packages 'RecordSift.0.1.0-rc.1\lib\net48'
+    $lib = Join-Path $installedRoot 'lib\net48'
     $components = @('Domain', 'Application', 'Infrastructure.Csv', 'Infrastructure.Reporting', 'Infrastructure.Xlsx')
     foreach ($component in $components) {
         $name = "RecordSift.$component"
@@ -60,7 +63,7 @@ try {
     $frameworks = @('net48', 'net472', 'net471', 'net47', 'net462', 'net461',
                     'net46', 'net45', 'net40', 'netstandard2.0', 'netstandard1.3')
     foreach ($dependency in @(Get-ChildItem -LiteralPath $packages -Directory |
-            Where-Object { $_.Name -ne 'RecordSift.0.1.0-rc.1' })) {
+            Where-Object { $_.Name -ne "RecordSift.$PackageVersion" })) {
         foreach ($framework in $frameworks) {
             $candidateLib = Join-Path $dependency.FullName "lib\$framework"
             if (-not (Test-Path $candidateLib)) { continue }
@@ -90,7 +93,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Standalone consumer C# compilation failed.' }
     & $exe
     if ($LASTEXITCODE -ne 0) { throw 'Standalone consumer execution failed.' }
-    Write-Host 'PASS: separate installed NuGet consumer verified without repository binaries.'
+    Write-Host "PASS: separate installed RecordSift $PackageVersion NuGet consumer verified without repository binaries."
 } finally {
     Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 }

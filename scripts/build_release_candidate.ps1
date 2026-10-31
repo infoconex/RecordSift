@@ -1,6 +1,9 @@
 # Internal candidate build only. Never push this nupkg to a feed or GitHub release.
 [CmdletBinding()]
-param([string]$OutputDirectory = (Join-Path $env:TEMP 'RecordSift-RC'))
+param(
+    [string]$OutputDirectory = (Join-Path $env:TEMP 'RecordSift-RC'),
+    [ValidateSet('0.1.0-rc.1', '0.1.0')][string]$PackageVersion = '0.1.0-rc.1'
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -26,13 +29,16 @@ foreach ($component in $components) {
         throw "$name identity/file version must be 0.1.0.0, observed $($identity.Version)/$fileVersion"
     }
 }
-Copy-Item -LiteralPath (Join-Path $root 'packaging\README.md') -Destination (Join-Path $stage 'README.md') -Force
+# The staged README must state the exact package version; repository source is unchanged.
+$readme = Get-Content -LiteralPath (Join-Path $root 'packaging\README.md') -Raw
+$readme = $readme.Replace('0.1.0-rc.1', $PackageVersion)
+[IO.File]::WriteAllText((Join-Path $stage 'README.md'), $readme, [Text.UTF8Encoding]::new($false))
 Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination (Join-Path $stage 'LICENSE') -Force
 Copy-Item -LiteralPath (Join-Path $root 'THIRD-PARTY-NOTICES.md') -Destination (Join-Path $stage 'THIRD-PARTY-NOTICES.md') -Force
 $nuget = Get-Command nuget -ErrorAction Stop
-& $nuget.Source pack (Join-Path $root 'packaging\RecordSift.nuspec') -BasePath $stage -OutputDirectory $destination -NonInteractive
+& $nuget.Source pack (Join-Path $root 'packaging\RecordSift.nuspec') -BasePath $stage -OutputDirectory $destination -Version $PackageVersion -NonInteractive
 if ($LASTEXITCODE -ne 0) { throw "NuGet pack failed: $LASTEXITCODE" }
-$package = Join-Path $destination 'RecordSift.0.1.0-rc.1.nupkg'
+$package = Join-Path $destination "RecordSift.$PackageVersion.nupkg"
 if (-not (Test-Path -LiteralPath $package)) { throw "Expected package missing: $package" }
 
 Add-Type -AssemblyName System.IO.Compression
@@ -62,6 +68,15 @@ try {
     $nuspecReader = [IO.StreamReader]::new($nuspecEntry.Open())
     try { [xml]$packedNuspec = $nuspecReader.ReadToEnd() }
     finally { $nuspecReader.Dispose() }
+    $metadata = $packedNuspec.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]')
+    $publishedVersion = $metadata.SelectSingleNode('*[local-name()="version"]').InnerText
+    if ($publishedVersion -cne $PackageVersion) {
+        throw "Packed version mismatch: requested $PackageVersion, found $publishedVersion."
+    }
+    # Ensure the internal 0.1.0 package is never accidentally marked as a prerelease.
+    if ($PackageVersion -eq '0.1.0' -and $publishedVersion.Contains('-')) {
+        throw 'Stable candidate manifest contains a prerelease suffix.'
+    }
     $license = $packedNuspec.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]/*[local-name()="license"]')
     if ($null -eq $license -or $license.GetAttribute('type') -ne 'expression' -or $license.InnerText -ne 'MIT') {
         throw 'Packaged .nuspec must declare the approved MIT SPDX license expression.'
