@@ -35,6 +35,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Ports\Csv\ICsvRecordReader.cs" />
     <Compile Include="Ports\Reporting\IImportResultSerializer.cs" />
+    <Compile Include="Ports\Reporting\IImportResultFormatter.cs" />
     <Compile Include="Ports\Csv\CsvReadOptions.cs" />
     <Compile Include="Ports\Csv\CsvParseResult.cs" />
     <Compile Include="Ports\Csv\CsvRecord.cs" />
