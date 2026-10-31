@@ -247,7 +247,7 @@ def verify_layout():
     if adapter_project.is_file():
         root = project(adapter_project)
         graph["RecordSift.Infrastructure.Csv"] = dependencies(root)
-        if set(includes(root, "Compile")) != set(ADAPTER_FILES) or len(includes(root, "Compile")) != len(ADAPTER_FILES):
+        if set(includes(root, "Compile")) != set(ADAPTER_FILES + ("Properties/AssemblyInfo.cs",)) or len(includes(root, "Compile")) != len(ADAPTER_FILES) + 1:
             errors.append("Infrastructure project must compile all explicitly owned CSV sources")
         sources = {file: (INFRASTRUCTURE / file).read_text(encoding="utf-8")
                    for file in ADAPTER_FILES if (INFRASTRUCTURE / file).is_file()}
@@ -308,7 +308,7 @@ def verify_layout():
     else:
         xlsx_root = project(xlsx_project)
         graph[xlsx_name] = dependencies(xlsx_root)
-        if includes(xlsx_root, "Compile") != ["XlsxWorksheetReaderAdapter.cs"]:
+        if set(includes(xlsx_root, "Compile")) != {"Properties/AssemblyInfo.cs", "XlsxWorksheetReaderAdapter.cs"} or len(includes(xlsx_root, "Compile")) != 2:
             errors.append("XLSX adapter must own its sole reader implementation")
         if {p.name for p in xlsx_path.glob("*.cs")} != {"XlsxWorksheetReaderAdapter.cs"}:
             errors.append("XLSX infrastructure source ownership mismatch")
