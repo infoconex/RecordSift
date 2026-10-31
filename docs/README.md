@@ -113,7 +113,7 @@ Source-level failures are distinguished from rejected records, and reporting con
 - `FR-###` and `NFR-###` identify requirements permanently.
 - Each requirement has one independent issue, which links to its authoritative scenario Markdown file under `docs/scenarios/`.
 - Priority `Must` applies to the release 0.1 scope; `Should` and `Future` remain backlog items unless deliberately moved into the release by a documented change.
-- **Traceability** owns scenario execution state: all 96 in-scope FR scenarios and ten scoped NFR requirements are accepted as recorded there; legacy functional-specification `Planned` metadata describes specification planning only. Historical FR-030 unit evidence was later supplemented by end-to-end CSV/XLSX and reporting acceptance. Do not confuse specification metadata with actual test execution status.
+- **Traceability** owns scenario execution state: all 77 in-scope functional scenarios and ten scoped NFR requirements are accepted as recorded there; legacy functional-specification `Planned` metadata describes specification planning only. Historical FR-030 unit evidence was later supplemented by end-to-end CSV/XLSX and reporting acceptance. Do not confuse specification metadata with actual test execution status.
 - An issue may cross-reference other requirements without becoming responsible for implementing them.
 - Requirement, scenario, test, PR, and release evidence are linked in [the traceability matrix](testing/traceability.md).
 
