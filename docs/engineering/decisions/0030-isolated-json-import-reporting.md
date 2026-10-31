@@ -10,7 +10,7 @@ Application owns the format-neutral `IImportResultSerializer` port accepting a c
 
 The report is a projection, not a second business model: all statuses, counts, and diagnostics originate from existing Domain result invariants. The JSON top-level properties are `schemaVersion`, `sourceId`, `status`, `message`, `summary`, `diagnostics`, in stable order. The summary exposes three row counts only. Every diagnostic includes `scope`, nullable `row`, nullable `field`, `code`, and sanitized `message`. Optional location fields appear only when known. Diagnostic order is retained; accepted record values, warning severities, stack traces, and vendor exceptions are not exported.
 
-The output includes the Domain result's existing `message` and `sourceId`. A caller manually constructing a result is responsible for keeping these caller-controlled strings non-sensitive; the default importer emits sanitized messages and consumers should supply opaque source identifiers. The serializer must not infer or include raw source values or absolute filesystem paths.
+The default JSON report does **not** repeat the caller-controlled `TypedImportResult<T>.Message`, which may contain private input. It selects a safe, invariant status message from the Reporting adapter's resource catalog based only on Domain status and summary counts. Opaque non-path `sourceId` values are preserved; absolute Windows, POSIX, UNC, or file-URI source identifiers are replaced with the stable `source-redacted` identifier. This privacy policy applies even to manually constructed results. The report never infers or includes raw accepted records. Detailed sanitized diagnostic reasons remain available through Domain diagnostic codes and messages.
 
 ## Consequences
 

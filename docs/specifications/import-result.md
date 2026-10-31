@@ -66,11 +66,12 @@ Human-readable `message` wording is **not** a substitute for machine-readable `s
 ## Privacy, versioning and compatibility
 
 - Never include raw source values, credentials, absolute file paths or stack traces by default.
-- The `sourceId` must be a caller-controlled opaque identifier.
+- Callers should provide an opaque `sourceId`; the default JSON adapter redacts absolute filesystem paths and file URIs to `source-redacted`.
 - The JSON Schema rejects unknown properties for contract version 1.0.
 - The `schemaVersion` version is independent of RecordSift package and target-framework versions; incompatible public changes require deliberate schema versioning.
 - Preserve deterministic diagnostics ordering for identical inputs and explicit settings.
 - Serialize from the completed in-memory result; do not reopen the source file.
+- JSON `message` is a trusted invariant status description selected from reporting resources; arbitrary caller-controlled result message strings are not copied into default reports.
 - Any future warnings or other severities require a separately approved contract evolution and tests. They must not silently enter version 1.0.
 
 ## What JSON Schema cannot verify on its own
