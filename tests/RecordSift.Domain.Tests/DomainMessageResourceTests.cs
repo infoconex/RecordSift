@@ -124,6 +124,16 @@ namespace RecordSift.Domain.Tests
 
 
         [Test]
+        public void DiagnosticClassificationHelpersRemainInternalToTheDomain()
+        {
+            var publicMethods = System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Static;
+            Assert.That(typeof(DiagnosticCodes).GetMethod("IsKnown", publicMethods), Is.Null);
+            Assert.That(typeof(DiagnosticCodes).GetMethod("IsSourceCode", publicMethods), Is.Null);
+            Assert.That(typeof(DiagnosticCodes).GetMethod("IsRecordCode", publicMethods), Is.Null);
+        }
+
+        [Test]
         public void PublicDomainLibraryContractsMustNotExposeCompileTimeConstants()
         {
             var literals = typeof(ImportDiagnostic).Assembly.GetExportedTypes()

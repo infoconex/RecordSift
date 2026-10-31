@@ -27,6 +27,20 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        public void ConfigurationDefaultFieldsAreNotExposedAsPublicLibraryApi()
+        {
+            var publicMembers = System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Static;
+            var csv = typeof(RecordSift.Application.Ports.Csv.CsvReadOptions);
+            Assert.That(csv.GetField("DefaultDelimiter", publicMembers), Is.Null);
+
+            var xlsx = typeof(XlsxReadLimits);
+            Assert.That(xlsx.GetField("DefaultMaxRows", publicMembers), Is.Null);
+            Assert.That(xlsx.GetField("DefaultMaxColumns", publicMembers), Is.Null);
+            Assert.That(xlsx.GetField("DefaultMaxCellCharacters", publicMembers), Is.Null);
+        }
+
+        [Test]
         public void LibraryConfigurationDefaultsRetainPublishedValues()
         {
             Assert.That(RecordSift.Application.Ports.Csv.CsvReadOptions.DefaultDelimiter,
