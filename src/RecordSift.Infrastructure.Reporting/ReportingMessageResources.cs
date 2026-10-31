@@ -14,6 +14,9 @@ namespace RecordSift.Infrastructure.Reporting
         internal static string ImportEmpty => Get("Outcome_ImportEmpty");
         internal static string ImportFailed => Get("Outcome_ImportFailed");
         internal static string ImportStopped => Get("Outcome_ImportStopped");
+        internal static string ImportCanceled => Get("Outcome_ImportCanceled");
+        internal static string ReadableCanceledSummary => Get("Readable_CanceledSummary");
+        internal static string ReadableCanceledSingleErrorSummary => Get("Readable_CanceledSingleErrorSummary");
         internal static string ReadableStoppedSummary => Get("Readable_StoppedSummary");
         internal static string ReadableStoppedSingleErrorSummary => Get("Readable_StoppedSingleErrorSummary");
 
