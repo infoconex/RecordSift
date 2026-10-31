@@ -47,6 +47,7 @@
     <Compile Include="Schema\PropertyMappingSchema.cs" />
     <Compile Include="Schema\PrimitiveFieldConverter.cs" />
     <Compile Include="Schema\FieldRangeRule.cs" />
+    <Compile Include="Schema\FieldConversionRule.cs" />
     <Compile Include="Schema\DuplicateIdentifierRule.cs" />
     <Compile Include="Schema\RecordValidationRule.cs" />
     <Compile Include="Schema\SourcePropertyMapping.cs" />
