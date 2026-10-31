@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "sourceId": "xlsx-missing",
+  "status": "Failed",
+  "message": "Import failed.",
+  "summary": {
+    "processedCount": 0,
+    "acceptedCount": 0,
+    "rejectedCount": 0
+  },
+  "diagnostics": [
+    {
+      "scope": "Source",
+      "row": null,
+      "field": null,
+      "code": "WORKSHEET_NOT_FOUND",
+      "message": "The requested worksheet was not found in the workbook.",
+      "worksheet": "Missing"
+    }
+  ]
+}

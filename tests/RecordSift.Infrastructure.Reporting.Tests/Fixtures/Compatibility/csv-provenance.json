@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "sourceId": "csv-provenance",
+  "status": "Completed",
+  "message": "Import completed with rejected records.",
+  "summary": {
+    "processedCount": 1,
+    "acceptedCount": 0,
+    "rejectedCount": 1
+  },
+  "diagnostics": [
+    {
+      "scope": "Record",
+      "row": 1,
+      "field": "Name",
+      "code": "VALIDATION_FAILED",
+      "message": "A field failed validation.",
+      "physicalLine": 3
+    }
+  ]
+}

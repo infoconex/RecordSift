@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "sourceId": "csv-failed",
+  "status": "Failed",
+  "message": "Import failed.",
+  "summary": {
+    "processedCount": 0,
+    "acceptedCount": 0,
+    "rejectedCount": 0
+  },
+  "diagnostics": [
+    {
+      "scope": "Source",
+      "row": null,
+      "field": null,
+      "code": "REQUIRED_HEADER_MISSING",
+      "message": "A required source header is missing."
+    }
+  ]
+}
