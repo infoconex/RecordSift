@@ -43,6 +43,13 @@
     <Compile Include="Importing\Csv\CsvHeaderPolicy.cs" />
     <Compile Include="Importing\Csv\CsvTableReader.cs" />
     <Compile Include="Importing\Csv\CsvImporter.cs" />
+    <Compile Include="Importing\ImportDataRow.cs" />
+    <Compile Include="Importing\RecordValidationPipeline.cs" />
+    <Compile Include="Importing\Xlsx\XlsxImporter.cs" />
+    <Compile Include="Ports\Xlsx\IXlsxWorksheetReader.cs" />
+    <Compile Include="Ports\Xlsx\XlsxReadResult.cs" />
+    <Compile Include="Ports\Xlsx\XlsxRecord.cs" />
+    <Compile Include="Ports\Xlsx\XlsxReadLimits.cs" />
     <Compile Include="Mapping\StringPropertyMapper.cs" />
     <Compile Include="Mapping\PrimitivePropertyMapper.cs" />
     <Compile Include="Importing\Csv\CsvTableResult.cs" />

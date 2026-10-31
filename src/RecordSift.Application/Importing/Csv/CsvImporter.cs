@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using RecordSift.Application.Importing;
 using RecordSift.Application.Messages;
 using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Diagnostics;
@@ -12,8 +13,8 @@ namespace RecordSift.Application.Importing.Csv
 {
     /// <summary>
     /// Integrates CSV source/header/schema policy with an explicitly supplied
-    /// CLR record converter. Generalized property mapping and rule validation
-    /// are separate requirements; no vendor parser type is exposed.
+    /// CLR record converter. Business validation is shared with XLSX and
+    /// no vendor parser type is exposed.
     /// </summary>
     public sealed class CsvImporter<T>
     {
@@ -99,108 +100,17 @@ namespace RecordSift.Application.Importing.Csv
                     ImportResult.Failed(0, table.Diagnostics), new T[0], message);
             }
 
-            var accepted = new List<T>();
-            var diagnostics = new List<ImportDiagnostic>();
-            var checkDuplicate = _identifierRule == null
-                ? null : _identifierRule.CreateValidator();
+            var rows = new List<ImportDataRow>();
             foreach (var row in table.DataRows)
-            {
-                var values = new Dictionary<string, string>(StringComparer.Ordinal);
-                foreach (var binding in table.Bindings)
-                    values.Add(binding.Name, row.Fields[binding.SourceIndex]);
+                rows.Add(new ImportDataRow(row.Row, row.Fields, null, null, row.PhysicalLine));
 
-                var recordValues = new ReadOnlyDictionary<string, string>(values);
-                var requiredErrors = schema.ValidateRequiredValues(
-                    recordValues, row.Row, row.PhysicalLine);
-                if (requiredErrors.Count != 0)
-                {
-                    diagnostics.AddRange(requiredErrors);
-                    continue;
-                }
-
-                var lengthErrors = schema.ValidateFieldLengths(
-                    recordValues, row.Row, row.PhysicalLine);
-                if (lengthErrors.Count != 0)
-                {
-                    diagnostics.AddRange(lengthErrors);
-                    continue;
-                }
-
-                T record;
-                try
-                {
-                    record = _mapRecord(recordValues);
-                }
-                catch (FieldConversionException error)
-                {
-                    diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, error.Field,
-                        DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
-                    continue;
-                }
-                catch (FormatException)
-                {
-                    diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, null,
-                        DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
-                    continue;
-                }
-                catch (OverflowException)
-                {
-                    diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, null,
-                        DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
-                    continue;
-                }
-
-                var rangeErrors = new List<ImportDiagnostic>();
-                foreach (var rule in _rangeRules)
-                {
-                    var diagnostic = rule.Validate(record, row.Row, row.PhysicalLine);
-                    if (diagnostic != null)
-                        rangeErrors.Add(diagnostic);
-                }
-                if (rangeErrors.Count != 0)
-                {
-                    diagnostics.AddRange(rangeErrors);
-                    continue;
-                }
-
-                var customErrors = new List<ImportDiagnostic>();
-                foreach (var rule in _customRules)
-                {
-                    var diagnostic = rule.Validate(record, row.Row, row.PhysicalLine);
-                    if (diagnostic != null)
-                        customErrors.Add(diagnostic);
-                }
-                if (customErrors.Count != 0)
-                {
-                    diagnostics.AddRange(customErrors);
-                    continue;
-                }
-
-                var duplicate = checkDuplicate == null
-                    ? null : checkDuplicate(record, row.Row, row.PhysicalLine);
-                if (duplicate != null)
-                    diagnostics.Add(duplicate);
-                else
-                    accepted.Add(record);
-            }
-
-            string summaryMessage;
-            if (table.DataRows.Count == 0)
-            {
-                summaryMessage = policy == CsvHeaderPolicy.WithHeader
-                    ? CsvMessageResources.ImportNoDataRecords
-                    : CsvMessageResources.ImportEmptySource;
-            }
-            else
-            {
-                summaryMessage = diagnostics.Count == 0
-                    ? CsvMessageResources.ImportCompleted
-                    : CsvMessageResources.ImportCompletedWithErrors;
-            }
-
-            return new TypedImportResult<T>(sourceId,
-                ImportResult.Completed(table.DataRows.Count, diagnostics),
-                accepted, summaryMessage);
+            var emptyMessage = policy == CsvHeaderPolicy.WithHeader
+                ? CsvMessageResources.ImportNoDataRecords
+                : CsvMessageResources.ImportEmptySource;
+            return RecordValidationPipeline.Process(rows, table.Bindings, schema,
+                sourceId, _mapRecord, _rangeRules, _identifierRule, _customRules,
+                emptyMessage, CsvMessageResources.ImportCompleted,
+                CsvMessageResources.ImportCompletedWithErrors);
         }
 
         private static bool ContainsMissingHeader(IEnumerable<ImportDiagnostic> diagnostics)
