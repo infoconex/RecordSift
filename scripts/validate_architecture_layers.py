@@ -26,7 +26,7 @@ EXPECTED = {
     },
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
-        "Ports/Reporting": ("IImportResultSerializer",),
+        "Ports/Reporting": ("IImportResultSerializer", "IImportResultFormatter"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Messages": ("CsvMessageResources",),
         "Mapping": ("StringPropertyMapper", "PrimitivePropertyMapper"),
@@ -39,6 +39,7 @@ TEST_PROJECT_REFERENCES = {
     ],
     "RecordSift.Infrastructure.Reporting.Tests": [
         "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        "RecordSift.Infrastructure.Csv.csproj",
         "RecordSift.Infrastructure.Reporting.csproj",
     ],
     "RecordSift.Infrastructure.Csv.Tests": [

@@ -33,9 +33,14 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonReportAcceptanceTests.cs" />
+    <Compile Include="CsvReadableReportIntegrationTests.cs" />
+    <Compile Include="ReadableReportAcceptanceTests.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/RecordSift.Infrastructure.Csv/RecordSift.Infrastructure.Csv.csproj">
+      <Project>{7B54F6F4-33DF-4A68-A2BC-28F3402D8125}</Project><Name>RecordSift.Infrastructure.Csv</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\RecordSift.Infrastructure.Reporting\RecordSift.Infrastructure.Reporting.csproj">
       <Project>{A2C6F539-1648-42A5-A04D-F27389A6F22B}</Project>
       <Name>RecordSift.Infrastructure.Reporting</Name>
