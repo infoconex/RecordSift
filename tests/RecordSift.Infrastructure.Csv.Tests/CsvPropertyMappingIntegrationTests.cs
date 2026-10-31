@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Globalization;
+using System.IO;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Mapping;
