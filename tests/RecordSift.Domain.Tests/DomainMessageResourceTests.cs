@@ -104,7 +104,7 @@ namespace RecordSift.Domain.Tests
             Assert.That(typeof(DomainMessageResources).GetMethod("Get", publicMembers), Is.Null);
 
             var namedMessages = typeof(DomainMessageResources).GetProperties(publicMembers);
-            Assert.That(namedMessages, Has.Length.EqualTo(38));
+            Assert.That(namedMessages, Has.Length.EqualTo(39));
             foreach (var property in namedMessages)
             {
                 Assert.That(property.PropertyType, Is.EqualTo(typeof(string)));

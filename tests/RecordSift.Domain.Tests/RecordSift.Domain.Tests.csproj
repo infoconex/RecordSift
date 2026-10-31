@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ImportSummaryTests.cs" />
+    <Compile Include="RecordValidationRuleTests.cs" />
     <Compile Include="TypedImportResultTests.cs" />
     <Compile Include="ImportDiagnosticTests.cs" />
     <Compile Include="ImportSchemaTests.cs" />

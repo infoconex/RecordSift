@@ -21,6 +21,7 @@ namespace RecordSift.Application.Importing.Csv
         private readonly Func<IReadOnlyDictionary<string, string>, T> _mapRecord;
         private readonly IReadOnlyList<FieldRangeRule<T>> _rangeRules;
         private readonly DuplicateIdentifierRule<T> _identifierRule;
+        private readonly IReadOnlyList<RecordValidationRule<T>> _customRules;
 
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord)
@@ -39,6 +40,15 @@ namespace RecordSift.Application.Importing.Csv
             Func<IReadOnlyDictionary<string, string>, T> mapRecord,
             IEnumerable<FieldRangeRule<T>> rangeRules,
             DuplicateIdentifierRule<T> identifierRule)
+            : this(reader, mapRecord, rangeRules, identifierRule, null)
+        {
+        }
+
+        public CsvImporter(ICsvRecordReader reader,
+            Func<IReadOnlyDictionary<string, string>, T> mapRecord,
+            IEnumerable<FieldRangeRule<T>> rangeRules,
+            DuplicateIdentifierRule<T> identifierRule,
+            IEnumerable<RecordValidationRule<T>> customRules)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapRecord == null) throw new ArgumentNullException(nameof(mapRecord));
@@ -58,6 +68,19 @@ namespace RecordSift.Application.Importing.Csv
             }
             _rangeRules = new ReadOnlyCollection<FieldRangeRule<T>>(rules);
             _identifierRule = identifierRule;
+
+            var validations = new List<RecordValidationRule<T>>();
+            if (customRules != null)
+            {
+                foreach (var rule in customRules)
+                {
+                    if (rule == null)
+                        throw new ArgumentException(DomainMessageResources.RecordValidationRuleNull,
+                            nameof(customRules));
+                    validations.Add(rule);
+                }
+            }
+            _customRules = new ReadOnlyCollection<RecordValidationRule<T>>(validations);
         }
 
         public TypedImportResult<T> Import(TextReader source, int maxCharacters,
@@ -103,46 +126,62 @@ namespace RecordSift.Application.Importing.Csv
                     continue;
                 }
 
+                T record;
                 try
                 {
-                    var record = _mapRecord(recordValues);
-                    var rangeErrors = new List<ImportDiagnostic>();
-                    foreach (var rule in _rangeRules)
-                    {
-                        var diagnostic = rule.Validate(record, row.Row, row.PhysicalLine);
-                        if (diagnostic != null)
-                            rangeErrors.Add(diagnostic);
-                    }
-
-                    if (rangeErrors.Count != 0)
-                    {
-                        diagnostics.AddRange(rangeErrors);
-                    }
-                    else
-                    {
-                        var duplicate = checkDuplicate == null
-                            ? null : checkDuplicate(record, row.Row, row.PhysicalLine);
-                        if (duplicate != null)
-                            diagnostics.Add(duplicate);
-                        else
-                            accepted.Add(record);
-                    }
+                    record = _mapRecord(recordValues);
                 }
                 catch (FieldConversionException error)
                 {
                     diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, error.Field,
                         DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
+                    continue;
                 }
                 catch (FormatException)
                 {
                     diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, null,
                         DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
+                    continue;
                 }
                 catch (OverflowException)
                 {
                     diagnostics.Add(ImportDiagnostic.ForRecord(row.Row, null,
                         DiagnosticCodes.ConversionFailed, null, null, row.PhysicalLine));
+                    continue;
                 }
+
+                var rangeErrors = new List<ImportDiagnostic>();
+                foreach (var rule in _rangeRules)
+                {
+                    var diagnostic = rule.Validate(record, row.Row, row.PhysicalLine);
+                    if (diagnostic != null)
+                        rangeErrors.Add(diagnostic);
+                }
+                if (rangeErrors.Count != 0)
+                {
+                    diagnostics.AddRange(rangeErrors);
+                    continue;
+                }
+
+                var customErrors = new List<ImportDiagnostic>();
+                foreach (var rule in _customRules)
+                {
+                    var diagnostic = rule.Validate(record, row.Row, row.PhysicalLine);
+                    if (diagnostic != null)
+                        customErrors.Add(diagnostic);
+                }
+                if (customErrors.Count != 0)
+                {
+                    diagnostics.AddRange(customErrors);
+                    continue;
+                }
+
+                var duplicate = checkDuplicate == null
+                    ? null : checkDuplicate(record, row.Row, row.PhysicalLine);
+                if (duplicate != null)
+                    diagnostics.Add(duplicate);
+                else
+                    accepted.Add(record);
             }
 
             string summaryMessage;
