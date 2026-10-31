@@ -134,8 +134,11 @@ def scenario_specifications() -> dict[str, str]:
                 scenarios[scenario] = relative
 
             expected_numbering = [f"{requirement}-SC{i:02d}" for i in range(1, len(found) + 1)]
-            if found != expected_numbering or len(found) < 2:
-                report(f"{relative}: scenarios must be unique, ordered SC01..SCnn, with at least two cases")
+            # NFR-009 has one approved Windows-only release scenario. Its
+            # historical SC02 was retired rather than invented as a release gate.
+            minimum = 1 if requirement == "NFR-009" else 2
+            if found != expected_numbering or len(found) < minimum:
+                report(f"{relative}: scenarios must be unique, ordered SC01..SCnn, with at least {minimum} case(s)")
             if len(ISSUE_RE.findall(content)) != 1:
                 report(f"{relative}: must link exactly one requirement issue")
     return scenarios
@@ -230,8 +233,10 @@ def validate() -> None:
     for scenario in sorted(set(trace_rows) - set(specs)):
         report(f"Traceability row has no specification: {scenario}")
 
-    if len(specs) < 109:
-        report(f"Expected at least 109 currently specified scenarios; found {len(specs)}")
+    # The historical NFR-009-SC02 portability proposal is not a release
+    # acceptance scenario and is archived outside this active inventory.
+    if len(specs) < 108:
+        report(f"Expected at least 108 currently specified scenarios; found {len(specs)}")
 
     for requirement, catalog in sorted(requirement_catalog.items()):
         if len(catalog) != 4:
