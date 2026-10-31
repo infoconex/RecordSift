@@ -4,7 +4,7 @@ This directory is the **authoritative source of expected behavior** for RecordSi
 
 - [Functional scenarios](functional/) — 39 Markdown files, one per `FR-001` through `FR-039`.
 - [Nonfunctional scenarios](non-functional/) — 10 Markdown files, one per `NFR-001` through `NFR-010`.
-- [Scenario-level traceability](../testing/traceability.md) — 109 specified scenarios, their GitHub issues, test mappings and observed execution evidence; this matrix is the sole source of scenario verification status.
+- [Scenario-level traceability](../testing/traceability.md) — 108 active specified scenarios, their GitHub issues, test mappings and observed execution evidence; this matrix is the sole source of scenario verification status.
 - [Functional requirements](../requirements/functional.md) and [Nonfunctional requirements](../requirements/non-functional.md).
 - [TDD and testing strategy](../testing/strategy.md).
 
@@ -41,7 +41,7 @@ The index at `docs/requirements/functional.md` stays concise. Avoid duplicating 
 
 ## Release scope and deferred scenarios
 
-`Must` requirements define the intended 0.1 baseline; `Should` and `Future` scenarios remain planned backlog. FR-025 severity customization is explicitly Future-only: release 0.1 uses accepted/rejected records with error diagnostics and no warnings. Some quality requirements include later modern-.NET platform checks; these must be explicitly deferred rather than claimed as complete on a .NET Framework 4.8 runner.
+`Must` requirements define the approved release 0.1 baseline **for Windows/.NET Framework 4.8 only**. Unapproved future capabilities are not release acceptance requirements. FR-025 severity customization is explicitly Future-only: release 0.1 uses accepted/rejected records with error diagnostics and no warnings. Former NFR-009-SC02 proposed cross-platform verification but was retired from the active acceptance matrix; its historical wording is preserved in the [platform review](../engineering/platform-dependencies-net48.md), and its scenario identifier must never be recycled. A future portability decision requires separate approved requirements rather than keeping release 0.1 open.
 
 ## Notes on requirement overlap
 

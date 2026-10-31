@@ -1,6 +1,6 @@
 # Release 0.1 platform-dependency review (NFR-009)
 
-**Scope:** [NFR-009](../scenarios/non-functional/NFR-009.md), [issue #49](https://github.com/infoconex/RecordSift/issues/49), historical `.NET Framework 4.8`, C# 7.3, Windows release 0.1. This review addresses **NFR-009-SC01** only. NFR-009-SC02 requires a separate portable framework and operating-system test matrix and remains unverified.
+**Scope:** [NFR-009](../scenarios/non-functional/NFR-009.md), [issue #49](https://github.com/infoconex/RecordSift/issues/49), historical `.NET Framework 4.8`, C# 7.3, Windows release 0.1. This review supplies **NFR-009-SC01** acceptance evidence for the Windows-only release 0.1. The former cross-platform scenario NFR-009-SC02 was withdrawn from release scope; it is retained below solely as historical context, not as an open requirement.
 
 ## Reviewed dependency boundary
 
@@ -25,6 +25,16 @@ The review inspected the five production `.csproj` files, CSV/XLSX `packages.con
 
 **NFR-009-SC01:** No *unnecessary first-party platform-specific integration* was identified in the release 0.1 import paths reviewed. The Windows-only `.NET Framework 4.8` target and Windows build/test tooling are intentional baseline requirements, not incidental library dependencies. Real adapters remain isolated behind RecordSift-owned ports. The review does not claim every transitive dependency is certified on other operating systems.
 
-**NFR-009-SC02 — not verified:** No portable target framework, Linux/macOS runtime test evidence, binary compatibility matrix, or cross-platform security/support statement exists for release 0.1. Future modernization must explicitly select runtimes and OS targets, repeat real CSV and XLSX acceptance tests and security controls, compare the compiled 375-entry API and seven JSON compatibility fixtures, and review transitive/native dependencies again. Do not close [issue #49](https://github.com/infoconex/RecordSift/issues/49) or mark SC02 verified on the basis of Windows CI.
+**Release 0.1 disposition:** NFR-009-SC01 has a repeatable manual platform-dependency review supported by successful Windows CI. This satisfies the Windows-scoped NFR-009 acceptance; issue #49 may be closed after the scope correction is merged and verified. The review does not certify other operating systems.
+
+### Historical proposal — NFR-009-SC02 (retired, not an acceptance scenario)
+
+Originally proposed as **"Verify modern cross-platform migration"**:
+
+> **Given** a later portable target framework is introduced,  
+> **When** the portable test matrix runs on the declared operating systems,  
+> **Then** imports behave consistently without introducing an Excel or COM dependency.
+
+This scenario was never executed and is **withdrawn from release 0.1 requirements** because Windows/.NET Framework 4.8 is the only approved deployment target. The scenario identifier is retained here for historical traceability and must not be reused. Future cross-platform support is **optional and uncommitted**; if approved later, create a separately scoped requirement rather than reviving this release gate.
 
 **Change impact:** This review introduces no production code change, public API expansion, dependency replacement, target-framework change or new cross-platform promise.
