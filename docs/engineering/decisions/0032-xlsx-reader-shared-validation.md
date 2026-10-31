@@ -1,6 +1,6 @@
 # ADR 0032: XLSX reader port and shared typed record validation
 
-**Status:** Accepted for FR-002 implementation, subject to Windows CI acceptance.
+**Status:** Accepted and implemented for FR-002 in release 0.1; Windows CI acceptance subsequently passed (see [traceability](../../testing/traceability.md)).
 **Issue:** [#6](https://github.com/infoconex/RecordSift/issues/6)
 
 ## Context
