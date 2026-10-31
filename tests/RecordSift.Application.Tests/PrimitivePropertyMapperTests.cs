@@ -379,5 +379,74 @@ namespace RecordSift.Application.Tests
             Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Id"));
             Assert.That(result.Diagnostics[1].Field, Is.EqualTo("Amount"));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-029")]
+        [Property("Scenario", "FR-029-SC01")]
+        public void FR_029_SC01_FakeReaderContinuesAfterRecordErrorWithValidLaterRecords()
+        {
+            var result = ImportOrders(new[] {
+                new CsvRecord(1, 1, new[] { "Id", "Amount", "Order Date" }),
+                new CsvRecord(2, 2, new[] { "1", "12,50", "31/12/2025" }),
+                new CsvRecord(3, 3, new[] { "2", "invalid-amount", "01/01/2026" }),
+                new CsvRecord(4, 4, new[] { "3", "7,25", "02/01/2026" })
+            });
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(3));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("invalid-amount"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-029")]
+        [Property("Scenario", "FR-029-SC02")]
+        public void FR_029_SC02_FakeReaderReportsUnreadableSourceAsFailedOperation()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true),
+                new ExpectedColumn("Amount", true),
+                new ExpectedColumn("Order Date", true)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Amount", "Amount"),
+                new SourcePropertyMapping("Order Date", "OrderDate")
+            });
+            var mapper = new PrimitivePropertyMapper<Order>(mapping,
+                CultureInfo.GetCultureInfo("fr-FR"));
+            var reader = new ScenarioReader(CsvParseResult.Failure(
+                ImportDiagnostic.ForSource(null, DiagnosticCodes.SourceUnreadable)));
+            var importer = new CsvImporter<Order>(reader, mapper.Map);
+
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "unreadable-fake");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.SourceId, Is.EqualTo("unreadable-fake"));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceUnreadable));
+                Assert.That(result.Diagnostics[0].Row, Is.Null);
+                Assert.That(result.Message, Is.Not.Empty);
+            }
+        }
     }
 }

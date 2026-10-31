@@ -42,6 +42,36 @@ namespace RecordSift.Infrastructure.Csv.Tests
             }
         }
 
+
+        private sealed class FailingTextReader : TextReader
+        {
+            private readonly string _availableInput;
+            private int _position;
+
+            public FailingTextReader(string availableInput)
+            {
+                _availableInput = availableInput;
+            }
+
+            public override int Read(char[] buffer, int index, int count)
+            {
+                if (_position >= _availableInput.Length)
+                    throw new IOException("private-reader-failure");
+
+                var available = Math.Min(count, _availableInput.Length - _position);
+                _availableInput.CopyTo(_position, buffer, index, available);
+                _position += available;
+                return available;
+            }
+
+            public override int Read()
+            {
+                if (_position >= _availableInput.Length)
+                    throw new IOException("private-reader-failure");
+                return _availableInput[_position++];
+            }
+        }
+
         private static TypedImportResult<Order> Import(string csv)
         {
             var schema = new ImportSchema(new[] {
@@ -303,6 +333,81 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("invalid-id"));
             Assert.That(result.Diagnostics[1].Message, Does.Not.Contain("invalid-amount"));
             Assert.That(result.Diagnostics[2].Message, Does.Not.Contain("not-a-date"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-029")]
+        [Property("Scenario", "FR-029-SC01")]
+        public void FR_029_SC01_RealCsvRecoversFromInvalidRecordAndAcceptsLaterRow()
+        {
+            var result = Import(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,\"12,50\",31/12/2025,true,\r\n" +
+                "2,private-invalid-amount,01/01/2026,true,\r\n" +
+                "3,\"7,25\",02/01/2026,false,8");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(3));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Record));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-invalid-amount"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-029")]
+        [Property("Scenario", "FR-029-SC02")]
+        public void FR_029_SC02_RealCsvReportsLateReaderFailureAsFatalSourceError()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true),
+                new ExpectedColumn("Amount", true),
+                new ExpectedColumn("Order Date", true),
+                new ExpectedColumn("Active", true),
+                new ExpectedColumn("Score", false)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Amount", "Amount"),
+                new SourcePropertyMapping("Order Date", "OrderDate"),
+                new SourcePropertyMapping("Active", "Active"),
+                new SourcePropertyMapping("Score", "Score")
+            });
+            var mapper = new PrimitivePropertyMapper<Order>(mapping,
+                CultureInfo.GetCultureInfo("fr-FR"));
+            var importer = new CsvImporter<Order>(new CsvRecordReaderAdapter(), mapper.Map);
+
+            // The first batch contains a complete valid record. The reader then
+            // fails on a subsequent read rather than producing a reliable EOF.
+            using (var source = new FailingTextReader(
+                "Id,Amount,Order Date,Active,Score\r\n" +
+                "1,\"12,50\",31/12/2025,true,\r\n"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "broken-source");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.SourceId, Is.EqualTo("broken-source"));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceUnreadable));
+                Assert.That(result.Diagnostics[0].Row, Is.Null);
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-reader-failure"));
+                Assert.That(result.Message, Is.Not.Empty);
+            }
         }
     }
 }
