@@ -95,6 +95,41 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
         }
 
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-038")]
+        [Property("Scenario", "FR-038-SC02")]
+        public void FR_038_SC02_CanceledWithoutDiagnosticsProducesHeaderOnlyReport()
+        {
+            var outcome = ImportResult.Canceled(0, new ImportDiagnostic[0]);
+            var result = new TypedImportResult<string>("canceled-source",
+                outcome, new string[0], "private cancellation message");
+            var csv = new CsvImportResultSerializerAdapter().Serialize(result);
+            Assert.That(ReadRows(csv), Has.Count.EqualTo(1));
+            Assert.That(csv, Is.EqualTo(
+                "SourceId,Scope,Row,Field,Code,Message,Worksheet,PhysicalRow,PhysicalLine\r\n"));
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Canceled));
+            Assert.That(result.Diagnostics, Is.Empty);
+        }
+
+        [Test]
+        [Property("Requirement", "FR-038")]
+        public void NonAsciiMetadataSurvivesCallerSelectedUtf8Encoding()
+        {
+            var diagnostic = ImportDiagnostic.ForRecord(1, "Région",
+                DiagnosticCodes.ValidationFailed);
+            var result = new TypedImportResult<string>("café-source",
+                ImportResult.Completed(1, new[] { diagnostic }),
+                new string[0], "ignored");
+            var report = new CsvImportResultSerializerAdapter().Serialize(result);
+            var bytes = new System.Text.UTF8Encoding(false, true).GetBytes(report);
+            Assert.That(bytes[0], Is.EqualTo((byte)'S'));
+            var restored = System.Text.Encoding.UTF8.GetString(bytes);
+            var rows = ReadRows(restored);
+            Assert.That(rows[1][0], Is.EqualTo("café-source"));
+            Assert.That(rows[1][3], Is.EqualTo("Région"));
+        }
+
         [TestCase(ImportStatus.Completed)]
         [TestCase(ImportStatus.Failed)]
         [TestCase(ImportStatus.Stopped)]
