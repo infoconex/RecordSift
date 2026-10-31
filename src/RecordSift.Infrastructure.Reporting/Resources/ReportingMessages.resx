@@ -8,4 +8,14 @@
   <data name="Outcome_ImportCompletedWithRejections" xml:space="preserve"><value>Import completed with rejected records.</value></data>
   <data name="Outcome_ImportEmpty" xml:space="preserve"><value>Import completed. No data records found.</value></data>
   <data name="Outcome_ImportFailed" xml:space="preserve"><value>Import failed.</value></data>
+  <data name="Readable_CompletedSummary" xml:space="preserve"><value>Import completed: {0} processed, {1} accepted, {2} rejected, {3} errors.</value></data>
+  <data name="Readable_FailedSummary" xml:space="preserve"><value>Import failed: {0} processed, {1} accepted, {2} rejected, {3} errors.</value></data>
+  <data name="Readable_NoRecords" xml:space="preserve"><value>No data records found.</value></data>
+  <data name="Readable_RecordIssue" xml:space="preserve"><value>Record {0}: [{1}] {2}</value></data>
+  <data name="Readable_RecordFieldIssue" xml:space="preserve"><value>Record {0}, field {1}: [{2}] {3}</value></data>
+  <data name="Readable_SourceIssue" xml:space="preserve"><value>Source: [{0}] {1}</value></data>
+  <data name="Readable_SourceFieldIssue" xml:space="preserve"><value>Source, field {0}: [{1}] {2}</value></data>
+  <data name="Readable_PhysicalLine" xml:space="preserve"><value> (physical line {0})</value></data>
+  <data name="Readable_PhysicalRow" xml:space="preserve"><value> (physical row {0})</value></data>
+  <data name="Readable_Worksheet" xml:space="preserve"><value> (worksheet {0})</value></data>
 </root>
