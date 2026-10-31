@@ -13,8 +13,8 @@ namespace RecordSift.Application.Importing.Csv
 {
     /// <summary>
     /// Integrates CSV source/header/schema policy with an explicitly supplied
-    /// CLR record converter. Generalized property mapping and rule validation
-    /// are separate requirements; no vendor parser type is exposed.
+    /// CLR record converter. Business validation is shared with XLSX and
+    /// no vendor parser type is exposed.
     /// </summary>
     public sealed class CsvImporter<T>
     {

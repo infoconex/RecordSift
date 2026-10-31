@@ -40,8 +40,9 @@ namespace RecordSift.Infrastructure.Xlsx
                     }
 
                     buffer.Position = 0;
-                    if (!IsSafePackage(buffer, maxBytes))
-                        return Error(DiagnosticCodes.SourceLimitExceeded);
+                    var packageError = CheckPackage(buffer, maxBytes);
+                    if (packageError != null)
+                        return Error(packageError);
 
                     buffer.Position = 0;
                     using (var workbook = ExcelReaderFactory.CreateOpenXmlReader(buffer,
@@ -96,12 +97,14 @@ namespace RecordSift.Infrastructure.Xlsx
             }
         }
 
-        private static bool IsSafePackage(Stream stream, int maxBytes)
+        private static string CheckPackage(Stream stream, int maxBytes)
         {
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Read, true))
             {
-                if (zip.Entries.Count == 0 || zip.Entries.Count > MaximumPackageEntries)
-                    return false;
+                if (zip.Entries.Count == 0)
+                    return DiagnosticCodes.MalformedSource;
+                if (zip.Entries.Count > MaximumPackageEntries)
+                    return DiagnosticCodes.SourceLimitExceeded;
                 long expanded = 0;
                 var expandedLimit = Math.Min((long)MaximumUncompressedBytes, (long)maxBytes * 32);
                 foreach (var entry in zip.Entries)
@@ -114,7 +117,8 @@ namespace RecordSift.Infrastructure.Xlsx
                         path.EndsWith("vbaProject.bin", StringComparison.OrdinalIgnoreCase))
                         return false;
                 }
-                return zip.GetEntry("xl/workbook.xml") != null;
+                return zip.GetEntry("xl/workbook.xml") == null
+                    ? DiagnosticCodes.MalformedSource : null;
             }
         }
 

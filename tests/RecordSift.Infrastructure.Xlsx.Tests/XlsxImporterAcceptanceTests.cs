@@ -85,5 +85,33 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("unsafe-source"));
             }
         }
+
+        [Test]
+        [Property("Requirement", "FR-002")]
+        public void ExceedingConfiguredWorkbookByteBudgetFailsWithoutPartialResults()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = CreateImporter().Import(stream, 64, Schema(), "bounded");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "FR-002")]
+        public void ExceedingConfiguredPhysicalRowBudgetFailsAtomically()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = CreateImporter().Import(stream, 4096, Schema(), "bounded",
+                    new RecordSift.Application.Ports.Xlsx.XlsxReadLimits(3, 16, 1024));
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(result.AcceptedRecords, Is.Empty);
+            }
+        }
     }
 }

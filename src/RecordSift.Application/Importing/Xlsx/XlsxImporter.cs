@@ -35,14 +35,16 @@ namespace RecordSift.Application.Importing.Xlsx
         }
 
         public TypedImportResult<T> Import(Stream source, int maxBytes,
-            ImportSchema schema, string sourceId)
+            ImportSchema schema, string sourceId, XlsxReadLimits limits = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (schema == null) throw new ArgumentNullException(nameof(schema));
             if (maxBytes < 1) throw new ArgumentOutOfRangeException(nameof(maxBytes));
 
             // Bounded input and row/cell limits are explicitly independent of CSV.
-            var raw = _reader.Read(source, maxBytes, 100000, 256, 32767);
+            var budget = limits ?? XlsxReadLimits.Default;
+            var raw = _reader.Read(source, maxBytes,
+                budget.MaxRows, budget.MaxColumns, budget.MaxCellCharacters);
             if (!raw.IsSuccessful)
                 return Failed(sourceId, raw.Error);
 

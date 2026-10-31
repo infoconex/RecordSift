@@ -49,6 +49,7 @@
     <Compile Include="Ports\Xlsx\IXlsxWorksheetReader.cs" />
     <Compile Include="Ports\Xlsx\XlsxReadResult.cs" />
     <Compile Include="Ports\Xlsx\XlsxRecord.cs" />
+    <Compile Include="Ports\Xlsx\XlsxReadLimits.cs" />
     <Compile Include="Mapping\StringPropertyMapper.cs" />
     <Compile Include="Mapping\PrimitivePropertyMapper.cs" />
     <Compile Include="Importing\Csv\CsvTableResult.cs" />

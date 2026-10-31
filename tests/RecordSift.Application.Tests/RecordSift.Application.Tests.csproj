@@ -42,6 +42,7 @@
     <Compile Include="CustomRecordValidationAcceptanceTests.cs" />
     <Compile Include="CsvReaderPortTests.cs" />
     <Compile Include="CsvImporterTests.cs" />
+    <Compile Include="XlsxReadLimitsTests.cs" />
     <Compile Include="StringPropertyMapperTests.cs" />
     <Compile Include="PrimitivePropertyMapperTests.cs" />
     <Compile Include="CsvReadOptionsTests.cs" />

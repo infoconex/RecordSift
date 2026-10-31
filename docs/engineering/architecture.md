@@ -103,3 +103,8 @@ Domain diagnostics and business-validation messages are defined by [ADR 0010](de
 3. Preserve public API and JSON compatibility with characterization/contract tests and an ADR for intentional change. In particular keep source/row diagnostics safe, deterministic, and explicit about physical versus logical rows.
 4. Review namespace and assembly references when adding dependencies; CI runs an automated architecture/dependency gate over `.csproj` references and folders. Microsoft naming rules are independently enforced with Roslyn IDE1006 and the constant naming guard.
 5. Use [Microsoft coding standards](csharp-style.md), [TDD strategy](../testing/strategy.md), and the [PR checklist](../../.github/pull_request_template.md). Exceptions belong in a scoped ADR or issue, never as an undocumented shortcut.
+
+
+## XLSX reading and shared typed validation (FR-002)
+
+The Application's `RecordValidationPipeline` processes normalized `ImportDataRow` values from both CSV and XLSX. CSV retains its existing importer and header behavior, while an XLSX-specific `IXlsxWorksheetReader` port handles binary workbook sources. The isolated `RecordSift.Infrastructure.Xlsx` adapter uses pinned ExcelDataReader without leaking vendor types. Existing Domain schema validators and reporting contracts are reused; reliable worksheet and physical-row coordinates are attached to Domain diagnostics. See [ADR 0032](decisions/0032-xlsx-reader-shared-validation.md).

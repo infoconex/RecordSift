@@ -30,7 +30,7 @@ EXPECTED = {
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Importing": ("ImportDataRow", "RecordValidationPipeline"),
         "Importing/Xlsx": ("XlsxImporter",),
-        "Ports/Xlsx": ("IXlsxWorksheetReader", "XlsxReadResult", "XlsxRecord"),
+        "Ports/Xlsx": ("IXlsxWorksheetReader", "XlsxReadResult", "XlsxRecord", "XlsxReadLimits"),
         "Messages": ("CsvMessageResources",),
         "Mapping": ("StringPropertyMapper", "PrimitivePropertyMapper"),
     },
