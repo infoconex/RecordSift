@@ -26,7 +26,7 @@ EXPECTED = {
     },
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
-        "Ports/Reporting": ("IImportResultSerializer",),
+        "Ports/Reporting": ("IImportResultSerializer", "IImportResultFormatter"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Messages": ("CsvMessageResources",),
         "Mapping": ("StringPropertyMapper", "PrimitivePropertyMapper"),
