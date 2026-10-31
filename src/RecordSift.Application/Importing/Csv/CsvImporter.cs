@@ -19,14 +19,35 @@ namespace RecordSift.Application.Importing.Csv
     {
         private readonly ICsvRecordReader _reader;
         private readonly Func<IReadOnlyDictionary<string, string>, T> _mapRecord;
+        private readonly IReadOnlyList<FieldRangeRule<T>> _rangeRules;
 
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord)
+            : this(reader, mapRecord, null)
+        {
+        }
+
+        public CsvImporter(ICsvRecordReader reader,
+            Func<IReadOnlyDictionary<string, string>, T> mapRecord,
+            IEnumerable<FieldRangeRule<T>> rangeRules)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             if (mapRecord == null) throw new ArgumentNullException(nameof(mapRecord));
             _reader = reader;
             _mapRecord = mapRecord;
+
+            var rules = new List<FieldRangeRule<T>>();
+            if (rangeRules != null)
+            {
+                foreach (var rule in rangeRules)
+                {
+                    if (rule == null)
+                        throw new ArgumentException(DomainMessageResources.RangeRuleNull,
+                            nameof(rangeRules));
+                    rules.Add(rule);
+                }
+            }
+            _rangeRules = new ReadOnlyCollection<FieldRangeRule<T>>(rules);
         }
 
         public TypedImportResult<T> Import(TextReader source, int maxCharacters,
@@ -72,7 +93,19 @@ namespace RecordSift.Application.Importing.Csv
 
                 try
                 {
-                    accepted.Add(_mapRecord(recordValues));
+                    var record = _mapRecord(recordValues);
+                    var rangeErrors = new List<ImportDiagnostic>();
+                    foreach (var rule in _rangeRules)
+                    {
+                        var diagnostic = rule.Validate(record, row.Row, row.PhysicalLine);
+                        if (diagnostic != null)
+                            rangeErrors.Add(diagnostic);
+                    }
+
+                    if (rangeErrors.Count != 0)
+                        diagnostics.AddRange(rangeErrors);
+                    else
+                        accepted.Add(record);
                 }
                 catch (FieldConversionException error)
                 {

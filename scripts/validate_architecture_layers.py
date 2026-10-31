@@ -20,7 +20,8 @@ EXPECTED = {
                         "FieldConversionException"),
         "Schema": ("ExpectedColumn", "ImportSchema", "SchemaBindingResult",
                    "SourceColumnBinding", "SourceColumnPosition",
-                   "SourcePropertyMapping", "PropertyMappingSchema", "PrimitiveFieldConverter"),
+                   "SourcePropertyMapping", "PropertyMappingSchema", "PrimitiveFieldConverter",
+                   "FieldRangeRule"),
         "Results": ("ImportResult", "ImportStatus", "ImportSummary", "TypedImportResult"),
     },
     "RecordSift.Application": {
