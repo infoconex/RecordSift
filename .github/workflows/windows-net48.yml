@@ -189,7 +189,7 @@ jobs:
           Assert-DomainTestProjectDependencies $domainTestsProject
           # Negative regression: each forbidden reference must make the actual guard fail.
           foreach ($forbidden in @('RecordSift.Application', 'RecordSift.Infrastructure.Csv', 'CsvHelper')) {
-            $invalidProject = $domainTestsProject.Replace('</Project>', "<ItemGroup><Reference Include=\u0060"$forbidden\u0060" /></ItemGroup></Project>")
+            $invalidProject = $domainTestsProject.Replace('</Project>', ('<ItemGroup><Reference Include="{0}" /></ItemGroup></Project>' -f $forbidden))
             $wasRejected = $false
             try { Assert-DomainTestProjectDependencies $invalidProject } catch { $wasRejected = $true }
             if (-not $wasRejected) { throw "Domain dependency audit failed to reject $forbidden." }
