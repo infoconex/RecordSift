@@ -418,5 +418,91 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(source.CanRead, Is.True);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-007")]
+        [Property("Scenario", "NFR-007-SC01")]
+        public void NFR_007_SC01_XlsxByteColumnAndCellLimitsFailWithoutPartialRows()
+        {
+            var data = Convert.FromBase64String(ValidWorkbook);
+            var limits = new[] {
+                new { Bytes = data.Length - 1, Limits = new XlsxReadLimits(10, 2, 32767) },
+                new { Bytes = data.Length, Limits = new XlsxReadLimits(10, 1, 32767) },
+                new { Bytes = data.Length, Limits = new XlsxReadLimits(10, 2, 1) }
+            };
+            foreach (var configuration in limits)
+            {
+                using (var source = new MemoryStream(data))
+                {
+                    var result = CreateImporter().Import(source, configuration.Bytes,
+                        Schema(), "bounded-xlsx", configuration.Limits);
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                    Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                    Assert.That(result.Summary.AcceptedCount, Is.Zero);
+                    Assert.That(result.Summary.RejectedCount, Is.Zero);
+                    Assert.That(result.AcceptedRecords, Is.Empty);
+                    Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                    Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                    Assert.That(result.Diagnostics[0].Code,
+                        Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                    Assert.That(source.CanRead, Is.True);
+                }
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-007")]
+        [Property("Scenario", "NFR-007-SC02")]
+        public void NFR_007_SC02_XlsxAcceptsExactCompressedByteAndColumnLimits()
+        {
+            var data = Convert.FromBase64String(ValidWorkbook);
+            using (var source = new MemoryStream(data))
+            {
+                var result = CreateImporter().Import(source, data.Length,
+                    Schema(), "exact-limit", new XlsxReadLimits(10, 2, 32767));
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-007")]
+        [Property("Scenario", "NFR-007-SC01")]
+        public void NFR_007_SC01_ZipExpansionGuardRejectsSmallHighlyCompressiblePackage()
+        {
+            byte[] bytes;
+            using (var output = new MemoryStream())
+            {
+                using (var zip = new System.IO.Compression.ZipArchive(
+                    output, System.IO.Compression.ZipArchiveMode.Create, true))
+                {
+                    var entry = zip.CreateEntry("xl/workbook.xml",
+                        System.IO.Compression.CompressionLevel.Optimal);
+                    using (var writer = new StreamWriter(entry.Open()))
+                        writer.Write(new string('A', 131072));
+                }
+                bytes = output.ToArray();
+            }
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, bytes.Length,
+                    Schema(), "small-zip-expansion");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
     }
 }
