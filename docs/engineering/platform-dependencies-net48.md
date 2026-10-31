@@ -37,6 +37,4 @@ Originally proposed as **"Verify modern cross-platform migration"**:
 
 This scenario was never executed and is **withdrawn from release 0.1 requirements** because Windows/.NET Framework 4.8 is the only approved deployment target. The scenario identifier is retained here for historical traceability and must not be reused. Future cross-platform support is **optional and uncommitted**; if approved later, create a separately scoped requirement rather than reviving this release gate.
 
-
-
 **Change impact:** This review introduces no production code change, public API expansion, dependency replacement, target-framework change or new cross-platform promise.
