@@ -310,5 +310,24 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private-setter-detail"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-026")]
+        [Property("Scenario", "FR-026-SC02")]
+        public void FR_026_SC02_RejectsUnsupportedAndUnwritableDestinationsBeforeImport()
+        {
+            var schema = Schema().SourceSchema;
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId")
+            });
+
+            Assert.Throws<ArgumentException>(() =>
+                new PrimitivePropertyMapper<UnsupportedDestination>(
+                    mapping, CultureInfo.InvariantCulture));
+            Assert.Throws<ArgumentException>(() =>
+                new PrimitivePropertyMapper<ReadOnlyDestination>(
+                    mapping, CultureInfo.InvariantCulture));
+        }
     }
 }
