@@ -10,15 +10,15 @@ namespace RecordSift.Domain.Schema
     /// </summary>
     public sealed class FieldPatternRule
     {
-        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMilliseconds(250);
-        private static readonly TimeSpan MaximumTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan s_defaultTimeout = TimeSpan.FromMilliseconds(250);
+        private static readonly TimeSpan s_maximumTimeout = TimeSpan.FromSeconds(10);
         private readonly Regex _expression;
 
         /// <summary>Creates a case-sensitive pattern rule with a finite 250-millisecond evaluation timeout.</summary>
         /// <param name="field">Exact-case canonical source field name.</param>
         /// <param name="pattern">Regular expression to evaluate using normal substring-matching semantics.</param>
         public FieldPatternRule(string field, string pattern)
-            : this(field, pattern, DefaultTimeout)
+            : this(field, pattern, s_defaultTimeout)
         {
         }
 
@@ -32,7 +32,7 @@ namespace RecordSift.Domain.Schema
                 throw new ArgumentException(DomainMessageResources.DiagnosticFieldBlank, nameof(field));
             if (string.IsNullOrWhiteSpace(pattern))
                 throw new ArgumentException(DomainMessageResources.PatternRuleInvalidExpression, nameof(pattern));
-            if (timeout < TimeSpan.FromMilliseconds(1) || timeout > MaximumTimeout)
+            if (timeout < TimeSpan.FromMilliseconds(1) || timeout > s_maximumTimeout)
                 throw new ArgumentOutOfRangeException(nameof(timeout));
             try
             {
