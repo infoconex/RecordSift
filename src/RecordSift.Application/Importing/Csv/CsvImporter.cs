@@ -112,6 +112,7 @@ namespace RecordSift.Application.Importing.Csv
         /// <param name="positions">Required explicit zero-based indexes for nonempty headerless CSV; incompatible with header mode.</param>
         /// <param name="options">Optional parser options; null selects comma delimiter.</param>
         /// <remarks>Source decoding and byte encoding are the caller's responsibility; use the CSV stream adapter for explicit encoding. A header-only CSV completes with zero data rows, but a zero-record source with a required header fails with a source diagnostic. A headerless zero-record source completes without validating positional bindings. Source-level failures return no accepted records, while record validation failures reject only the affected rows.</remarks>
+        /// <returns>A typed result with read-only accepted records and structured source/record diagnostics.</returns>
         public TypedImportResult<T> Import(TextReader source, int maxCharacters,
             ImportSchema schema, CsvHeaderPolicy policy, string sourceId,
             IEnumerable<SourceColumnPosition> positions = null,

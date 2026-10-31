@@ -19,7 +19,7 @@ namespace RecordSift.Infrastructure.Reporting
     {
         private const string JsonSchemaVersion = "1.0";
 
-        /// <summary>Projects the existing import result to stable schema-version 1.0 JSON. Accepted CLR records and caller-defined messages are omitted; path-like source IDs are redacted.</summary>
+        /// <summary>Projects the existing import result to stable schema-version 1.0 JSON. Accepted CLR records and caller-defined messages are omitted; rooted paths and file-URI source IDs are redacted, but arbitrary caller metadata is not scrubbed.</summary>
         /// <param name="result">Existing in-memory typed result; null throws an argument exception.</param>
         /// <typeparam name="T">Accepted CLR record type; values are not included in output.</typeparam>
         public string Serialize<T>(TypedImportResult<T> result)
