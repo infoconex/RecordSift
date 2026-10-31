@@ -310,5 +310,65 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("Alice"));
         }
 
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-004")]
+        [Property("Scenario", "FR-004-SC01")]
+        public void FR_004_SC01_HeadedAndHeaderlessCsvProduceEquivalentOrderedTypedRecords()
+        {
+            var headed = ImportWithDeclaredMapping("Id,Name\r\n1,Alice\r\n2,Bob");
+            var headerless = ImportWithDeclaredMapping("1,Alice\r\n2,Bob",
+                CsvHeaderPolicy.WithoutHeader, new[] {
+                    new SourceColumnPosition("Id", 0),
+                    new SourceColumnPosition("Name", 1)
+                });
+
+            Assert.That(headed.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(headerless.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(headed.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(headerless.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(headed.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(headerless.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(headed.Summary.RejectedCount, Is.Zero);
+            Assert.That(headerless.Summary.RejectedCount, Is.Zero);
+            Assert.That(headed.Diagnostics, Is.Empty);
+            Assert.That(headerless.Diagnostics, Is.Empty);
+            Assert.That(headerless.AcceptedRecords, Has.Count.EqualTo(2));
+            for (var index = 0; index < 2; index++)
+            {
+                Assert.That(headerless.AcceptedRecords[index], Is.TypeOf<Customer>());
+                Assert.That(headerless.AcceptedRecords[index].Id,
+                    Is.EqualTo(headed.AcceptedRecords[index].Id));
+                Assert.That(headerless.AcceptedRecords[index].Name,
+                    Is.EqualTo(headed.AcceptedRecords[index].Name));
+            }
+            Assert.That(headerless.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(headerless.AcceptedRecords[1].Id, Is.EqualTo(2));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-004")]
+        [Property("Scenario", "FR-004-SC02")]
+        public void FR_004_SC02_MissingDeclaredHeaderFailsWithoutAcceptingOrShiftingRows()
+        {
+            var result = ImportWithDeclaredMapping(
+                "Id,Unexpected\r\n1,private-source-value");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+            Assert.That(result.Summary.ProcessedCount, Is.Zero);
+            Assert.That(result.Summary.AcceptedCount, Is.Zero);
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords, Is.Empty);
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+            Assert.That(result.Diagnostics[0].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredColumnMissing));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Name"));
+            Assert.That(result.Diagnostics[0].Row, Is.Null);
+            Assert.That(result.Diagnostics[0].Message,
+                Does.Not.Contain("private-source-value"));
+        }
     }
 }
