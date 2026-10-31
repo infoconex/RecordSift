@@ -27,6 +27,8 @@ foreach ($component in $components) {
     }
 }
 Copy-Item -LiteralPath (Join-Path $root 'packaging\README.md') -Destination (Join-Path $stage 'README.md') -Force
+Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination (Join-Path $stage 'LICENSE') -Force
+Copy-Item -LiteralPath (Join-Path $root 'THIRD-PARTY-NOTICES.md') -Destination (Join-Path $stage 'THIRD-PARTY-NOTICES.md') -Force
 $nuget = Get-Command nuget -ErrorAction Stop
 & $nuget.Source pack (Join-Path $root 'packaging\RecordSift.nuspec') -BasePath $stage -OutputDirectory $destination -NonInteractive
 if ($LASTEXITCODE -ne 0) { throw "NuGet pack failed: $LASTEXITCODE" }
@@ -45,6 +47,25 @@ try {
         }
     }
     if ($entries -cnotcontains 'README.md') { throw 'Package missing NuGet README.md' }
+    foreach ($file in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
+        if ($entries -cnotcontains $file) { throw "Package missing $file" }
+        $entry = $zip.GetEntry($file)
+        $reader = New-Object IO.StreamReader($entry.Open())
+        try {
+            $packed = $reader.ReadToEnd()
+        } finally { $reader.Dispose() }
+        $source = Get-Content -LiteralPath (Join-Path $root $file) -Raw
+        if ($packed -cne $source) { throw "Package notice $file differs from reviewed source." }
+    }
+    $nuspecEntry = $zip.GetEntry('RecordSift.nuspec')
+    if ($null -eq $nuspecEntry) { throw 'NuGet manifest missing from package.' }
+    $nuspecReader = New-Object IO.StreamReader($nuspecEntry.Open())
+    try { [xml]$packedNuspec = $nuspecReader.ReadToEnd() }
+    finally { $nuspecReader.Dispose() }
+    $license = $packedNuspec.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]/*[local-name()="license"]')
+    if ($null -eq $license -or $license.GetAttribute('type') -ne 'expression' -or $license.InnerText -ne 'MIT') {
+        throw 'Packaged .nuspec must declare the approved MIT SPDX license expression.'
+    }
     $own = @($entries | Where-Object { $_ -match '^lib/net48/.*\.dll$' })
     if ($own.Count -ne $components.Count) {
         throw "Expected only five RecordSift assemblies, found $($own.Count): $($own -join ', ')"
@@ -53,5 +74,5 @@ try {
     $zip.Dispose()
 }
 $hash = (Get-FileHash -LiteralPath $package -Algorithm SHA256).Hash
-Write-Host "Validated unpublished candidate $package SHA256=$hash with five net48 assemblies, XML documentation and NuGet dependencies."
+Write-Host "Validated unpublished candidate $package SHA256=$hash with five net48 assemblies, XML documentation, MIT license and notices, and NuGet dependencies."
 Write-Output $package
