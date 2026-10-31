@@ -2,13 +2,88 @@
 
 **Import, validate, and report on structured data.**
 
-RecordSift is an open-source .NET library project intended to import records from CSV and Excel files, validate them, and produce actionable diagnostics and JSON reports.
+RecordSift is an open-source .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
 
 ## Project status
 
-**Release 0.1 is under development.** A deliberately constructed, traditional .NET Framework 4.8 solution and executable NUnit smoke tests are introduced by engineering issue #57. The FR-030 in-memory summary/status model has automated unit coverage. No CSV/XLSX importer, end-to-end requirement verification, or published NuGet package is claimed yet.
+**Release 0.1 is under development; there is no published NuGet package yet.** The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. Release acceptance and modernization requirements remain in progress.
 
-The historical project configuration exists for a documented modernization experiment, not as recovered legacy production code. The implementation is physically separated into `RecordSift.Domain`, `RecordSift.Application`, and the vendor-isolated `RecordSift.Infrastructure.Csv` (see [architecture](docs/engineering/architecture.md) and [ADR 0013](docs/engineering/decisions/0013-physical-domain-application-infrastructure-assemblies.md)). Subsequent experiments will separately change NuGet dependency management, project format, build SDK and target framework.
+## Public API quick start (.NET Framework 4.8)
+
+Reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). Define a record type with public writable properties:
+
+```csharp
+public sealed class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+```
+
+### CSV import
+
+The following example uses the public schema, property mapping, and CSV adapter. The caller chooses the character limit, header policy, source identifier, and conversion culture; no internal initializer is required.
+
+```csharp
+using System;
+using System.Globalization;
+using System.IO;
+using RecordSift.Application.Importing.Csv;
+using RecordSift.Application.Mapping;
+using RecordSift.Application.Ports.Csv;
+using RecordSift.Domain.Schema;
+using RecordSift.Infrastructure.Csv;
+
+var schema = new ImportSchema(new[] {
+    new ExpectedColumn("Id", true, true),
+    new ExpectedColumn("Name", true, true)
+});
+var properties = new PropertyMappingSchema(schema, new[] {
+    new SourcePropertyMapping("Id", "Id"),
+    new SourcePropertyMapping("Name", "Name")
+});
+var mapper = new PrimitivePropertyMapper<Customer>(properties, CultureInfo.InvariantCulture);
+var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(), mapper.Map);
+
+using (var csv = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
+{
+    var result = importer.Import(csv, 4096, schema,
+        CsvHeaderPolicy.WithHeader, "customers", options: CsvReadOptions.Default);
+
+    // Access result.Status, result.Summary, result.AcceptedRecords,
+    // result.Diagnostics (including Code, Scope, Row, Field and PhysicalLine).
+    Console.WriteLine(result.Status);
+    Console.WriteLine(result.Summary.AcceptedCount);
+    foreach (var error in result.Diagnostics)
+        Console.WriteLine(error.Code);
+}
+```
+
+`CsvReadOptions.Default` uses a comma delimiter; supply `new CsvReadOptions(";")` for another supported delimiter. For encoded byte streams, use the public `CsvStreamImporterAdapter<T>` with an explicit `Encoding`. A headerless, nonempty CSV requires explicit `SourceColumnPosition` bindings. Passing positions with `WithHeader` is rejected, and invalid delimiters return an explicit source diagnostic.
+
+### XLSX import
+
+Reference `RecordSift.Infrastructure.Xlsx` and its runtime dependencies as well. Reuse the `Customer`, `schema`, and `mapper` declarations above:
+
+```csharp
+using System.IO;
+using RecordSift.Application.Importing.Xlsx;
+using RecordSift.Application.Ports.Xlsx;
+using RecordSift.Infrastructure.Xlsx;
+
+var xlsx = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(), mapper.Map);
+using (var stream = File.OpenRead("customers.xlsx"))
+{
+    var result = xlsx.Import(stream, 4 * 1024 * 1024, schema,
+        "customers", limits: XlsxReadLimits.Default);
+    // The first worksheet is used by default; specify worksheetName to select one.
+    // The result exposes the same typed records, summary and diagnostic contract.
+}
+```
+
+Both importers use a caller-supplied resource budget. XLSX additionally supports explicit worksheet row, column, and cell-character limits. Stream ownership remains with the caller. A failed source import has no partially accepted records; completed imports may contain record-level rejections.
+
+The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs) and [XLSX acceptance tests](tests/RecordSift.Infrastructure.Xlsx.Tests/XlsxImporterAcceptanceTests.cs) compile and execute the same public workflow on the .NET Framework 4.8 Windows CI build. These examples describe the current API, not a published binary/package compatibility promise.
 
 ## Development baseline
 
@@ -17,15 +92,12 @@ The historical project configuration exists for a documented modernization exper
 - [Functional requirements](docs/requirements/functional.md)
 - [Nonfunctional requirements](docs/requirements/non-functional.md)
 - [Acceptance scenario specifications](docs/scenarios/README.md)
+- [Architecture and dependency direction](docs/engineering/architecture.md)
 
 ## Development workflow
 
 - `main` is reserved for accepted releases.
 - `release/0.1` is the integration branch for the 0.1 release.
-- Each issue uses an independent short-lived branch from `release/0.1`, reviewed by PR and squash-merged.
-- Requirements remain `Planned` until linked executable acceptance evidence exists.
-- When release 0.1 passes its quality gates, open a separate PR from `release/0.1` to `main`.
-
-## Initial scope
-
-FR-030 provides immutable in-memory status and row counters, with passive supplied error diagnostics. CSV/XLSX ingestion, schema validation, error generation, typed accepted records and JSON report serialization remain independently tracked and unimplemented.
+- Each tracked issue uses an independent short-lived branch, reviewed and squash-merged into `release/0.1`.
+- Scenarios remain Planned until executable acceptance evidence exists in [traceability](docs/testing/traceability.md).
+- Future framework and package modernization must establish separate compatibility evidence before being declared complete.
