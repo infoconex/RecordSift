@@ -1,6 +1,6 @@
 # Import result JSON contract — version 1.0
 
-**Status:** Release 0.1 versioned report contract. In-memory Domain result models and CSV import are implemented. FR-035 provides an Infrastructure reporting adapter and executable JSON acceptance tests; the JSON Schema remains the authoritative wire definition. Full Draft 2020-12 meta-schema execution is not required by the current NUnit suite.  
+**Status:** Accepted release 0.1 versioned JSON report contract with real CSV/XLSX imports, Domain result models, Reporting adapters and executable acceptance plus seven golden-compatibility fixtures. The JSON Schemas remain the normative wire definitions; the current NUnit suite tests semantic behavior and golden output, not exhaustive Draft 2020-12 meta-schema execution.  
 **Related requirements:** [FR-028](../scenarios/functional/FR-028.md), [FR-030](../scenarios/functional/FR-030.md), [FR-035](../scenarios/functional/FR-035.md), [FR-036](../scenarios/functional/FR-036.md), [FR-037](../scenarios/functional/FR-037.md), [NFR-010](../scenarios/non-functional/NFR-010.md).  
 **Machine-readable definition:** [`schemas/import-result.schema.json`](schemas/import-result.schema.json) (JSON Schema Draft 2020-12).
 
@@ -52,7 +52,7 @@ Each element of `diagnostics` has these required properties:
 | `scope` | `"Record"` or `"Source"` | A validation error on a data row, or a source/schema/import failure |
 | `row` | positive integer or `null` | One-based logical data-record ordinal for `Record`; `null` for `Source` |
 | `field` | nonempty string or `null` | Source field/column identifier if known |
-| `code` | nonempty uppercase identifier | Machine-readable error code; registry to be fixed during implementation |
+| `code` | nonempty uppercase identifier | Machine-readable error code; fixed RecordSift-owned registry is exposed by Domain DiagnosticCodes |
 | `message` | nonempty string | Sanitized human-readable explanation |
 
 Optional location fields: `worksheet` (nonempty name), `physicalRow` (positive XLSX row number), `physicalLine` (positive line number only when the CSV reader reliably provides it). Because quoted CSV fields can contain line breaks, logical data-record ordinal and physical line are different concepts.
@@ -86,7 +86,7 @@ Human-readable `message` wording is **not** a substitute for machine-readable `s
 
 [The JSON Schema](schemas/import-result.schema.json) expresses required properties, types, enums, integer bounds, the `Record`/ `Source` row convention and rejection of unknown fields. It **cannot** by itself prove `processedCount = acceptedCount + rejectedCount`, distinct-row accounting, consistency between rejected rows and error diagnostics, privacy redaction or stable ordering.
 
-When executable contract tests exist, they must assert these semantic invariants independently, not merely validate the JSON shape.
+Executable contract and regression tests now assert these semantic invariants independently of JSON shape; passing golden fixtures does not by itself certify full Draft 2020-12 schema-engine conformance.
 
 ## Version-controlled compatibility fixtures
 
