@@ -198,12 +198,13 @@ namespace RecordSift.Application.Mapping
             {
                 converted = rule.Convert(value, _culture);
             }
-            catch (Exception error) when (!(error is OutOfMemoryException) &&
-                !(error is OperationCanceledException) &&
-                !(error is System.Threading.ThreadAbortException))
+            catch (FormatException)
             {
-                // A caller converter can include sensitive values in its exception.
-                // Discard the exception entirely and preserve only trusted field identity.
+                // Expected data rejections are record-specific; never retain untrusted messages.
+                throw new FieldConversionException(rule.Field);
+            }
+            catch (OverflowException)
+            {
                 throw new FieldConversionException(rule.Field);
             }
 
@@ -211,7 +212,7 @@ namespace RecordSift.Application.Mapping
             if ((converted == null && destinationType.IsValueType &&
                     Nullable.GetUnderlyingType(destinationType) == null) ||
                 (converted != null && !target.IsInstanceOfType(converted)))
-                throw new FieldConversionException(rule.Field);
+                throw new InvalidOperationException(DomainMessageResources.ConversionUnsupportedType);
             return converted;
         }
     }
