@@ -7,6 +7,7 @@ using NUnit.Framework;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class BaselineAssemblyTests
     {
         private static Assembly LoadProductionAssembly()

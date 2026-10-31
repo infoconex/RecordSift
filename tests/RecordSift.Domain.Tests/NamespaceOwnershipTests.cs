@@ -7,6 +7,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class NamespaceOwnershipTests
     {
         [Test]

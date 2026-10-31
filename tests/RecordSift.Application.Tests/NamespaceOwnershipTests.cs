@@ -8,6 +8,7 @@ using RecordSift.Application.Ports.Csv;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class NamespaceOwnershipTests
     {
         [Test]

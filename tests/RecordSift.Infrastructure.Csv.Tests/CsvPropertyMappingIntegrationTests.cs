@@ -12,6 +12,7 @@ using RecordSift.Infrastructure.Csv;
 namespace RecordSift.Infrastructure.Csv.Tests
 {
     [TestFixture]
+    [Category("Integration")]
     public sealed class CsvPropertyMappingIntegrationTests
     {
         private sealed class Customer
@@ -27,6 +28,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-010")]
+        [Property("Scenario", "FR-010-SC01")]
         public void FR_010_SC01_RealCsvMapsDifferentlyNamedHeadersToTypedProperties()
         {
             var sourceSchema = new ImportSchema(new[] {
@@ -57,6 +61,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-010")]
+        [Property("Scenario", "FR-010-SC01")]
         public void FR_010_SC01_RealCsvReaderMapsDifferentlyNamedHeadersInSourceOrder()
         {
             var sourceSchema = new ImportSchema(new[] {
@@ -84,6 +91,10 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-017")]
+        [Property("Scenario", "FR-017-SC01")]
+        [Property("Scenario", "FR-017-SC02")]
         public void FR_017_SC01_SC02_RealCsvRejectsBlankRequiredValuesAndKeepsValidTypedRows()
         {
             var schema = new ImportSchema(new[] {

@@ -6,9 +6,13 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class PrimitiveFieldConverterTests
     {
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-011")]
+        [Property("Scenario", "FR-011-SC01")]
         public void FR_011_SC01_ConvertsStringIntegerDecimalDateBooleanAndNullableValues()
         {
             var converter = new PrimitiveFieldConverter(CultureInfo.GetCultureInfo("en-US"));
@@ -24,6 +28,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-011")]
+        [Property("Scenario", "FR-011-SC02")]
         public void FR_011_SC02_ExplicitCultureDeterminesDecimalAndDateParsing()
         {
             var original = CultureInfo.CurrentCulture;

@@ -5,6 +5,7 @@ using RecordSift.Domain.Diagnostics;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class AssemblyIsolationTests
     {
         [Test]

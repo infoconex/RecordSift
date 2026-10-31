@@ -12,6 +12,7 @@ using RecordSift.Infrastructure.Csv;
 namespace RecordSift.Infrastructure.Csv.Tests
 {
     [TestFixture]
+    [Category("Component")]
     public sealed class CsvDelimiterTests
     {
         private static ImportSchema Schema()
@@ -23,6 +24,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-003")]
+        [Property("Scenario", "FR-003-SC01")]
         public void FR_003_SC01_SemicolonDelimiterPreservesQuotedSemicolonInRealAdapter()
         {
             using (var source = new StringReader("Id;Description\r\n1;\"hello;world\"\r\n2;done"))
@@ -69,6 +73,9 @@ namespace RecordSift.Infrastructure.Csv.Tests
         [TestCase("\r")]
         [TestCase("\n")]
         [TestCase("\0")]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-003")]
+        [Property("Scenario", "FR-003-SC02")]
         public void FR_003_SC02_InvalidDelimiterReturnsSafeSourceDiagnosticBeforeReading(string delimiter)
         {
             using (var source = new StringReader("never read"))

@@ -12,6 +12,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class PrimitivePropertyMapperTests
     {
         private sealed class Customer
@@ -61,6 +62,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-011")]
+        [Property("Scenario", "FR-011-SC01")]
         public void FR_011_SC01_FakeReaderImportsTypedValuesAndClassifiesBadField()
         {
             var mapping = Schema();
@@ -87,6 +91,7 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Requirement", "FR-010")]
         public void FR_010_SourceIdentifiersRemainOrdinalWhenInputDictionaryIgnoresCase()
         {
             var mapper = new PrimitivePropertyMapper<Customer>(
@@ -103,6 +108,7 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Requirement", "FR-010")]
         public void FR_010_OptionalSourceDoesNotMatchDifferentlyCasedCallerKey()
         {
             var mapper = new PrimitivePropertyMapper<Customer>(
@@ -121,6 +127,7 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Requirement", "FR-010")]
         public void FR_010_UnsupportedReadOnlyAndWrongCaseDestinationPropertiesFailBeforeMapping()
         {
             var sourceSchema = Schema().SourceSchema;

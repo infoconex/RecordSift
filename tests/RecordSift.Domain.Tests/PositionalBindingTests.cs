@@ -7,6 +7,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class PositionalBindingTests
     {
         private static ImportSchema Schema()
@@ -20,6 +21,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-013")]
+        [Property("Scenario", "FR-013-SC01")]
         public void FR_013_SC01_NamedAndPositionalBindingsIdentifyEquivalentFields()
         {
             var schema = Schema();
@@ -44,6 +48,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-013")]
+        [Property("Scenario", "FR-013-SC02")]
         public void FR_013_SC02_OutOfRangePositionIsAClassifiedSourceError()
         {
             var schema = new ImportSchema(new[] { new ExpectedColumn("Id", true) });

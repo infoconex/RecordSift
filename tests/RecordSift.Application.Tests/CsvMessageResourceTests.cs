@@ -9,6 +9,7 @@ using RecordSift.Domain.Diagnostics;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class CsvMessageResourceTests
     {
         private const string ResourceBaseName = "RecordSift.Resources.CsvMessages";

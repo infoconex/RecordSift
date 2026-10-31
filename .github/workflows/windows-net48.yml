@@ -7,6 +7,11 @@ on:
     branches:
       - 'release/**'
   workflow_dispatch:
+    inputs:
+      test_filter:
+        description: 'Optional NUnit --where expression for manual runs; blank runs the full suite'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -49,6 +54,8 @@ jobs:
           & dotnet format style RecordSift.sln --no-restore --verify-no-changes --diagnostics IDE1006 --severity error --verbosity normal
           if ($LASTEXITCODE -ne 0) { throw "IDE1006 C# naming gate failed: $LASTEXITCODE" }
       - name: Run Domain-only, Application-only and real-adapter NUnit suites
+        env:
+          NUNIT_WHERE: ${{ github.event_name == 'workflow_dispatch' && inputs.test_filter || '' }}
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path TestResults | Out-Null
@@ -75,21 +82,50 @@ jobs:
               throw "$core tests must not copy vendor parser packages."
             }
           }
-          $counts = @{}
-          $failures = 0
-          foreach ($layer in @('domain', 'application', 'adapter')) {
-            & $runner $assemblies[$layer] "--result=TestResults/nunit-$layer.xml;format=nunit3" --noheader
-            if ($LASTEXITCODE -ne 0) { throw "$layer NUnit failed: $LASTEXITCODE" }
-            [xml]$report = Get-Content "TestResults/nunit-$layer.xml"
-            $counts[$layer] = [int]$report.'test-run'.total
-            $failures += [int]$report.'test-run'.failed
-            if ($counts[$layer] -lt 1) { throw "$layer NUnit suite has no tests." }
+          $filter = $env:NUNIT_WHERE
+          if (-not [string]::IsNullOrWhiteSpace($filter)) {
+            Write-Host "Manual targeted NUnit selection: $filter"
+            & $runner $assemblies.domain $assemblies.application $assemblies.adapter "--where=$filter" "--result=TestResults/nunit-targeted.xml;format=nunit3" --noheader
+            if ($LASTEXITCODE -ne 0) { throw "Targeted NUnit failed: $LASTEXITCODE" }
+            [xml]$targeted = Get-Content TestResults/nunit-targeted.xml
+            $selected = [int]$targeted.'test-run'.total
+            $failed = [int]$targeted.'test-run'.failed
+            if ($selected -lt 1 -or $failed -ne 0) {
+              throw "Invalid targeted NUnit outcome: selected=$selected, failed=$failed; zero matches must fail."
+            }
+            Write-Host "Verified targeted NUnit=$selected, failed=$failed."
+          } else {
+            $counts = @{}
+            $failures = 0
+            foreach ($layer in @('domain', 'application', 'adapter')) {
+              & $runner $assemblies[$layer] "--result=TestResults/nunit-$layer.xml;format=nunit3" --noheader
+              if ($LASTEXITCODE -ne 0) { throw "$layer NUnit failed: $LASTEXITCODE" }
+              [xml]$report = Get-Content "TestResults/nunit-$layer.xml"
+              $counts[$layer] = [int]$report.'test-run'.total
+              $failures += [int]$report.'test-run'.failed
+              if ($counts[$layer] -lt 1) { throw "$layer NUnit suite has no tests." }
+            }
+            $total = $counts.domain + $counts.application + $counts.adapter
+            if ($failures -ne 0 -or $total -lt 126) {
+              throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), failed=$failures."
+            }
+            Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), total=$total failed=$failures."
           }
-          $total = $counts.domain + $counts.application + $counts.adapter
-          if ($failures -ne 0 -or $total -lt 126) {
-            throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), failed=$failures."
+      - name: Verify combined NUnit category and scenario property filtering
+        shell: pwsh
+        run: |
+          $runner = 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          $adapter = 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+          $selection = "cat == Integration && Verification == Acceptance && Requirement == 'FR-017' && Scenario == 'FR-017-SC01'"
+          & $runner $adapter "--where=$selection" "--result=TestResults/nunit-filter-smoke.xml;format=nunit3" --noheader
+          if ($LASTEXITCODE -ne 0) { throw "Metadata filter smoke run failed: $LASTEXITCODE" }
+          [xml]$filtered = Get-Content TestResults/nunit-filter-smoke.xml
+          $selected = [int]$filtered.'test-run'.total
+          $failed = [int]$filtered.'test-run'.failed
+          if ($selected -lt 1 -or $failed -ne 0) {
+            throw "NUnit metadata filter regression: matched=$selected, failed=$failed."
           }
-          Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), total=$total failed=$failures."
+          Write-Host "NUnit metadata filter selected $selected real CSV integration acceptance test(s)."
       - name: Upload NUnit XML evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -29,6 +29,8 @@ jobs:
           persist-credentials: false
       - name: Validate versioned requirements and Markdown links
         run: python3 scripts/validate_docs.py
+      - name: Validate NUnit test levels, acceptance metadata and naming consistency
+        run: python3 scripts/validate_test_metadata.py
       - name: Verify PascalCase constant identifiers and negative fixtures
         run: python3 scripts/validate_constant_names.py
       - name: Validate physical domain, application and infrastructure layers
