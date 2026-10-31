@@ -20,7 +20,7 @@ main
     └── other issue branches → PR / squash into release/0.1
 ```
 
-When all release scope and quality gates pass, open a **separate release PR** from `release/0.1` into `main`. Record final SDK, framework, NuGet dependency and test evidence. Tag the accepted release on `main` and retain intentional baseline/modernization milestone tags.
+When all release scope, complete documentation review, and quality gates pass, open a **separate release PR** from `release/0.1` into `main`. Require all three Windows/consumer/docs workflows to pass on the promotion PR; **SQUASH merge** the release PR to produce **one consolidated `main` commit** and reverify all three workflows on that exact SHA. Record final SDK, framework, dependency and test evidence. **Promotion does not authorize creating a tag, GitHub release, or uploading a NuGet package**; those actions need explicit, separate owner authorization.
 
 ## Risk controls
 

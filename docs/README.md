@@ -1,6 +1,8 @@
 # RecordSift engineering documentation
 
-These pages specify the product and engineering process for **release 0.1**. In-memory and raw CSV components are implemented. A narrowly scoped caller-mapped typed CSV import workflow has been added through issue #113; generalized property binding, validation and complete requirements-level acceptance remain outstanding.
+These pages document the **accepted release 0.1 Windows/.NET Framework 4.8 implementation**, its normative requirements, test evidence, and historical engineering decisions. The release candidate passed 379 NUnit tests, 425 compiled public API baseline entries, seven golden JSON regression fixtures, and independently installed internal prerelease **and stable 0.1.0** NuGet consumers. All 25 Must and eight targeted Should functional requirements and ten Windows-scoped nonfunctional requirements are accepted. Six Future features are deliberately deferred. See [functional completion](engineering/release-0.1-functional-completion.md), [release readiness](engineering/release-0.1-readiness.md), and [release checklist](release/0.1-release-checklist.md). Public package publication is **not** implied by technical acceptance.
+
+**How to read this documentation:** Requirement and scenario documents specify intended behavior; the [traceability matrix](testing/traceability.md) holds current observed execution status. ADRs and early issue/PR evidence document **historical decisions and intermediate milestones**, not the current feature-completion state. Do not interpret the mandatory `Planned` specification label in older FR files as proof that the associated acceptance tests remain unimplemented.
 
 ## Requirement catalogs
 
@@ -9,21 +11,21 @@ These pages specify the product and engineering process for **release 0.1**. In-
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and **108 active release scenarios**; scenario-level test mappings and observed Windows execution evidence are maintained in the [traceability matrix](testing/traceability.md). Historical NFR-009-SC02 is retired from release 0.1 acceptance and preserved in the [platform review](engineering/platform-dependencies-net48.md).
-- [Draft import specification](specifications/record-import.md)
-- [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and **108 active catalogued scenario IDs** (95 Automated, one Manual, 12 deferred Future); scenario-level test mappings and observed Windows execution evidence are maintained in the [traceability matrix](testing/traceability.md). Historical NFR-009-SC02 is retired from release 0.1 acceptance and preserved in the [platform review](engineering/platform-dependencies-net48.md).
+- [Accepted release 0.1 import behavior and historical decisions](specifications/record-import.md)
+- [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — normative wire contract; seven approved JSON golden fixtures now live in the [reporting test project](../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/) and run in Windows CI.
 - [TDD and test types](testing/strategy.md)
 - [Requirement-to-scenario-to-test matrix](testing/traceability.md)
 
-The FR-009 source-column schema binding contract is implemented and unit-tested against supplied header metadata. Real CSV/XLSX reader integration remains an acceptance-test obligation.
+FR-009 schema binding is implemented and verified in Domain unit and real CSV/XLSX end-to-end acceptance tests.
 
-The FR-013 explicit positional binding contract is implemented and unit-tested without claiming typed-record or source-reader integration.
+FR-013 named and positional binding is verified in typed-import integration tests, including headerless CSV acceptance.
 
-The FR-001 raw CSV reader now uses a separately packaged CsvHelper adapter behind `ICsvRecordReader`; the core keeps the parser-independent record and diagnostic contracts. The Application now offers a caller-mapped typed import slice through `CsvImporter<T>` and Domain-owned `TypedImportResult<T>`, with real-adapter integration tests. Initial format-neutral property mapping and CLR primitive conversion are now implemented; complete field validation and FR-001 acceptance remain pending. Issue #2 remains open.
+FR-001 CSV and FR-002 XLSX typed imports are implemented and acceptance-verified. Domain owns schemas, validation, diagnostics and results; Application owns typed import orchestration and ports; Infrastructure adapters isolate CsvHelper, ExcelDataReader and reporting. Mapping, alias/default/conversion, required/length/range/duplicate/pattern/custom validation, processing controls, JSON/readable/CSV reports, and source-safety boundaries are covered by the [release acceptance inventory](engineering/release-0.1-functional-completion.md).
 
-The FR-003 delimiter policy uses core-owned `CsvReadOptions` and source-scoped configuration diagnostics, with real adapter component tests; the end-to-end typed import scenarios are still Planned. See [ADR 0009](engineering/decisions/0009-configurable-csv-delimiters.md).
+FR-003 configurable delimiter and FR-004 headed/headerless policy have passing typed-import acceptance; the original implementation decisions remain in [ADR 0009](engineering/decisions/0009-configurable-csv-delimiters.md) and [ADR 0006](engineering/decisions/0006-csv-header-policy.md).
 
-The FR-004 header policy integrates an injected CSV reader port with named/positional bindings and keeps logical data-row numbering independent of headers. Complete typed imports and final result reporting remain forthcoming.
+Source-level failures are distinguished from rejected records, and reporting consumes structured results without reopening the input. Validation/diagnostic semantics, row numbering and JSON schema evolution are documented in the [import specification](specifications/record-import.md) and [versioned JSON contract](specifications/import-result.md).
 
 ## Explicit source-property mapping (FR-010)
 
@@ -42,7 +44,7 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 - [ADR 0007 — Domain-centric ports and adapters](engineering/decisions/0007-domain-ports-and-adapters.md) — accepted design direction.
 - [ADR 0008 — Isolated CsvHelper adapter](engineering/decisions/0008-csvhelper-isolated-adapter.md) — RecordSift-owned port and pinned library integration.
 - [ADR 0009 — CSV delimiter policy](engineering/decisions/0009-configurable-csv-delimiters.md) — single-character delimiters, default, safe validation and explicit out-of-scope behavior.
-- [#84 — Engineering conventions](https://github.com/infoconex/RecordSift/issues/84) and [#85 — Third-party CSV adapter migration](https://github.com/infoconex/RecordSift/issues/85) are separately scoped implementation work.
+- [#84 — Engineering conventions](https://github.com/infoconex/RecordSift/issues/84) and [#85 — Third-party CSV adapter migration](https://github.com/infoconex/RecordSift/issues/85) record completed historical engineering work.
 
 ## Domain message contracts and test isolation
 
@@ -111,10 +113,10 @@ The FR-004 header policy integrates an injected CSV reader port with named/posit
 - `FR-###` and `NFR-###` identify requirements permanently.
 - Each requirement has one independent issue, which links to its authoritative scenario Markdown file under `docs/scenarios/`.
 - Priority `Must` applies to the release 0.1 scope; `Should` and `Future` remain backlog items unless deliberately moved into the release by a documented change.
-- Scenarios remain **Planned** until a linked test/check has observed execution evidence; FR-030 summary-level unit tests now provide evidence for SC01–SC05, but do not verify end-to-end import behavior.
+- **Traceability** owns scenario execution state: all 77 in-scope functional scenarios and ten scoped NFR requirements are accepted as recorded there; legacy functional-specification `Planned` metadata describes specification planning only. Historical FR-030 unit evidence was later supplemented by end-to-end CSV/XLSX and reporting acceptance. Do not confuse specification metadata with actual test execution status.
 - An issue may cross-reference other requirements without becoming responsible for implementing them.
 - Requirement, scenario, test, PR, and release evidence are linked in [the traceability matrix](testing/traceability.md).
 
 ## Delivery policy
 
-Branch from `release/0.1` only when starting a requirement. Implement it using TDD where appropriate. Open a PR targeting `release/0.1`; review and squash merge. Promote a release to `main` via a separate release PR. Follow issue #55 for PR template automation when implemented.
+Branch from `release/0.1` only when starting a requirement. Implement it using TDD where appropriate. Open a PR targeting `release/0.1`; review and squash merge. Promote a release to `main` by a **separate, reviewed squash-merge PR** after all gates pass and the owner authorizes promotion. A merge to `main` does **not** authorize tagging, a GitHub release, or public NuGet distribution. The PR template and CI checks are already implemented.

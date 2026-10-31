@@ -1,10 +1,10 @@
 # Functional requirements — RecordSift
 
-**Baseline:** Release 0.1 targets Windows/.NET Framework 4.8. Typed CSV and XLSX import, shared schema mapping and conversion, validation, processing controls and structured/JSON/readable reporting have been implemented and accepted per the individual evidence in [scenario traceability](../testing/traceability.md). Error-only CSV diagnostics (FR-038) is the final targeted Should enhancement in this batch; acceptance depends on observed CI, not this catalog. Future-priority features remain out of release scope.
+**Baseline:** Release 0.1 targets Windows/.NET Framework 4.8. Typed CSV and XLSX import, shared schema mapping and conversion, validation, processing controls and structured/JSON/readable reporting have been implemented and accepted per the individual evidence in [scenario traceability](../testing/traceability.md). Error-only CSV diagnostics (FR-038) was the final targeted Should enhancement and is accepted with observed Windows CI. The 25 Must and eight targeted Should requirements have executable acceptance evidence; the six Future requirements remain explicitly deferred. Future-priority features remain out of release scope.
 
 **Scope:** Import CSV and XLSX into strongly typed records using a common schema, validate those records, and return consistent diagnostics plus JSON reports. Distinguish errors in source records from fatal failures to read a file.
 
-**Priority:** Must = intended release 0.1; Should = optional backlog; Future = deferred.
+**Priority:** Must = required release 0.1 scope; Should = selectively approved release 0.1 enhancements (eight accepted here), otherwise optional backlog; Future = deferred.
 
 | Requirement | Behavior | Priority | GitHub issue / acceptance |
 | --- | --- | --- | --- |
@@ -52,6 +52,6 @@
 
 Each issue contains an independently verifiable scenario and a testing expectation. Implementing another requirement does not automatically close its issue. Cross-cutting quality obligations are documented separately in [nonfunctional requirements](non-functional.md).
 
-Before declaring release 0.1 complete, every **Must** requirement needs an executable passing acceptance test, explicit manual verification evidence where appropriate, or an approved documented change to scope. Feature behavior and dependency versions must not be invented to satisfy an issue.
+Release 0.1's **Must** and eight targeted **Should** requirements have passing executable acceptance tests; any newly approved scope must similarly have real passing evidence (or a documented manual procedure when automation is not practical) before completion is declared. Feature behavior and dependency versions must not be invented to satisfy an issue.
 
 Any change to source-to-record indexing, row numbering, validation failure semantics, or JSON contracts belongs in the behavioral specification tracked by [#51](https://github.com/infoconex/RecordSift/issues/51).

@@ -1,6 +1,6 @@
 # ADR 0022 — First typed CSV import vertical slice
 
-**Status:** Accepted in engineering issue [#113](https://github.com/infoconex/RecordSift/issues/113), contributing to [FR-001 #2](https://github.com/infoconex/RecordSift/issues/2). Does not close FR-001 or FR-026.
+**Status:** Accepted in engineering issue [#113](https://github.com/infoconex/RecordSift/issues/113), contributing to [FR-001 #2](https://github.com/infoconex/RecordSift/issues/2). This initial slice alone did not close FR-001 or FR-026; their complete acceptance was subsequently verified for release 0.1 (see [traceability](../../testing/traceability.md)).
 
 ## Context
 

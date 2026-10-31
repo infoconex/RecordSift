@@ -48,7 +48,7 @@ The architecture test-project split in [#91](https://github.com/infoconex/Record
 - `tests/RecordSift.Application.Tests` references **Application, Domain and NUnit**, never Infrastructure or CsvHelper; hand-written fake ports test source/CSV policy and configuration independently.
 - `tests/RecordSift.Application.Tests/Contracts/CsvRecordReaderContractTests.cs` declares **vendor-independent shared behavioral assertions** for the Application-owned `ICsvRecordReader` port contract: raw records, quoting, line/provenance, invalid source, bounded reads, security, caller ownership and immutable results.
 - `tests/RecordSift.Infrastructure.Csv.Tests` references the real infrastructure adapter and **inherits the shared contract suite** through its own `CsvAdapterContractConformanceTests` fixture, alongside additional real-parser CSV header and delimiter integration tests. All future adapters must execute an equivalent inherited contract suite against the real implementation.
-- Windows CI builds **all three NUnit test assemblies**, runs Domain, Application and real-adapter suites **separately**, verifies independent output dependencies and publishes distinct NUnit XML files. Architecture validation rejects outward test project references, stale source folders and forbidden imports.
+- Windows CI builds **all five NUnit test assemblies** (Domain, Application, CSV adapter, XLSX adapter and Reporting), runs each suite **separately**, verifies isolated core output dependencies and publishes distinct NUnit XML files. Architecture validation rejects outward test project references, stale source folders and forbidden imports.
 - NUnit itself is a development-only test framework, not an import processing dependency. The requirement is to eliminate **third-party import libraries** from Domain/Application unit-test authoring, compilation and execution.
 
 ## Ports, adapters and architecture tests
@@ -56,7 +56,7 @@ The architecture test-project split in [#91](https://github.com/infoconex/Record
 - Use hand-written fakes or stubs for RecordSift-owned application input ports. Validate import orchestration, schema binding and diagnostic handling without importing parser vendor assemblies into core/unit tests.
 - Exercise the real third-party parser **only in adapter/component and end-to-end tests** for quoting, malformed input, newline/row provenance, resource budgets and source failure handling. Faking an adapter does not verify parsing.
 - Where a parser or library is swapped, retain characterization tests of the existing observable contract; document and approve intentional changes before asserting substitute implementations satisfy the same contract (Liskov substitution).
-- Keep domain and application compilation independent of third-party package references; architectural review and project reference checks are required until automated rules exist. See [architecture](../engineering/architecture.md) and [ADR 0007](../engineering/decisions/0007-domain-ports-and-adapters.md).
+- Keep domain and application compilation independent of third-party package references; automated architecture-layer and project-reference checks are enforced in CI alongside code review. See [architecture](../engineering/architecture.md) and [ADR 0007](../engineering/decisions/0007-domain-ports-and-adapters.md).
 
 ## Fixture policy
 
@@ -66,13 +66,13 @@ The architecture test-project split in [#91](https://github.com/infoconex/Record
 - Use invariant/culture-explicit expectations; never assume machine locale, file iteration order, or local time.
 - Avoid brittle snapshots of runtime-generated exception stack traces and absolute file paths.
 - The authoritative report format is specified by [import-result.md](../specifications/import-result.md) and [JSON Schema 1.0](../specifications/schemas/import-result.schema.json). Do not maintain duplicate expected JSON documents inside the specifications.
-- When contract tests are implemented, place anonymized expected JSON snapshots under `tests/RecordSift.ContractTests/Fixtures/`, alongside executable tests; expected cases include successful import, completed with rejected rows, empty import, and failed import. No warning fixture is part of the initial contract.
+- Seven approved, anonymized JSON compatibility fixtures **are implemented** in [`tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/`](../../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/). The reporting test project checks complete JSON trees, deterministic serialization and versioned Completed/Failed behavior with Stopped/Canceled extensions. There is no separate `RecordSift.ContractTests` project and no warning fixture in release 0.1.
 - Contract tests must validate report structure against the JSON Schema **and** assert semantic invariants not expressible in JSON Schema, especially row-based counting and source errors. Do not treat a schema passing as sufficient evidence that counters are correct.
 - Distinguish logical CSV record ordinal from physical line number in assertions.
 
 ## Dependencies and test isolation
 
-Use a maintained test framework and adapter compatible with the historical net48 baseline. NUnit is the proposed default; **pin versions only after a successful clean Windows restore/build**. NSubstitute is optional where genuine collaborators need isolation; avoid gratuitous mocks of plain data and validators. Later test-framework upgrades are isolated from SDK and project-format experiments.
+Use the **pinned NUnit 3.14.0 and NUnit.ConsoleRunner 3.17.0** versions in the current net48 solution; Windows CI restores, builds and executes their five test assemblies. NSubstitute is optional where genuine collaborators need isolation; avoid gratuitous mocks of plain data and validators. Later test-framework upgrades are isolated from SDK and project-format experiments.
 
 ## Test naming, metadata and targeted execution
 
@@ -95,7 +95,7 @@ With Release test assemblies already built on Windows and NuGet packages restore
 .\scripts\run_tests.ps1 -Where "Requirement == 'FR-017' || Requirement == 'FR-018'"
 ```
 
-Selectors combine with logical AND; `-Where` accepts NUnit's native expression language for complex cases. A selected run with zero tests fails. The Windows GitHub Actions `workflow_dispatch` input `test_filter` provides optional manual targeted execution. **Pull requests and pushes ignore filters, always run all three full suites, and retain the minimum-test-count gate.** NUnit XML evidence is uploaded in either mode; targeted XML is labeled `nunit-targeted.xml`.
+Selectors combine with logical AND; `-Where` accepts NUnit's native expression language for complex cases. A selected run with zero tests fails. The Windows GitHub Actions `workflow_dispatch` input `test_filter` provides optional manual targeted execution. **Pull requests and pushes ignore filters, always run all five full suites, and retain the minimum-test-count gate.** NUnit XML evidence is uploaded in either mode; targeted XML is labeled `nunit-targeted.xml`.
 
 ## Pre-merge quality gate
 
@@ -109,4 +109,4 @@ Selectors combine with logical AND; `-Where` accepts NUnit's native expression l
 
 ## Current status
 
-See [scenario-to-test traceability](traceability.md) for current Automated/Planned/Manual/Blocked evidence and the specific Windows CI runs that established it. Older milestone totals are historical and must not be repeated as the current suite count. A source specification, test name, or merged PR alone does **not** prove a scenario passed; mark it verified only after observing the relevant Windows CI and documenting remaining scope limits. In particular, .NET Framework 4.8 acceptance cannot establish the behavior of an unbuilt modern target.
+See [scenario-to-test traceability](traceability.md) for current Automated/Planned/Manual/Blocked evidence and the specific Windows CI runs that established it. Older milestone totals are historical and must not be repeated as the current suite count. A source specification, test name, or merged PR alone does **not** prove a scenario passed; mark it verified only after observing the relevant Windows CI and documenting remaining scope limits. The accepted release 0.1 baseline is **379 passing NUnit cases across five assemblies** with 77 accepted functional scenarios and all ten Windows-scoped nonfunctional requirements verified. In particular, .NET Framework 4.8 acceptance cannot establish the behavior of an unbuilt modern target.
