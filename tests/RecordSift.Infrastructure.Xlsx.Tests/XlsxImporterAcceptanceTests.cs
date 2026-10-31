@@ -631,5 +631,66 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(lastDiagnostic.Message, Does.Not.Contain("Bob"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-024")]
+        [Property("Scenario", "FR-024-SC01")]
+        public void FR_024_SC01_RealXlsxCrossFieldRulePreservesWorksheetRowAndSkipsConversionFailure()
+        {
+            var importer = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(),
+                values => new Customer {
+                    Name = values["Name"],
+                    Id = int.Parse(values["Id"], CultureInfo.InvariantCulture)
+                }, customRules: new[] {
+                    new RecordValidationRule<Customer>(null,
+                        value => value.Name != "Bob" || value.Id == 1)
+                });
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = importer.Import(stream, 4096, Schema(), "range-xlsx");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[1].Code, Is.EqualTo(DiagnosticCodes.ValidationFailed));
+                Assert.That(result.Diagnostics[1].Field, Is.Null);
+                Assert.That(result.Diagnostics[1].Row, Is.EqualTo(3));
+                Assert.That(result.Diagnostics[1].Worksheet, Is.EqualTo("Customers"));
+                Assert.That(result.Diagnostics[1].PhysicalRow, Is.EqualTo(6));
+                Assert.That(result.Diagnostics[1].PhysicalLine, Is.Null);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-024")]
+        [Property("Scenario", "FR-024-SC02")]
+        public void FR_024_SC02_RealXlsxConsistentTypedCrossFieldRuleAddsNoValidationErrors()
+        {
+            var importer = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(),
+                values => new Customer {
+                    Name = values["Name"],
+                    Id = int.Parse(values["Id"], CultureInfo.InvariantCulture)
+                }, customRules: new[] {
+                    new RecordValidationRule<Customer>(null,
+                        value => (value.Name == "Alice" && value.Id == 1) ||
+                            (value.Name == "Bob" && value.Id == 2))
+                });
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = importer.Import(stream, 4096, Schema(), "range-xlsx");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+            }
+        }
     }
 }
