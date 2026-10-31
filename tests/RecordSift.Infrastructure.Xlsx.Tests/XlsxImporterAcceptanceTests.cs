@@ -235,5 +235,70 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(stream.CanRead, Is.True);
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-004")]
+        [Property("Scenario", "NFR-004-SC01")]
+        public void NFR_004_SC01_RepeatedXlsxImportsPreserveOrderedRecordsAndDiagnostics()
+        {
+            for (var repetition = 0; repetition < 8; repetition++)
+            {
+                using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+                {
+                    var result = CreateImporter().Import(stream, 4096, Schema(), "repeat-xlsx");
+                    Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                    Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                    Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                    Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                    Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                    Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+                    Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+                    Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(2));
+                    Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                    Assert.That(result.Diagnostics[0].Code,
+                        Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                    Assert.That(result.Diagnostics[0].Worksheet, Is.EqualTo("Customers"));
+                    Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                    Assert.That(result.Diagnostics[0].PhysicalRow, Is.EqualTo(4));
+                }
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-004")]
+        [Property("Scenario", "NFR-004-SC02")]
+        public void NFR_004_SC02_XlsxExplicitMappingIgnoresAmbientCulture()
+        {
+            var originalCulture = CultureInfo.CurrentCulture;
+            var originalUiCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                foreach (var cultureName in new[] { "en-US", "fr-FR", "de-DE" })
+                {
+                    CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+                    CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(cultureName);
+                    using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+                    {
+                        var result = CreateImporter().Import(stream, 4096, Schema(), "stable-xlsx");
+                        Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                        Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                        Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                        Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                        Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                        Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+                        Assert.That(result.Diagnostics[0].Code,
+                            Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                        Assert.That(result.Diagnostics[0].PhysicalRow, Is.EqualTo(4));
+                    }
+                }
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUiCulture;
+            }
+        }
     }
 }
