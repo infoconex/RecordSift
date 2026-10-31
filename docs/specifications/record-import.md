@@ -20,7 +20,7 @@ The initial baseline is synchronous and may materialize results, with explicit i
 6. Return only accepted typed records. Accumulate diagnostics for rejected records.
 7. Compute an internally consistent summary and expose JSON reporting from this in-memory result.
 
-Dependencies, exact API signatures, field conversion edge cases, and default limits remain decisions for implementation issues; this document is not an assertion of production behavior. The proposed JSON report contract is defined separately in [import-result.md](import-result.md) and [its JSON Schema](schemas/import-result.schema.json).
+The FR-010 initial binding contract now supports explicit, exact-case source-column names to public writable string properties through `PropertyMappingSchema` and `StringPropertyMapper<T>`. All other CLR conversions and destination construction policies remain decisions for FR-011/FR-026; this document is not an assertion of complete production behavior. The proposed JSON report contract is defined separately in [import-result.md](import-result.md) and [its JSON Schema](schemas/import-result.schema.json).
 
 ## Source location
 

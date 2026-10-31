@@ -37,4 +37,12 @@
   <data name="Argument_AcceptedRecordCountMismatch" xml:space="preserve"><value>The accepted record count must match the import summary.</value></data>
   <data name="Argument_ImportSourceIdBlank" xml:space="preserve"><value>The source identifier must be nonempty.</value></data>
   <data name="Argument_ImportMessageBlank" xml:space="preserve"><value>The import outcome message must be nonempty.</value></data>
+  <data name="Argument_PropertyMappingSourceName" xml:space="preserve"><value>Source column name must be nonempty.</value></data>
+  <data name="Argument_PropertyMappingDestinationName" xml:space="preserve"><value>Destination property name must be nonempty.</value></data>
+  <data name="Argument_PropertyMappingNull" xml:space="preserve"><value>Property mappings cannot contain null.</value></data>
+  <data name="Argument_PropertyMappingUndeclaredSource" xml:space="preserve"><value>Property mapping refers to an undeclared source column.</value></data>
+  <data name="Argument_PropertyMappingDuplicateDestination" xml:space="preserve"><value>Multiple source columns cannot target the same destination property.</value></data>
+  <data name="Argument_PropertyMappingEmpty" xml:space="preserve"><value>At least one property mapping must be declared.</value></data>
+  <data name="Argument_PropertyMappingUnsupportedDestination" xml:space="preserve"><value>Mapped destination must be a public writable string property.</value></data>
+  <data name="Argument_PropertyMappingRequiredSourceMissing" xml:space="preserve"><value>A required mapped source column is missing from the supplied record.</value></data>
 </root>

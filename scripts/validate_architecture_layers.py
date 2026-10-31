@@ -18,13 +18,15 @@ EXPECTED = {
     "RecordSift.Domain": {
         "Diagnostics": ("DiagnosticCodes", "DiagnosticScope", "DomainMessageResources", "ImportDiagnostic"),
         "Schema": ("ExpectedColumn", "ImportSchema", "SchemaBindingResult",
-                   "SourceColumnBinding", "SourceColumnPosition"),
+                   "SourceColumnBinding", "SourceColumnPosition",
+                   "SourcePropertyMapping", "PropertyMappingSchema"),
         "Results": ("ImportResult", "ImportStatus", "ImportSummary", "TypedImportResult"),
     },
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Messages": ("CsvMessageResources",),
+        "Mapping": ("StringPropertyMapper",),
     },
 }
 TEST_PROJECT_REFERENCES = {
