@@ -15,12 +15,21 @@ namespace RecordSift.Application.Mapping
     {
         private readonly PropertyMappingSchema _schema;
         private readonly IReadOnlyList<PropertyInfo> _properties;
+        private readonly IReadOnlyList<bool> _required;
 
         public StringPropertyMapper(PropertyMappingSchema schema)
         {
             if (schema == null) throw new ArgumentNullException(nameof(schema));
 
+            var requiredSources = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var column in schema.SourceSchema.Columns)
+            {
+                if (column.IsRequired)
+                    requiredSources.Add(column.Name);
+            }
+
             var properties = new List<PropertyInfo>();
+            var required = new List<bool>();
             var candidates = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
             foreach (var mapping in schema.Mappings)
             {
@@ -43,10 +52,12 @@ namespace RecordSift.Application.Mapping
                         DomainMessageResources.PropertyMappingUnsupportedDestination,
                         nameof(schema));
                 properties.Add(resolved);
+                required.Add(requiredSources.Contains(mapping.SourceColumnName));
             }
 
             _schema = schema;
             _properties = new ReadOnlyCollection<PropertyInfo>(properties);
+            _required = new ReadOnlyCollection<bool>(required);
         }
 
         public T Map(IReadOnlyDictionary<string, string> values)
@@ -58,6 +69,9 @@ namespace RecordSift.Application.Mapping
                 string value;
                 if (values.TryGetValue(_schema.Mappings[i].SourceColumnName, out value))
                     _properties[i].SetValue(record, value, null);
+                else if (_required[i])
+                    throw new ArgumentException(
+                        DomainMessageResources.PropertyMappingRequiredSourceMissing, nameof(values));
             }
             return record;
         }

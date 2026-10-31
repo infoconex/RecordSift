@@ -44,4 +44,5 @@
   <data name="Argument_PropertyMappingDuplicateDestination" xml:space="preserve"><value>Multiple source columns cannot target the same destination property.</value></data>
   <data name="Argument_PropertyMappingEmpty" xml:space="preserve"><value>At least one property mapping must be declared.</value></data>
   <data name="Argument_PropertyMappingUnsupportedDestination" xml:space="preserve"><value>Mapped destination must be a public writable string property.</value></data>
+  <data name="Argument_PropertyMappingRequiredSourceMissing" xml:space="preserve"><value>A required mapped source column is missing from the supplied record.</value></data>
 </root>

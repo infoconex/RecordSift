@@ -82,6 +82,26 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        public void MissingRequiredMappedSourceCannotSilentlyCreateAnIncompleteRecord()
+        {
+            var mapper = new StringPropertyMapper<Customer>(Mapping());
+            Assert.Throws<ArgumentException>(() => mapper.Map(
+                new System.Collections.Generic.Dictionary<string, string>()));
+        }
+
+        [Test]
+        public void UnavailableOptionalSourceColumnLeavesCorrespondingPropertyUnset()
+        {
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Alias", false) });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Alias", "DisplayName")
+            });
+            var record = new StringPropertyMapper<Customer>(mapping).Map(
+                new System.Collections.Generic.Dictionary<string, string>());
+            Assert.That(record.DisplayName, Is.Null);
+        }
+
+        [Test]
         public void MissingDestinationPropertyIsRejectedWithoutReadingRecords()
         {
             var schema = Mapping();

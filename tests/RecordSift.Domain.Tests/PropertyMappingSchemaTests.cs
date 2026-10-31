@@ -47,6 +47,15 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        public void EmptyAndNullMappingDeclarationsAreRejected()
+        {
+            Assert.Throws<ArgumentException>(() => new PropertyMappingSchema(
+                Schema(), new SourcePropertyMapping[0]));
+            Assert.Throws<ArgumentException>(() => new PropertyMappingSchema(
+                Schema(), new SourcePropertyMapping[] { null }));
+        }
+
+        [Test]
         public void MappingDeclarationsAreImmutableSnapshots()
         {
             var source = new System.Collections.Generic.List<SourcePropertyMapping> {

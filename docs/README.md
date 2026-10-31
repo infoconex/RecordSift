@@ -25,6 +25,11 @@ The FR-003 delimiter policy uses core-owned `CsvReadOptions` and source-scoped c
 
 The FR-004 header policy integrates an injected CSV reader port with named/positional bindings and keeps logical data-row numbering independent of headers. Complete typed imports and final result reporting remain forthcoming.
 
+## Explicit source-property mapping (FR-010)
+
+- [ADR 0023 — Explicit string-property mapping](engineering/decisions/0023-explicit-string-property-mapping.md) — format-neutral Domain mapping declarations and Application string destination assignment with strict prevalidation.
+- [FR-010 issue #19](https://github.com/infoconex/RecordSift/issues/19) — first string-only implementation through [PR #115](https://github.com/infoconex/RecordSift/pull/115); broader CLR types and conversion are tracked under FR-011.
+
 ## Architecture, code style and dependency isolation
 
 - [Domain-centric architecture and SOLID boundaries](engineering/architecture.md) — ports, adapters, direction of dependencies, mockable seams and security.

@@ -1,8 +1,8 @@
 using System;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
-using RecordSift.Application.Messages;
 using RecordSift.Application.Mapping;
+using RecordSift.Application.Messages;
 using RecordSift.Application.Ports.Csv;
 
 namespace RecordSift.Application.Tests
