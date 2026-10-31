@@ -16,7 +16,8 @@ $runner = Join-Path $root 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-cons
 $assemblies = @(
     'tests\RecordSift.Domain.Tests\bin\Release\RecordSift.Domain.Tests.dll',
     'tests\RecordSift.Application.Tests\bin\Release\RecordSift.Application.Tests.dll',
-    'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll'
+    'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll',
+    'tests\RecordSift.Infrastructure.Reporting.Tests\bin\Release\RecordSift.Infrastructure.Reporting.Tests.dll'
 ) | ForEach-Object { Join-Path $root $_ }
 
 foreach ($file in @($runner) + $assemblies) {
