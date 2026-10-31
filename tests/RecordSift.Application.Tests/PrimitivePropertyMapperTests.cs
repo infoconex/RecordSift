@@ -45,6 +45,51 @@ namespace RecordSift.Application.Tests
             }
         }
 
+        private sealed class Order
+        {
+            public int Id { get; set; }
+            public decimal Amount { get; set; }
+            public DateTime OrderDate { get; set; }
+        }
+
+        private sealed class ScenarioReader : ICsvRecordReader
+        {
+            private readonly CsvParseResult _records;
+
+            public ScenarioReader(CsvParseResult records)
+            {
+                _records = records;
+            }
+
+            public CsvParseResult Read(TextReader source, int maxCharacters,
+                CsvReadOptions options = null)
+            {
+                return _records;
+            }
+        }
+
+        private static TypedImportResult<Order> ImportOrders(CsvRecord[] records)
+        {
+            var sourceSchema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true),
+                new ExpectedColumn("Amount", true),
+                new ExpectedColumn("Order Date", true)
+            });
+            var mapping = new PropertyMappingSchema(sourceSchema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Amount", "Amount"),
+                new SourcePropertyMapping("Order Date", "OrderDate")
+            });
+            var mapper = new PrimitivePropertyMapper<Order>(
+                mapping, CultureInfo.GetCultureInfo("fr-FR"));
+            var importer = new CsvImporter<Order>(new ScenarioReader(
+                CsvParseResult.Success(records)), mapper.Map);
+
+            using (var input = new StringReader("unused"))
+                return importer.Import(input, 4096, sourceSchema,
+                    CsvHeaderPolicy.WithHeader, "orders-application");
+        }
+
         private static PropertyMappingSchema Schema()
         {
             var schema = new ImportSchema(new[] {
@@ -88,6 +133,63 @@ namespace RecordSift.Application.Tests
                 Assert.That(result.AcceptedRecords[0].Active, Is.False);
                 Assert.That(result.AcceptedRecords[0].Score, Is.EqualTo(7));
             }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-018")]
+        [Property("Scenario", "FR-018-SC01")]
+        public void FR_018_SC01_FakeReaderRejectsInvalidNumericAndDateRowsIndependently()
+        {
+            var result = ImportOrders(new[] {
+                new CsvRecord(1, 1, new[] { "Id", "Amount", "Order Date" }),
+                new CsvRecord(2, 2, new[] { "1", "12,50", "31/12/2025" }),
+                new CsvRecord(3, 3, new[] { "2", "not-a-number", "01/01/2025" }),
+                new CsvRecord(4, 4, new[] { "3", "2,50", "not-a-date" }),
+                new CsvRecord(5, 5, new[] { "4", "7,25", "02/01/2025" })
+            });
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(4));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(4));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Amount"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[1].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            Assert.That(result.Diagnostics[1].Field, Is.EqualTo("Order Date"));
+            Assert.That(result.Diagnostics[1].Row, Is.EqualTo(3));
+            Assert.That(result.Diagnostics[1].PhysicalLine, Is.EqualTo(4));
+            Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("not-a-number"));
+            Assert.That(result.Diagnostics[1].Message, Does.Not.Contain("not-a-date"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-018")]
+        [Property("Scenario", "FR-018-SC02")]
+        public void FR_018_SC02_FakeReaderPreservesValidTypedValuesInExplicitCulture()
+        {
+            var result = ImportOrders(new[] {
+                new CsvRecord(1, 1, new[] { "Id", "Amount", "Order Date" }),
+                new CsvRecord(2, 2, new[] { "1", "12,50", "31/12/2025" }),
+                new CsvRecord(3, 3, new[] { "2", "-7,25", "01/01/2026" })
+            });
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.AcceptedRecords[0].Amount, Is.EqualTo(12.50m));
+            Assert.That(result.AcceptedRecords[0].OrderDate,
+                Is.EqualTo(new DateTime(2025, 12, 31)));
+            Assert.That(result.AcceptedRecords[1].Amount, Is.EqualTo(-7.25m));
+            Assert.That(result.AcceptedRecords[1].OrderDate,
+                Is.EqualTo(new DateTime(2026, 1, 1)));
         }
 
         [Test]

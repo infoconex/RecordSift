@@ -7,6 +7,10 @@ namespace RecordSift.Domain.Schema
     /// <summary>Supported .NET primitive field conversions, independent of source format and ambient culture.</summary>
     public sealed class PrimitiveFieldConverter
     {
+        // Decimal always has at most 28 fractional digits. The fixed-point format
+        // avoids scientific notation when comparing exact numeric values.
+        private const string ExactDecimalFormat = "0.############################";
+
         private readonly CultureInfo _culture;
 
         public PrimitiveFieldConverter(CultureInfo culture)
@@ -48,7 +52,8 @@ namespace RecordSift.Domain.Schema
 
             decimal money;
             if (target == typeof(decimal) &&
-                decimal.TryParse(value, NumberStyles.Number, _culture, out money))
+                decimal.TryParse(value, NumberStyles.Number, _culture, out money) &&
+                HasExactDecimalValue(value, money, _culture.NumberFormat))
                 return money;
 
             DateTime date;
@@ -61,6 +66,54 @@ namespace RecordSift.Domain.Schema
                 return boolean;
 
             throw new FormatException(DomainMessageResources.ConversionInvalidValue);
+        }
+
+        private static bool HasExactDecimalValue(string input, decimal converted,
+            NumberFormatInfo format)
+        {
+            // decimal.TryParse may round extra significant fractional digits.
+            // Compare the original mathematical value with the full fixed-point
+            // representation of the parsed decimal before accepting it.
+            var original = NormalizeDecimalText(input, format);
+            var parsed = NormalizeDecimalText(
+                converted.ToString(ExactDecimalFormat, format), format);
+            return string.Equals(original, parsed, StringComparison.Ordinal);
+        }
+
+        private static string NormalizeDecimalText(string value, NumberFormatInfo format)
+        {
+            var text = value.Trim();
+            if (format.NegativeSign.Length > 0 &&
+                text.StartsWith(format.NegativeSign, StringComparison.Ordinal))
+                text = text.Substring(format.NegativeSign.Length);
+            else if (format.PositiveSign.Length > 0 &&
+                text.StartsWith(format.PositiveSign, StringComparison.Ordinal))
+                text = text.Substring(format.PositiveSign.Length);
+
+            text = text.Trim();
+            if (format.NegativeSign.Length > 0 &&
+                text.EndsWith(format.NegativeSign, StringComparison.Ordinal))
+                text = text.Substring(0, text.Length - format.NegativeSign.Length);
+            else if (format.PositiveSign.Length > 0 &&
+                text.EndsWith(format.PositiveSign, StringComparison.Ordinal))
+                text = text.Substring(0, text.Length - format.PositiveSign.Length);
+
+            text = text.Trim();
+            if (format.NumberGroupSeparator.Length > 0 &&
+                !string.Equals(format.NumberGroupSeparator, format.NumberDecimalSeparator,
+                    StringComparison.Ordinal))
+                text = text.Replace(format.NumberGroupSeparator, string.Empty);
+
+            var separator = format.NumberDecimalSeparator;
+            var index = text.IndexOf(separator, StringComparison.Ordinal);
+            var whole = index < 0 ? text : text.Substring(0, index);
+            var fraction = index < 0 ? string.Empty : text.Substring(index + separator.Length);
+
+            whole = whole.TrimStart('0');
+            if (whole.Length == 0)
+                whole = "0";
+            fraction = fraction.TrimEnd('0');
+            return fraction.Length == 0 ? whole : whole + "." + fraction;
         }
     }
 }
