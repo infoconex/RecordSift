@@ -28,6 +28,9 @@ EXPECTED = {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
         "Ports/Reporting": ("IImportResultSerializer", "IImportResultFormatter"),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
+        "Importing": ("ImportDataRow", "RecordValidationPipeline"),
+        "Importing/Xlsx": ("XlsxImporter",),
+        "Ports/Xlsx": ("IXlsxWorksheetReader", "XlsxReadResult", "XlsxRecord"),
         "Messages": ("CsvMessageResources",),
         "Mapping": ("StringPropertyMapper", "PrimitivePropertyMapper"),
     },
@@ -41,6 +44,10 @@ TEST_PROJECT_REFERENCES = {
         "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
         "RecordSift.Infrastructure.Csv.csproj",
         "RecordSift.Infrastructure.Reporting.csproj",
+    ],
+    "RecordSift.Infrastructure.Xlsx.Tests": [
+        "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        "RecordSift.Infrastructure.Xlsx.csproj",
     ],
     "RecordSift.Infrastructure.Csv.Tests": [
         "RecordSift.Application.Tests.csproj", "RecordSift.Domain.csproj",
@@ -108,6 +115,9 @@ def verify_dependency_graph(graph):
             "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
         ],
         "RecordSift.Infrastructure.Reporting": [
+            "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
+        ],
+        "RecordSift.Infrastructure.Xlsx": [
             "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
         ],
     }
@@ -288,6 +298,29 @@ def verify_layout():
         for forbidden in ("PackageReference", "PackageDownload", "Analyzer", "COMReference"):
             if items(reporting_project, forbidden):
                 errors.append("Reporting adapter must not reference third-party packages")
+
+    xlsx_name = "RecordSift.Infrastructure.Xlsx"
+    xlsx_path = ROOT / "src" / xlsx_name
+    xlsx_project = xlsx_path / (xlsx_name + ".csproj")
+    if not xlsx_project.is_file():
+        errors.append("Missing XLSX infrastructure project")
+    else:
+        xlsx_root = project(xlsx_project)
+        graph[xlsx_name] = dependencies(xlsx_root)
+        if includes(xlsx_root, "Compile") != ["XlsxWorksheetReaderAdapter.cs"]:
+            errors.append("XLSX adapter must own its sole reader implementation")
+        if {p.name for p in xlsx_path.glob("*.cs")} != {"XlsxWorksheetReaderAdapter.cs"}:
+            errors.append("XLSX infrastructure source ownership mismatch")
+        adapter = xlsx_path / "XlsxWorksheetReaderAdapter.cs"
+        if adapter.is_file():
+            errors.extend(verify_namespace(adapter.read_text(encoding="utf-8"),
+                                           xlsx_name, str(adapter.relative_to(ROOT))))
+        if [x.text for x in items(xlsx_root, "RootNamespace")] != [xlsx_name]:
+            errors.append("XLSX root namespace mismatch")
+        if [x.text for x in items(xlsx_root, "AssemblyName")] != [xlsx_name]:
+            errors.append("XLSX assembly name mismatch")
+        if not any(x.attrib.get("Include") == "ExcelDataReader" for x in items(xlsx_root, "Reference")):
+            errors.append("XLSX reader must declare pinned infrastructure vendor package")
     errors.extend(verify_dependency_graph(graph))
 
     resource_project = DOMAIN / "RecordSift.Domain.csproj"
@@ -343,7 +376,7 @@ def verify_layout():
                 r"using\s+(?:RecordSift\.Infrastructure|CsvHelper)\b", data
             ):
                 errors.append(f"{source.relative_to(ROOT)}: forbidden Application test import")
-        if project_name not in ("RecordSift.Infrastructure.Csv.Tests", "RecordSift.Infrastructure.Reporting.Tests"):
+        if project_name not in ("RecordSift.Infrastructure.Csv.Tests", "RecordSift.Infrastructure.Reporting.Tests", "RecordSift.Infrastructure.Xlsx.Tests"):
             allowed = {"System", "System.Core", "nunit.framework"}
             for item in items(root, "Reference"):
                 assembly = item.attrib.get("Include", "").split(",", 1)[0]

@@ -21,9 +21,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" /><Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="ExcelDataReader"><HintPath>..\\..\\packages\\ExcelDataReader.3.9.0\\lib\\net462\\ExcelDataReader.dll</HintPath><Private>True</Private></Reference>
     
   </ItemGroup>
-  <ItemGroup><None Include="packages.config" /></ItemGroup>
+  <ItemGroup><Compile Include="XlsxWorksheetReaderAdapter.cs" /><None Include="packages.config" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\RecordSift.Application\RecordSift.Application.csproj"><Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project><Name>RecordSift.Application</Name></ProjectReference>
 <ProjectReference Include="..\RecordSift.Domain\RecordSift.Domain.csproj"><Project>{D107315D-E4EA-4C77-8A14-8F34F76B2100}</Project><Name>RecordSift.Domain</Name></ProjectReference></ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

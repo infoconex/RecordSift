@@ -234,6 +234,16 @@ jobs:
               throw "Unexpected CSV adapter dependency: $id $($package.version)"
             }
           }
+          [xml]$xlsxConfig = Get-Content src/RecordSift.Infrastructure.Xlsx/packages.config -Raw
+          $xlsxPackages = @($xlsxConfig.packages.package)
+          $xlsxExpected = @{ ExcelDataReader = '3.9.0'; 'System.ValueTuple' = '4.5.0' }
+          if ($xlsxPackages.Count -ne $xlsxExpected.Count) { throw 'Unexpected XLSX package inventory.' }
+          foreach ($package in $xlsxPackages) {
+            $id = [string]$package.id
+            if (-not $xlsxExpected.ContainsKey($id) -or $xlsxExpected[$id] -ne [string]$package.version) {
+              throw "Unexpected pinned XLSX dependency: $id $($package.version)"
+            }
+          }
           foreach ($layer in @("RecordSift.Domain", "RecordSift.Application")) {
             if ((Get-Content "src/$layer/$layer.csproj" -Raw) -match 'CsvHelper') {
               throw "$layer must not reference the CSV vendor or adapter."
