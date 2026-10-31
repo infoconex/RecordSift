@@ -8,6 +8,8 @@ namespace RecordSift.Domain.Results
         /// <summary>A source or schema failure prevented successful completion.</summary>
         Failed,
         /// <summary>Validation stopped early at a record error under an explicitly selected fail-fast policy.</summary>
-        Stopped
+        Stopped,
+        /// <summary>The caller requested cooperative cancellation; only the processed prefix is included.</summary>
+        Canceled
     }
 }
