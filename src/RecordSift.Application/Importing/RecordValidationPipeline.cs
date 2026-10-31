@@ -52,6 +52,15 @@ namespace RecordSift.Application.Importing
                 foreach (var binding in bindings)
                     values.Add(binding.Name, row.Fields[binding.SourceIndex]);
 
+                // A missing optional source field may have an explicit default.
+                // Never replace any bound value, even an empty or whitespace value.
+                foreach (var column in schema.Columns)
+                {
+                    if (!column.IsRequired && column.DefaultValue != null &&
+                        !values.ContainsKey(column.Name))
+                        values.Add(column.Name, column.DefaultValue);
+                }
+
                 var recordValues = new ReadOnlyDictionary<string, string>(values);
                 var requiredErrors = schema.ValidateRequiredValues(
                     recordValues, row.Row, row.PhysicalLine);
