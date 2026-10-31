@@ -1,6 +1,6 @@
 # RecordSift 0.1.0-rc.1 (internal validation only)
 
-**Internal validation candidate — not yet published.** RecordSift is now licensed under the **MIT License**, copyright (c) 2026 Infoconex. The installed package includes the full `LICENSE` and `THIRD-PARTY-NOTICES.md`, and declares the SPDX `MIT` license expression. This prerelease artifact remains for **internal validation only**; publication, a final stable version, and promotion to `main` require separate release-owner authorization.
+**Internal validation candidate — not yet published.** RecordSift is now licensed under the **MIT License**, copyright (c) 2026 Infoconex. The installed package includes the full `LICENSE` and `THIRD-PARTY-NOTICES.md`, and declares the SPDX `MIT` license expression. This locally staged artifact remains for **internal validation only**; publication, a final stable version, and promotion to `main` require separate release-owner authorization.
 
 RecordSift is currently supported on **Windows, .NET Framework 4.8, C# 7.3** only. This internal NuGet package groups five RecordSift assemblies (Domain, Application, CSV, XLSX, Reporting) and their XML documentation into one `lib/net48` folder. It declares exact CsvHelper 33.1.0 and ExcelDataReader 3.9.0 package dependencies; NuGet resolves their platform-specific dependency graphs. No Office installation or network service is needed at runtime. Dependencies have separate licenses described in the included third-party notices.
 
