@@ -131,5 +131,21 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.That(report, Does.Not.Contain("private-customer"));
             Assert.That(report, Does.Not.Contain("private-status"));
         }
+
+        [Test]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void CanceledReadableReportDoesNotClaimCompletionOrExposeCallerValues()
+        {
+            var result = new TypedImportResult<string>("cancel-safe",
+                ImportResult.Canceled(1, new ImportDiagnostic[0]),
+                new[] { "private-record" }, "private-status");
+            var report = new ReadableImportResultFormatterAdapter().Format(result);
+            Assert.That(report, Does.Contain("Import canceled"));
+            Assert.That(report, Does.Contain("1 processed"));
+            Assert.That(report, Does.Not.Contain("Import completed"));
+            Assert.That(report, Does.Not.Contain("private-record"));
+            Assert.That(report, Does.Not.Contain("private-status"));
+        }
     }
 }
