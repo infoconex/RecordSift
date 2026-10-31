@@ -37,7 +37,7 @@ The original issue #57 `src/RecordSift` entry below is **historical**, not a cur
 
 NUnit 3.14.0 supports .NET Framework 4.8 (via its net45 assembly) and uses the MIT license. NUnit.ConsoleRunner 3.17.0 runs NUnit 3 assemblies and is MIT licensed. The runner is a test execution tool only; the production library intentionally has **no NuGet dependencies** in this issue. `packages.config` pins version numbers but is not a cryptographic lockfile. Review dependency vulnerability status and test runner upgrade options in issue #64 before release.
 
-The NUnit tests verify only that the historical executable baseline is properly assembled. They do **not** verify any FR/NFR acceptance scenarios. Accordingly, the 109 scenario rows in `docs/testing/traceability.md` remain **Planned**. CSV/XLSX parsing, public import APIs, JSON contract fixtures, and functional tests belong to separately tracked requirements.
+At this **historical initial baseline** milestone, NUnit smoke tests verified only that the solution was assembled; they did **not** verify FR/NFR acceptance. At that time 109 scenario rows were catalogued and Planned. Subsequent requirements-driven development added real CSV/XLSX import acceptance, contract fixtures and Windows quality gates; the [current traceability matrix](../testing/traceability.md) now tracks 108 active release scenarios with scenario-specific observed evidence. The retired NFR-009-SC02 cross-platform proposal is not a release 0.1 acceptance requirement.
 
 ## Evidence and limitations
 
