@@ -171,8 +171,8 @@
 | NFR-008-SC02 | NFR-008 | Must | [#48](https://github.com/infoconex/RecordSift/issues/48) | [NFR-008 scenarios](../scenarios/non-functional/NFR-008.md) | — | Planned | — |
 | NFR-009-SC01 | NFR-009 | Must | [#49](https://github.com/infoconex/RecordSift/issues/49) | [NFR-009 scenarios](../scenarios/non-functional/NFR-009.md) | — | Planned | — |
 | NFR-009-SC02 | NFR-009 | Must | [#49](https://github.com/infoconex/RecordSift/issues/49) | [NFR-009 scenarios](../scenarios/non-functional/NFR-009.md) | — | Planned | — |
-| NFR-010-SC01 | NFR-010 | Must | [#50](https://github.com/infoconex/RecordSift/issues/50) | [NFR-010 scenarios](../scenarios/non-functional/NFR-010.md) | — | Planned | — |
-| NFR-010-SC02 | NFR-010 | Must | [#50](https://github.com/infoconex/RecordSift/issues/50) | [NFR-010 scenarios](../scenarios/non-functional/NFR-010.md) | — | Planned | — |
+| NFR-010-SC01 | NFR-010 | Must | [#50](https://github.com/infoconex/RecordSift/issues/50) | [NFR-010 scenarios](../scenarios/non-functional/NFR-010.md) | `scripts/verify_public_api.ps1` after Release MSBuild (compiled assembly, public members, metadata and pinned package baseline); future cross-framework comparison deferred | Planned | Pending Windows CI and reviewed net48 baseline; modernization comparison remains open |
+| NFR-010-SC02 | NFR-010 | Must | [#50](https://github.com/infoconex/RecordSift/issues/50) | [NFR-010 scenarios](../scenarios/non-functional/NFR-010.md) | `JsonCompatibilityGoldenTests.NFR_010_SC02_*` (7 JSON golden-fixture integration regressions) | Planned | Pending Windows CI; future cross-framework comparison deferred |
 
 ## Release 0.1 exit conditions
 

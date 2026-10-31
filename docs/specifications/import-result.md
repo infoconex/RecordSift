@@ -80,17 +80,12 @@ Human-readable `message` wording is **not** a substitute for machine-readable `s
 
 When executable contract tests exist, they must assert these semantic invariants independently, not merely validate the JSON shape.
 
-## Planned version-controlled test fixtures — not yet created
+## Version-controlled compatibility fixtures
 
-The future `tests/RecordSift.ContractTests/Fixtures/` directory should contain expected JSON documents for:
+Seven approved JSON fixtures live in [the reporting integration tests](../../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/) and cover successful, rejected, source-failed and empty imports, CSV physical-line provenance, XLSX worksheet/physical-row provenance, and missing XLSX worksheet failures. `JsonCompatibilityGoldenTests` compares complete parsed JSON trees (including required/null/omitted properties and diagnostic ordering) against these immutable examples and checks repeated serializer calls produce identical output. NUnit exercises the actual .NET Framework reporting adapter, not a mock.
 
-- `successful-import.json` — valid input with accepted records.
-- `completed-with-errors.json` — one or more rejected data rows, including multiple errors on one row.
-- `empty-import.json` — a successful zero-data-row import.
-- `failed-import.json` — a source/schema error with zero rejected data rows.
+Fixtures are **regression test inputs**, not normative JSON specifications; the JSON Schema remains the definitive wire contract. The fixture suite intentionally captures invariant English messages from existing resources only to maintain reviewable expected JSON; consumers still must not branch on human-readable messages. Future localization may require explicitly approved fixture changes. CI execution XML is never committed as a fixture.
 
-These files are **test fixtures**, not part of the specification. They will be committed alongside actual contract tests and linked to the relevant `FR-###-SC##` acceptance scenarios. Generated reports, test results and coverage output are CI **execution artifacts**, not golden fixtures to commit.
+## Remaining compatibility obligations
 
-## Remaining implementation decisions
-
-The public .NET API types, exact diagnostic-code registry, the compatible schema-validation test library, and JSON contract migration policy still need implementation-specific review. No executable contract tests or release-readiness claims are made by this document.
+Baseline checks are enforced on .NET Framework 4.8 only. A future target-framework migration must compare the compiled public surface and representative golden JSON again, and separately examine assembly binding, target framework and package distribution changes; net48 baseline creation alone does not certify modernized target-framework compatibility.
