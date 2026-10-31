@@ -140,5 +140,126 @@ namespace RecordSift.Application.Tests
                 Assert.That(visited, Is.EqualTo(2));
             }
         }
+
+        private sealed class NumericRange
+        {
+            public int Start { get; set; }
+            public int? End { get; set; }
+        }
+
+        private sealed class RangeReader : ICsvRecordReader
+        {
+            private readonly CsvRecord[] _rows;
+
+            public RangeReader(params CsvRecord[] rows)
+            {
+                _rows = rows;
+            }
+
+            public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
+            {
+                return CsvParseResult.Success(_rows);
+            }
+        }
+
+        private static NumericRange MapRange(IReadOnlyDictionary<string, string> values)
+        {
+            return new NumericRange {
+                Start = int.Parse(values["Start"], System.Globalization.CultureInfo.InvariantCulture),
+                End = values.ContainsKey("End") ?
+                    (int?)int.Parse(values["End"], System.Globalization.CultureInfo.InvariantCulture) : null
+            };
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-024")]
+        [Property("Scenario", "FR-024-SC01")]
+        public void FR_024_SC01_CrossFieldRulesRejectConvertedInconsistencyButNotLaterValidRows()
+        {
+            var visited = 0;
+            var rows = new[] {
+                new CsvRecord(1, 1, new[] { "Start", "End" }),
+                new CsvRecord(2, 2, new[] { "1", "3" }),
+                new CsvRecord(3, 5, new[] { "5", "2" }),
+                new CsvRecord(4, 7, new[] { "7", "7" }),
+                new CsvRecord(5, 9, new[] { "secret-invalid", "9" }),
+                new CsvRecord(6, 11, new[] { "10", "12" })
+            };
+            var importer = new CsvImporter<NumericRange>(new RangeReader(rows), MapRange,
+                null, null, new[] {
+                    new RecordValidationRule<NumericRange>(null, range => {
+                        visited++;
+                        return range.Start <= range.End.Value;
+                    }),
+                    new RecordValidationRule<NumericRange>("End",
+                        range => range.Start <= range.End.Value)
+                });
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Start", true, true),
+                new ExpectedColumn("End", true, true)
+            });
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "range-source");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(5));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+                Assert.That(visited, Is.EqualTo(4));
+                Assert.That(result.AcceptedRecords[0].Start, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[1].Start, Is.EqualTo(7));
+                Assert.That(result.AcceptedRecords[2].Start, Is.EqualTo(10));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(3));
+                Assert.That(result.Diagnostics[0].Field, Is.Null);
+                Assert.That(result.Diagnostics[1].Field, Is.EqualTo("End"));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ValidationFailed));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(5));
+                Assert.That(result.Diagnostics[1].PhysicalLine, Is.EqualTo(5));
+                Assert.That(result.Diagnostics[2].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[2].Row, Is.EqualTo(4));
+                Assert.That(result.Diagnostics[2].PhysicalLine, Is.EqualTo(9));
+                foreach (var diagnostic in result.Diagnostics)
+                    Assert.That(diagnostic.Message, Does.Not.Contain("secret-invalid"));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-024")]
+        [Property("Scenario", "FR-024-SC02")]
+        public void FR_024_SC02_ConsistentCrossFieldRulesPreserveEqualBoundaryAndOptionalMissingField()
+        {
+            var rows = new[] {
+                new CsvRecord(1, 1, new[] { "Start" }),
+                new CsvRecord(2, 2, new[] { "1" }),
+                new CsvRecord(3, 3, new[] { "7" })
+            };
+            var inspected = 0;
+            var importer = new CsvImporter<NumericRange>(new RangeReader(rows), MapRange,
+                null, null, new[] {
+                    new RecordValidationRule<NumericRange>(null, range => {
+                        inspected++;
+                        return !range.End.HasValue || range.Start <= range.End.Value;
+                    })
+                });
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Start", true, true),
+                new ExpectedColumn("End", false)
+            });
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "optional-end");
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.Zero);
+                Assert.That(inspected, Is.EqualTo(2));
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(result.AcceptedRecords[0].End, Is.Null);
+            }
+        }
     }
 }
