@@ -35,6 +35,10 @@ namespace RecordSift.Domain.Schema
         /// <summary>Converts a source string to string, Int32, Decimal, DateTime or Boolean (including nullable value types) using the captured culture; rejects rounded decimal conversions.</summary>
         /// <param name="value">Raw source string; null is preserved for a string destination.</param>
         /// <param name="destinationType">Requested CLR type; null is invalid.</param>
+        /// <returns>The converted boxed value; null for a blank nullable value or a null source string mapped as string.</returns>
+        /// <exception cref="ArgumentNullException">The destination type is null.</exception>
+        /// <exception cref="ArgumentException">The destination CLR type is unsupported.</exception>
+        /// <exception cref="FormatException">The source value is invalid or would require a lossy decimal conversion.</exception>
         public object Convert(string value, Type destinationType)
         {
             if (destinationType == null) throw new ArgumentNullException(nameof(destinationType));

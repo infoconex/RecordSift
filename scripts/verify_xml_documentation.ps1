@@ -44,3 +44,7 @@ try {
 finally {
     Set-Content -Path $path -Value $original -Encoding utf8 -NoNewline
 }
+
+# A failed compiler invocation was expected. Reset the native exit code so the
+# surrounding GitHub Actions PowerShell wrapper treats this successful probe as success.
+$global:LASTEXITCODE = 0

@@ -31,10 +31,7 @@ namespace RecordSift.Application.Ports.Xlsx
         /// <summary>Gets the maximum UTF-16 characters permitted in each formatted cell value.</summary>
         public int MaxCellCharacters { get; private set; }
 
-        /// <summary>Sets positive per-worksheet row, field-column and per-cell decoded-character budgets.</summary>
-        /// <param name="efaultMaxRows">Value provided for this operation.</param>
-        /// <param name="efaultMaxColumns">Value provided for this operation.</param>
-        /// <param name="efaultMaxCellCharacters">Value provided for this operation.</param>
+        /// <summary>Gets a new default limit set: 100,000 physical rows, 256 columns per row, and 32,767 UTF-16 characters per cell.</summary>
         public static XlsxReadLimits Default => new XlsxReadLimits(
             DefaultMaxRows, DefaultMaxColumns, DefaultMaxCellCharacters);
     }

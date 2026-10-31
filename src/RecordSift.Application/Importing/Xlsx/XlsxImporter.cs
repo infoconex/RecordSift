@@ -48,6 +48,7 @@ namespace RecordSift.Application.Importing.Xlsx
         /// <param name="sourceId">Nonblank opaque source identifier supplied by the caller.</param>
         /// <param name="limits">Optional worksheet row, column and cell-character limits; null selects defaults.</param>
         /// <param name="worksheetName">Optional exact-case worksheet name; null selects the first worksheet.</param>
+        /// <remarks>Headers come from the first nonblank source row; no rows produces a missing-header source failure, while a header-only worksheet completes with zero data records. Logical diagnostic rows are one-based data-row ordinals excluding the header; physical worksheet row locations are retained separately. The source stream remains open.</remarks>
         public TypedImportResult<T> Import(Stream source, int maxBytes,
             ImportSchema schema, string sourceId, XlsxReadLimits limits = null,
             string worksheetName = null)

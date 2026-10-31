@@ -25,6 +25,7 @@ namespace RecordSift.Infrastructure.Xlsx
         /// <param name="maxColumns">Positive maximum decoded fields in any row.</param>
         /// <param name="maxCellCharacters">Positive maximum UTF-16 code units per decoded cell.</param>
         /// <param name="worksheetName">Optional exact-case worksheet name; null uses first available worksheet.</param>
+        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total declared expansion to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Entries containing macro binaries or external-link parts are rejected. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
         public XlsxReadResult Read(Stream source, int maxBytes,
             int maxRows, int maxColumns, int maxCellCharacters,
             string worksheetName = null)
