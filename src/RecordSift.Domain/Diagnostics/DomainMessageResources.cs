@@ -21,7 +21,7 @@ namespace RecordSift.Domain.Diagnostics
         /// <summary>Gets the invariant, resource-backed converter rule validation message.</summary>
         public static string ConversionRuleUndeclared => Get("Argument_ConversionRuleUndeclared");
         /// <summary>Gets the sanitized fail-fast outcome argument error.</summary>
-        internal static string StoppedWithoutRecordError => Get("Argument_StoppedWithoutRecordError");
+        public static string StoppedWithoutRecordError => Get("Argument_StoppedWithoutRecordError");
         /// <summary>Gets the invariant, resource-backed regex configuration message.</summary>
         public static string PatternRuleNull => Get("Argument_PatternRuleNull");
         /// <summary>Gets the invariant, resource-backed regex configuration message.</summary>
