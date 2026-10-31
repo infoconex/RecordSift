@@ -31,6 +31,34 @@ namespace RecordSift.Infrastructure.Csv.Tests
             public decimal Amount { get; set; }
         }
 
+        private sealed class OptionalCustomer
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Note { get; set; }
+        }
+
+        private static TypedImportResult<OptionalCustomer> ImportOptionalCustomers(string csv)
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, true),
+                new ExpectedColumn("Note", false, false)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Id", "Id"),
+                new SourcePropertyMapping("Name", "Name"),
+                new SourcePropertyMapping("Note", "Note")
+            });
+            var mapper = new PrimitivePropertyMapper<OptionalCustomer>(
+                mapping, CultureInfo.InvariantCulture);
+            var importer = new CsvImporter<OptionalCustomer>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+            using (var source = new StringReader(csv))
+                return importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "fr012-optional");
+        }
+
         private static ImportSchema Schema()
         {
             return new ImportSchema(new[] {
@@ -446,6 +474,61 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.Diagnostics[0].Row, Is.Null);
             Assert.That(result.Diagnostics[0].Message,
                 Does.Not.Contain("private-unterminated"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-012")]
+        [Property("Scenario", "FR-012-SC01")]
+        public void FR_012_SC01_MissingRequiredAndOptionalValuesRejectOnlyTheInvalidRecord()
+        {
+            var result = ImportOptionalCustomers(
+                "Id,Name,Note\r\n, ,\r\n2,Bob,\r\n3,Carol,observed");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.SourceId, Is.EqualTo("fr012-optional"));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.Diagnostics, Has.Count.EqualTo(2));
+            Assert.That(result.Diagnostics[0].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+            Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Id"));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(2));
+            Assert.That(result.Diagnostics[1].Code,
+                Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+            Assert.That(result.Diagnostics[1].Field, Is.EqualTo("Name"));
+            Assert.That(result.Diagnostics[1].Row, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[1].PhysicalLine, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Bob"));
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(3));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Carol"));
+        }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-012")]
+        [Property("Scenario", "FR-012-SC02")]
+        public void FR_012_SC02_AbsentOptionalSourceColumnLeavesDestinationUnchanged()
+        {
+            var result = ImportOptionalCustomers(
+                "Id,Name\r\n1,Alice\r\n2,Bob");
+
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.RejectedCount, Is.Zero);
+            Assert.That(result.Diagnostics, Is.Empty);
+            Assert.That(result.AcceptedRecords, Has.Count.EqualTo(2));
+            Assert.That(result.AcceptedRecords[0], Is.TypeOf<OptionalCustomer>());
+            Assert.That(result.AcceptedRecords[0].Id, Is.EqualTo(1));
+            Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+            Assert.That(result.AcceptedRecords[0].Note, Is.Null);
+            Assert.That(result.AcceptedRecords[1].Id, Is.EqualTo(2));
+            Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+            Assert.That(result.AcceptedRecords[1].Note, Is.Null);
         }
     }
 }
