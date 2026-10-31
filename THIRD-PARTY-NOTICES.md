@@ -20,4 +20,4 @@ The RecordSift NuGet package declares the following **separately installed** NuG
 
 The CsvHelper package's `MS-PL OR Apache-2.0` expression describes an either/or licensing choice, **not** a requirement to comply with both simultaneously. For older Microsoft packages, their NuGet license-info links point to the MIT-licensed [.NET CoreFX license text](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT). Review the license material shipped in each installed package for downstream redistribution.
 
-This inventory is version-specific to the 0.1 release candidate. Changes to dependencies require a fresh inventory and security/license review. See [detailed dependency evidence](docs/release/0.1-dependencies.md) in the source repository.
+This inventory is version-specific to the 0.1 release candidate. Changes to dependencies require a fresh inventory and security/license review. See [detailed dependency evidence](https://github.com/infoconex/RecordSift/blob/release/0.1/docs/release/0.1-dependencies.md) in the source repository.
