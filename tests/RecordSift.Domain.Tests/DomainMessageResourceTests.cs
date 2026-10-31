@@ -33,7 +33,8 @@ namespace RecordSift.Domain.Tests
                 { DiagnosticCodes.MalformedSource, "The source structure is malformed." },
                 { DiagnosticCodes.RequiredFieldMissing, "A required field is missing." },
                 { DiagnosticCodes.ConversionFailed, "A field could not be converted." },
-                { DiagnosticCodes.ValidationFailed, "A field failed validation." }
+                { DiagnosticCodes.ValidationFailed, "A field failed validation." },
+                { DiagnosticCodes.FieldLengthOutOfRange, "The field length is outside the configured range." }
             };
 
         [Test]
@@ -101,7 +102,7 @@ namespace RecordSift.Domain.Tests
             Assert.That(typeof(DomainMessageResources).GetMethod("Get", publicMembers), Is.Null);
 
             var namedMessages = typeof(DomainMessageResources).GetProperties(publicMembers);
-            Assert.That(namedMessages, Has.Length.EqualTo(33));
+            Assert.That(namedMessages, Has.Length.EqualTo(34));
             foreach (var property in namedMessages)
             {
                 Assert.That(property.PropertyType, Is.EqualTo(typeof(string)));
