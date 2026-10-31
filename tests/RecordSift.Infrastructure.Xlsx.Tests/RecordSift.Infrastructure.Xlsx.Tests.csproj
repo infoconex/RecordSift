@@ -23,7 +23,8 @@
     <Reference Include="System" /><Reference Include="System.Core" />
     <Reference Include="nunit.framework"><HintPath>..\..\packages\NUnit.3.14.0\lib\net45\nunit.framework.dll</HintPath><Private>True</Private></Reference>
   </ItemGroup>
-  <ItemGroup><Compile Include="XlsxImporterAcceptanceTests.cs" /><None Include="packages.config" /></ItemGroup>
+  <ItemGroup><Compile Include="XlsxImporterAcceptanceTests.cs" />
+    <Compile Include="XlsxWorksheetSelectionAcceptanceTests.cs" /><None Include="packages.config" /></ItemGroup>
   <ItemGroup><ProjectReference Include="..\..\src\RecordSift.Infrastructure.Xlsx\RecordSift.Infrastructure.Xlsx.csproj"><Project>{D46162A5-14B0-42E1-9C8E-3954C3B94365}</Project><Name>RecordSift.Infrastructure.Xlsx</Name></ProjectReference>
 <ProjectReference Include="..\..\src\RecordSift.Application\RecordSift.Application.csproj"><Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project><Name>RecordSift.Application</Name></ProjectReference>
 <ProjectReference Include="..\..\src\RecordSift.Domain\RecordSift.Domain.csproj"><Project>{D107315D-E4EA-4C77-8A14-8F34F76B2100}</Project><Name>RecordSift.Domain</Name></ProjectReference></ItemGroup>

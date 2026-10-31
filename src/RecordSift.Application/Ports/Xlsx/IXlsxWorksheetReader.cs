@@ -9,6 +9,7 @@ namespace RecordSift.Application.Ports.Xlsx
     public interface IXlsxWorksheetReader
     {
         XlsxReadResult Read(Stream source, int maxBytes,
-            int maxRows, int maxColumns, int maxCellCharacters);
+            int maxRows, int maxColumns, int maxCellCharacters,
+            string worksheetName = null);
     }
 }

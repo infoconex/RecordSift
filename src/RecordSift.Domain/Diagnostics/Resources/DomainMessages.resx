@@ -13,6 +13,7 @@
   <data name="INVALID_COLUMN_POSITION" xml:space="preserve"><value>A declared source column position is outside the available field range.</value></data>
   <data name="INVALID_CSV_DELIMITER" xml:space="preserve"><value>The configured CSV delimiter is invalid.</value></data>
   <data name="MALFORMED_SOURCE" xml:space="preserve"><value>The source structure is malformed.</value></data>
+  <data name="WORKSHEET_NOT_FOUND" xml:space="preserve"><value>The requested worksheet was not found in the workbook.</value></data>
   <data name="REQUIRED_FIELD_MISSING" xml:space="preserve"><value>A required field is missing.</value></data>
   <data name="CONVERSION_FAILED" xml:space="preserve"><value>A field could not be converted.</value></data>
   <data name="VALIDATION_FAILED" xml:space="preserve"><value>A field failed validation.</value></data>

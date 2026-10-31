@@ -10,7 +10,7 @@ using RecordSift.Domain.Schema;
 
 namespace RecordSift.Application.Importing.Xlsx
 {
-    /// <summary>Imports the first worksheet's stored values into the shared validation pipeline.</summary>
+    /// <summary>Imports a selected or default XLSX worksheet through shared validation.</summary>
     public sealed class XlsxImporter<T>
     {
         private readonly IXlsxWorksheetReader _reader;
@@ -35,16 +35,20 @@ namespace RecordSift.Application.Importing.Xlsx
         }
 
         public TypedImportResult<T> Import(Stream source, int maxBytes,
-            ImportSchema schema, string sourceId, XlsxReadLimits limits = null)
+            ImportSchema schema, string sourceId, XlsxReadLimits limits = null,
+            string worksheetName = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (schema == null) throw new ArgumentNullException(nameof(schema));
             if (maxBytes < 1) throw new ArgumentOutOfRangeException(nameof(maxBytes));
+            if (worksheetName != null && string.IsNullOrWhiteSpace(worksheetName))
+                throw new ArgumentException(DomainMessageResources.DiagnosticWorksheetBlank,
+                    nameof(worksheetName));
 
             // Bounded input and row/cell limits are explicitly independent of CSV.
             var budget = limits ?? XlsxReadLimits.Default;
             var raw = _reader.Read(source, maxBytes,
-                budget.MaxRows, budget.MaxColumns, budget.MaxCellCharacters);
+                budget.MaxRows, budget.MaxColumns, budget.MaxCellCharacters, worksheetName);
             if (!raw.IsSuccessful)
                 return Failed(sourceId, raw.Error);
 

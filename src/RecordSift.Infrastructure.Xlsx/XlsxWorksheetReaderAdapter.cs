@@ -17,7 +17,8 @@ namespace RecordSift.Infrastructure.Xlsx
         private const int BufferSize = 8192;
 
         public XlsxReadResult Read(Stream source, int maxBytes,
-            int maxRows, int maxColumns, int maxCellCharacters)
+            int maxRows, int maxColumns, int maxCellCharacters,
+            string worksheetName = null)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (maxBytes < 1) throw new ArgumentOutOfRangeException(nameof(maxBytes));
@@ -25,6 +26,9 @@ namespace RecordSift.Infrastructure.Xlsx
             if (maxColumns < 1) throw new ArgumentOutOfRangeException(nameof(maxColumns));
             if (maxCellCharacters < 1)
                 throw new ArgumentOutOfRangeException(nameof(maxCellCharacters));
+            if (worksheetName != null && string.IsNullOrWhiteSpace(worksheetName))
+                throw new ArgumentException(DomainMessageResources.DiagnosticWorksheetBlank,
+                    nameof(worksheetName));
 
             try
             {
@@ -50,6 +54,23 @@ namespace RecordSift.Infrastructure.Xlsx
                     {
                         if (workbook.ResultsCount == 0)
                             return Error(DiagnosticCodes.MalformedSource);
+
+                        if (worksheetName != null)
+                        {
+                            var selected = false;
+                            do
+                            {
+                                if (string.Equals(workbook.Name, worksheetName,
+                                    StringComparison.Ordinal))
+                                {
+                                    selected = true;
+                                    break;
+                                }
+                            } while (workbook.NextResult());
+
+                            if (!selected)
+                                return Error(DiagnosticCodes.WorksheetNotFound);
+                        }
 
                         var worksheet = workbook.Name;
                         var records = new List<XlsxRecord>();

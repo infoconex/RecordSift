@@ -31,6 +31,7 @@ namespace RecordSift.Domain.Tests
                 { DiagnosticCodes.InvalidColumnPosition, "A declared source column position is outside the available field range." },
                 { DiagnosticCodes.InvalidCsvDelimiter, "The configured CSV delimiter is invalid." },
                 { DiagnosticCodes.MalformedSource, "The source structure is malformed." },
+                { DiagnosticCodes.WorksheetNotFound, "The requested worksheet was not found in the workbook." },
                 { DiagnosticCodes.RequiredFieldMissing, "A required field is missing." },
                 { DiagnosticCodes.ConversionFailed, "A field could not be converted." },
                 { DiagnosticCodes.ValidationFailed, "A field failed validation." },
