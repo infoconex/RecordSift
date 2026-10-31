@@ -33,7 +33,7 @@
     <file src="lib\net48\*.dll" target="lib/net48/" />
     <file src="lib\net48\*.xml" target="lib/net48/" />
     <file src="README.md" target="" />
-    <file src="LICENSE" target="" />
-    <file src="THIRD-PARTY-NOTICES.md" target="" />
+    <file src="LICENSE" target="LICENSE" />
+    <file src="THIRD-PARTY-NOTICES.md" target="THIRD-PARTY-NOTICES.md" />
   </files>
 </package>
