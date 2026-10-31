@@ -2,6 +2,8 @@
 
 The source at tests/ReleaseConsumer/Program.cs is intentionally not part of the solution and has no project references. scripts/verify_clean_consumer.ps1 copies the source to a separate temporary Windows directory, installs the unpublished RecordSift.0.1.0-rc.1.nupkg and its dependencies using NuGet, compiles the consumer against installed DLLs using C# 7.3, and executes the resulting .NET Framework 4.8 executable. Runtime DLLs come from the temporary NuGet installation rather than repository build output.
 
+The independent Windows workflow additionally builds the **unpublished stable `RecordSift.0.1.0.nupkg`** with `-PackageVersion 0.1.0` into a distinct temporary directory, verifies the effective NuGet version inside its manifest, and installs/tests that exact version. The existing `0.1.0-rc.1` pathway remains in CI; neither artifact is uploaded.
+
 This clean consumer checks CSV import, XLSX import, schema and property mapping, caller-defined record validation, structured results, JSON reports, human-readable results and CSV diagnostic exports. It also verifies the installed package carries the exact root MIT LICENSE and THIRD-PARTY-NOTICES.md, while the packaging script verifies the embedded SPDX MIT expression. .github/workflows/verify-rc-consumer.yml runs it on Windows 2022. It neither uploads nor publishes packages. The regular 379 NUnit tests and API/JSON compatibility checks remain separate required CI gates.
 
 NuGet can access nuget.org while installing pinned vendor dependencies, but record processing itself does not require an external service. The test certifies Windows/net48 only. The owner approved MIT licensing under #186; internal package verification is not **promotion or publication** authorization, which remains separate.
