@@ -64,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CsvRecordReaderAdapter.cs" />
     <Compile Include="CsvStreamImporterAdapter.cs" />
     <Compile Include="CharacterLimitedTextReader.cs" />
