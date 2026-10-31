@@ -126,7 +126,7 @@ public sealed class SampleTests
     errors, count = inspect_source("SampleTests.cs", source, requirements, scenarios)
     assert not errors and count == 1, f"valid fixture rejected: {errors}"
     cases = [
-        (source.replace('[Category("Unit")]', ""), "primary level"),
+        (source.replace('[Category("Unit")]\n', ""), "primary level"),
         (source.replace('"FR-017-SC01"', '"FR-017-SC02"'), "undocumented scenario"),
         (source.replace("FR_017_SC01_Rejects", "FR_017_SC02_Rejects"), "name prefixes"),
         (source.replace('[Property("Requirement", "FR-017")]', ""), "Requirement"),
