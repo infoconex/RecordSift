@@ -19,6 +19,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC03")]
         public void FR_001_SC03_UnclosedQuotedFieldIsSourceFailureWithPhysicalLocation()
         {
             var result = Parse("Id,Value\n1,\"unfinished\nvalue");
@@ -32,6 +35,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC04")]
         public void FR_001_SC04_QuotedCommaNewlineAndEscapedQuoteStayInOneField()
         {
             var result = Parse("Id,Description\r\n1,\"hello,\r\n\"\"world\"\"\"\r\n2,done");

@@ -12,6 +12,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class CsvImporterTests
     {
         private sealed class Customer
@@ -60,6 +61,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC01")]
         public void FR_001_SC01_ValidCsvProducesOrderedTypedCustomersAndSummary()
         {
             var result = Import(CsvParseResult.Success(new[] {
@@ -81,6 +85,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC02")]
         public void FR_001_SC02_HeaderOnlySourceCompletesWithInformationalMessage()
         {
             var result = Import(CsvParseResult.Success(new[] {
@@ -97,6 +104,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC05")]
         public void FR_001_SC05_EmptyHeaderlessSourceCompletesWithoutErrors()
         {
             var result = Import(CsvParseResult.Success(new CsvRecord[0]),
@@ -110,6 +120,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC06")]
         public void FR_001_SC06_EmptyHeadedSourceFailsWithRequiredHeaderCode()
         {
             var result = Import(CsvParseResult.Success(new CsvRecord[0]));
@@ -123,6 +136,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-001")]
+        [Property("Scenario", "FR-001-SC03")]
         public void FR_001_SC03_MalformedSourceFailureKeepsPhysicalLineAndNoPartialRecords()
         {
             var error = ImportDiagnostic.ForSource(null, DiagnosticCodes.MalformedSource,
@@ -156,6 +172,10 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-017")]
+        [Property("Scenario", "FR-017-SC01")]
+        [Property("Scenario", "FR-017-SC02")]
         public void FR_017_SC01_SC02_RequiredValueFailuresRejectOnlyTheirOwnRows()
         {
             var schema = new ImportSchema(new[] {

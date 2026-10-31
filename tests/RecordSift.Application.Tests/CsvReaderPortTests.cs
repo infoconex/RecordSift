@@ -10,6 +10,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class CsvReaderPortTests
     {
         private sealed class StubReader : ICsvRecordReader

@@ -10,6 +10,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Application.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class StringPropertyMapperTests
     {
         private sealed class Customer
@@ -52,6 +53,9 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-010")]
+        [Property("Scenario", "FR-010-SC01")]
         public void FR_010_SC01_DifferentlyNamedSourceColumnMapsToExplicitClrProperty()
         {
             var mapper = new StringPropertyMapper<Customer>(Mapping());
