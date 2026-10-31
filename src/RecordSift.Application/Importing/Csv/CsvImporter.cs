@@ -62,6 +62,14 @@ namespace RecordSift.Application.Importing.Csv
                     continue;
                 }
 
+                var lengthErrors = schema.ValidateFieldLengths(
+                    recordValues, row.Row, row.PhysicalLine);
+                if (lengthErrors.Count != 0)
+                {
+                    diagnostics.AddRange(lengthErrors);
+                    continue;
+                }
+
                 try
                 {
                     accepted.Add(_mapRecord(recordValues));
