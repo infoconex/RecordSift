@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Messages;
+using RecordSift.Application.Mapping;
 using RecordSift.Application.Ports.Csv;
 
 namespace RecordSift.Application.Tests
@@ -13,6 +14,8 @@ namespace RecordSift.Application.Tests
         public void ApplicationContractsUseDeclaredResponsibilityNamespaces()
         {
             AssertNamespace(typeof(CsvMessageResources), "RecordSift.Application.Messages");
+            AssertNamespace(typeof(StringPropertyMapper<System.Collections.Generic.List<string>>),
+                "RecordSift.Application.Mapping");
             AssertNamespace(typeof(ICsvRecordReader), "RecordSift.Application.Ports.Csv");
             AssertNamespace(typeof(CsvReadOptions), "RecordSift.Application.Ports.Csv");
             AssertNamespace(typeof(CsvParseResult), "RecordSift.Application.Ports.Csv");

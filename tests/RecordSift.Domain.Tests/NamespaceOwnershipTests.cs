@@ -21,6 +21,8 @@ namespace RecordSift.Domain.Tests
             AssertNamespace(typeof(SchemaBindingResult), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(SourceColumnBinding), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(SourceColumnPosition), "RecordSift.Domain.Schema");
+            AssertNamespace(typeof(PropertyMappingSchema), "RecordSift.Domain.Schema");
+            AssertNamespace(typeof(SourcePropertyMapping), "RecordSift.Domain.Schema");
             AssertNamespace(typeof(ImportResult), "RecordSift.Domain.Results");
             AssertNamespace(typeof(ImportStatus), "RecordSift.Domain.Results");
             AssertNamespace(typeof(ImportSummary), "RecordSift.Domain.Results");

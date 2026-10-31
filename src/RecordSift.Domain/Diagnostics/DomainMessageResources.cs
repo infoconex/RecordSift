@@ -12,6 +12,13 @@ namespace RecordSift.Domain.Diagnostics
         private static readonly ResourceManager s_catalog = new ResourceManager(
             "RecordSift.Resources.DomainMessages", typeof(DomainMessageResources).Assembly);
 
+        public static string PropertyMappingSourceName => Get("Argument_PropertyMappingSourceName");
+        public static string PropertyMappingDestinationName => Get("Argument_PropertyMappingDestinationName");
+        public static string PropertyMappingNull => Get("Argument_PropertyMappingNull");
+        public static string PropertyMappingUndeclaredSource => Get("Argument_PropertyMappingUndeclaredSource");
+        public static string PropertyMappingDuplicateDestination => Get("Argument_PropertyMappingDuplicateDestination");
+        public static string PropertyMappingEmpty => Get("Argument_PropertyMappingEmpty");
+        public static string PropertyMappingUnsupportedDestination => Get("Argument_PropertyMappingUnsupportedDestination");
         public static string AcceptedRecordCountMismatch => Get("Argument_AcceptedRecordCountMismatch");
         public static string ImportSourceIdBlank => Get("Argument_ImportSourceIdBlank");
         public static string ImportMessageBlank => Get("Argument_ImportMessageBlank");
