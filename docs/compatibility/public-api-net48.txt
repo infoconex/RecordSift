@@ -1,6 +1,6 @@
-# RecordSift net48 compiled public API baseline; approved via reviewed pull requests.
-# Generated with scripts/verify_public_api.ps1 from Release binaries.
 # Framework modernization MUST compare against this baseline; net48-only checks do not certify modernization.
+# Generated with scripts/verify_public_api.ps1 from Release binaries.
+# RecordSift net48 compiled public API baseline; approved via reviewed pull requests.
 assembly RecordSift.Application version=0.1.0.0 culture=neutral publicKeyToken=null
 assembly RecordSift.Domain version=0.1.0.0 culture=neutral publicKeyToken=null
 assembly RecordSift.Infrastructure.Csv version=0.0.0.0 culture=neutral publicKeyToken=null
@@ -112,6 +112,7 @@ field RecordSift.Domain.Diagnostics.DiagnosticScope static const RecordSift.Doma
 field RecordSift.Domain.Results.ImportStatus instance mutable System.Int32 value__
 field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Completed
 field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Failed
+field RecordSift.Domain.Results.ImportStatus static const RecordSift.Domain.Results.ImportStatus Stopped
 fileVersion RecordSift.Application 0.1.0.0
 fileVersion RecordSift.Domain 0.1.0.0
 fileVersion RecordSift.Infrastructure.Csv 0.0.0.0
@@ -147,6 +148,7 @@ literal RecordSift.Domain.Diagnostics.DiagnosticScope.Record=0
 literal RecordSift.Domain.Diagnostics.DiagnosticScope.Source=1
 literal RecordSift.Domain.Results.ImportStatus.Completed=0
 literal RecordSift.Domain.Results.ImportStatus.Failed=1
+literal RecordSift.Domain.Results.ImportStatus.Stopped=2
 metadata RecordSift.Application AssemblyCompanyAttribute=Infoconex
 metadata RecordSift.Application AssemblyDescriptionAttribute=RecordSift application orchestration and owned source ports.
 metadata RecordSift.Application AssemblyProductAttribute=RecordSift
@@ -165,9 +167,12 @@ metadata RecordSift.Infrastructure.Reporting AssemblyTitleAttribute=RecordSift.I
 metadata RecordSift.Infrastructure.Reporting TargetFrameworkAttribute=.NETFramework,Version=v4.8
 metadata RecordSift.Infrastructure.Xlsx TargetFrameworkAttribute=.NETFramework,Version=v4.8
 method RecordSift.Application.Importing.Csv.CsvImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions optional=null, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
+method RecordSift.Application.Importing.Csv.CsvImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.String sourceId, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions, RecordSift.Application.Ports.Csv.CsvReadOptions options, System.Boolean failFast)
 method RecordSift.Application.Importing.Csv.CsvTableReader static ordinary RecordSift.Application.Importing.Csv.CsvTableResult Read(RecordSift.Application.Ports.Csv.ICsvRecordReader reader, System.IO.TextReader source, System.Int32 maxCharacters, RecordSift.Domain.Schema.ImportSchema schema, RecordSift.Application.Importing.Csv.CsvHeaderPolicy policy, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.SourceColumnPosition> positions optional=null, RecordSift.Application.Ports.Csv.CsvReadOptions options optional=null)
 method RecordSift.Application.Importing.RecordValidationPipeline static ordinary RecordSift.Domain.Results.TypedImportResult<T> Process<T>(System.Collections.Generic.IReadOnlyList<RecordSift.Application.Importing.ImportDataRow> rows, System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> bindings, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules, System.String emptyMessage, System.String completedMessage, System.String rejectedMessage)
+method RecordSift.Application.Importing.RecordValidationPipeline static ordinary RecordSift.Domain.Results.TypedImportResult<T> Process<T>(System.Collections.Generic.IReadOnlyList<RecordSift.Application.Importing.ImportDataRow> rows, System.Collections.Generic.IReadOnlyList<RecordSift.Domain.Schema.SourceColumnBinding> bindings, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, System.Func<System.Collections.Generic.IReadOnlyDictionary<System.String, System.String>, T> mapRecord, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.FieldRangeRule<T>> rangeRules, RecordSift.Domain.Schema.DuplicateIdentifierRule<T> identifierRule, System.Collections.Generic.IEnumerable<RecordSift.Domain.Schema.RecordValidationRule<T>> customRules, System.String emptyMessage, System.String completedMessage, System.String rejectedMessage, System.Boolean failFast, System.String stoppedMessage)
 method RecordSift.Application.Importing.Xlsx.XlsxImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxBytes, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, RecordSift.Application.Ports.Xlsx.XlsxReadLimits limits optional=null, System.String worksheetName optional=null)
+method RecordSift.Application.Importing.Xlsx.XlsxImporter<T> instance ordinary RecordSift.Domain.Results.TypedImportResult<T> Import(System.IO.Stream source, System.Int32 maxBytes, RecordSift.Domain.Schema.ImportSchema schema, System.String sourceId, RecordSift.Application.Ports.Xlsx.XlsxReadLimits limits, System.String worksheetName, System.Boolean failFast)
 method RecordSift.Application.Mapping.PrimitivePropertyMapper<T> instance ordinary T Map(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values)
 method RecordSift.Application.Mapping.StringPropertyMapper<T> instance ordinary T Map(System.Collections.Generic.IReadOnlyDictionary<System.String, System.String> values)
 method RecordSift.Application.Ports.Csv.CsvParseResult static ordinary RecordSift.Application.Ports.Csv.CsvParseResult Failure(RecordSift.Domain.Diagnostics.ImportDiagnostic diagnostic)
@@ -184,6 +189,7 @@ method RecordSift.Domain.Diagnostics.ImportDiagnostic static ordinary RecordSift
 method RecordSift.Domain.Diagnostics.ImportDiagnostic static ordinary RecordSift.Domain.Diagnostics.ImportDiagnostic ForSource(System.String field, System.String code, System.String worksheet, System.Nullable<System.Int32> physicalRow, System.Nullable<System.Int32> physicalLine)
 method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Completed(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
 method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Failed(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
+method RecordSift.Domain.Results.ImportResult static ordinary RecordSift.Domain.Results.ImportResult Stopped(System.Int32 processedCount, System.Collections.Generic.IEnumerable<RecordSift.Domain.Diagnostics.ImportDiagnostic> diagnostics)
 method RecordSift.Domain.Schema.DuplicateIdentifierRule<T> instance ordinary System.Func<T, System.Int32, System.Nullable<System.Int32>, RecordSift.Domain.Diagnostics.ImportDiagnostic> CreateValidator()
 method RecordSift.Domain.Schema.DuplicateIdentifierRule<T> static ordinary RecordSift.Domain.Schema.DuplicateIdentifierRule<T> ForKey<TKey>(System.String field, System.Func<T, TKey> selector, System.Collections.Generic.IEqualityComparer<TKey> comparer optional=null)
 method RecordSift.Domain.Schema.FieldConversionRule instance ordinary System.Object Convert(System.String value, System.Globalization.CultureInfo culture)
