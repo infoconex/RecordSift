@@ -50,6 +50,7 @@ APPLICATION_CSV_OUTCOME_KEYS = {
     "Outcome_ImportEmptySource",
     "Outcome_ImportMissingHeader",
     "Outcome_ImportFailed",
+    "Outcome_ImportStopped",
 }
 APPLICATION_CSV_RESX = APPLICATION / "Messages" / "Resources" / "CsvMessages.resx"
 if argument_keys.intersection(APPLICATION_CSV_ARGUMENT_KEYS):
