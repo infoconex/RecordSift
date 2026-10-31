@@ -8,6 +8,7 @@ namespace RecordSift.Domain.Schema
     /// Immutable typed identifier policy. Each import creates an independent
     /// validator that remembers only records accepted by its caller.
     /// </summary>
+    /// <typeparam name="T">Type of the imported CLR record.</typeparam>
     public sealed class DuplicateIdentifierRule<T>
     {
         private readonly Func<Func<T, int, int?, ImportDiagnostic>> _createValidator;
@@ -19,12 +20,14 @@ namespace RecordSift.Domain.Schema
             _createValidator = createValidator;
         }
 
+        /// <summary>Gets the source field reported for a repeated identifier.</summary>
         public string Field { get; private set; }
 
         /// <summary>
         /// Uses the supplied typed equality policy, or EqualityComparer{TKey}.Default.
         /// Null keys are not implicitly required and are not tracked as duplicates.
         /// </summary>
+        /// <typeparam name="TKey">Typed identifier compared for duplicates.</typeparam>
         public static DuplicateIdentifierRule<T> ForKey<TKey>(
             string field, Func<T, TKey> selector, IEqualityComparer<TKey> comparer = null)
         {

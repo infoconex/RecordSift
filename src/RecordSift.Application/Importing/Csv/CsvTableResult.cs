@@ -26,9 +26,13 @@ namespace RecordSift.Application.Importing.Csv
             Diagnostics = new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic>(diagnostics));
         }
 
+        /// <summary>Gets whether source binding succeeded or failed.</summary>
         public ImportStatus Status { get; private set; }
+        /// <summary>Gets a read-only snapshot of logical data rows after header processing; empty on failure.</summary>
         public IReadOnlyList<CsvDataRow> DataRows { get; private set; }
+        /// <summary>Gets read-only ordered source column bindings; empty on failure.</summary>
         public IReadOnlyList<SourceColumnBinding> Bindings { get; private set; }
+        /// <summary>Gets read-only source-scope diagnostics when processing failed.</summary>
         public IReadOnlyList<ImportDiagnostic> Diagnostics { get; private set; }
 
         internal static CsvTableResult Completed(IEnumerable<CsvDataRow> dataRows,

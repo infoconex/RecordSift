@@ -9,6 +9,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Application.Mapping
 {
     /// <summary>Applies explicit source-to-property mappings using core-owned primitive conversion.</summary>
+    /// <typeparam name="T">CLR record type constructed or processed by this service.</typeparam>
     public sealed class PrimitivePropertyMapper<T> where T : class, new()
     {
         private readonly PropertyMappingSchema _schema;
@@ -16,6 +17,9 @@ namespace RecordSift.Application.Mapping
         private readonly IReadOnlyList<PropertyInfo> _properties;
         private readonly IReadOnlyList<bool> _required;
 
+        /// <summary>Validates declared destination properties and constructs a mapper with a defensive snapshot of the explicit conversion culture.</summary>
+        /// <param name="schema">Declared source field schema used for header matching.</param>
+        /// <param name="culture">Explicit parsing culture, defensively snapshotted.</param>
         public PrimitivePropertyMapper(PropertyMappingSchema schema, CultureInfo culture)
             : this(schema, culture, false)
         {
@@ -69,6 +73,8 @@ namespace RecordSift.Application.Mapping
             _required = new ReadOnlyCollection<bool>(required);
         }
 
+        /// <summary>Maps source strings keyed by exact-case schema names into a new CLR record; conversion errors identify the field without preserving sensitive raw values.</summary>
+        /// <param name="values">Source strings keyed by exact-case declared column names.</param>
         public T Map(IReadOnlyDictionary<string, string> values)
         {
             if (values == null) throw new ArgumentNullException(nameof(values));

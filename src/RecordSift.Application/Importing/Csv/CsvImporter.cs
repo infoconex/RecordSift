@@ -16,6 +16,7 @@ namespace RecordSift.Application.Importing.Csv
     /// CLR record converter. Business validation is shared with XLSX and
     /// no vendor parser type is exposed.
     /// </summary>
+    /// <typeparam name="T">Type of accepted mapped CLR records.</typeparam>
     public sealed class CsvImporter<T>
     {
         private readonly ICsvRecordReader _reader;
@@ -24,12 +25,19 @@ namespace RecordSift.Application.Importing.Csv
         private readonly DuplicateIdentifierRule<T> _identifierRule;
         private readonly IReadOnlyList<RecordValidationRule<T>> _customRules;
 
+        /// <summary>Creates a CSV import orchestrator with a replaceable reader, required mapper, and optional validation rules snapshotted per importer.</summary>
+        /// <param name="reader">Replaceable reader owned by the caller; vendor types are not exposed.</param>
+        /// <param name="mapRecord">Function mapping exact-case source fields to a CLR record; programming exceptions propagate.</param>
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord)
             : this(reader, mapRecord, null)
         {
         }
 
+        /// <summary>Creates a CSV import orchestrator with a replaceable reader, required mapper, and optional validation rules snapshotted per importer.</summary>
+        /// <param name="reader">Replaceable reader owned by the caller; vendor types are not exposed.</param>
+        /// <param name="mapRecord">Function mapping exact-case source fields to a CLR record; programming exceptions propagate.</param>
+        /// <param name="rangeRules">Optional range rules; declarations are snapshotted and null entries rejected.</param>
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord,
             IEnumerable<FieldRangeRule<T>> rangeRules)
@@ -37,6 +45,11 @@ namespace RecordSift.Application.Importing.Csv
         {
         }
 
+        /// <summary>Creates a CSV import orchestrator with a replaceable reader, required mapper, and optional validation rules snapshotted per importer.</summary>
+        /// <param name="reader">Replaceable reader owned by the caller; vendor types are not exposed.</param>
+        /// <param name="mapRecord">Function mapping exact-case source fields to a CLR record; programming exceptions propagate.</param>
+        /// <param name="rangeRules">Optional range rules; declarations are snapshotted and null entries rejected.</param>
+        /// <param name="identifierRule">Optional duplicate identifier policy with independent state per import.</param>
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord,
             IEnumerable<FieldRangeRule<T>> rangeRules,
@@ -45,6 +58,12 @@ namespace RecordSift.Application.Importing.Csv
         {
         }
 
+        /// <summary>Creates a CSV import orchestrator with a replaceable reader, required mapper, and optional validation rules snapshotted per importer.</summary>
+        /// <param name="reader">Replaceable reader owned by the caller; vendor types are not exposed.</param>
+        /// <param name="mapRecord">Function mapping exact-case source fields to a CLR record; programming exceptions propagate.</param>
+        /// <param name="rangeRules">Optional range rules; declarations are snapshotted and null entries rejected.</param>
+        /// <param name="identifierRule">Optional duplicate identifier policy with independent state per import.</param>
+        /// <param name="customRules">Optional custom predicates; declarations are snapshotted and null entries rejected.</param>
         public CsvImporter(ICsvRecordReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord,
             IEnumerable<FieldRangeRule<T>> rangeRules,
@@ -84,6 +103,16 @@ namespace RecordSift.Application.Importing.Csv
             _customRules = new ReadOnlyCollection<RecordValidationRule<T>>(validations);
         }
 
+        /// <summary>Imports caller-owned, already-decoded CSV text with an explicit character budget and header policy; invalid arguments throw, source errors return an atomic failed result without accepted records.</summary>
+        /// <param name="source">Caller-owned TextReader, which is not disposed by this importer or reader.</param>
+        /// <param name="maxCharacters">Positive maximum number of decoded UTF-16 characters the CSV reader may consume.</param>
+        /// <param name="schema">Declared source columns and required-value constraints.</param>
+        /// <param name="policy">Explicit header policy, not inferred from content.</param>
+        /// <param name="sourceId">Nonblank caller-provided opaque source identifier.</param>
+        /// <param name="positions">Required explicit zero-based indexes for nonempty headerless CSV; incompatible with header mode.</param>
+        /// <param name="options">Optional parser options; null selects comma delimiter.</param>
+        /// <remarks>Source decoding and byte encoding are the caller's responsibility; use the CSV stream adapter for explicit encoding. A header-only CSV completes with zero data rows, but a zero-record source with a required header fails with a source diagnostic. A headerless zero-record source completes without validating positional bindings. Source-level failures return no accepted records, while record validation failures reject only the affected rows.</remarks>
+        /// <returns>A typed result with read-only accepted records and structured source/record diagnostics.</returns>
         public TypedImportResult<T> Import(TextReader source, int maxCharacters,
             ImportSchema schema, CsvHeaderPolicy policy, string sourceId,
             IEnumerable<SourceColumnPosition> positions = null,

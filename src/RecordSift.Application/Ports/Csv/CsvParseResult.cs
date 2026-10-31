@@ -21,10 +21,15 @@ namespace RecordSift.Application.Ports.Csv
             IsSuccessful = diagnostics.Count == 0;
         }
 
+        /// <summary>Gets whether parsing finished without a source-level error.</summary>
         public bool IsSuccessful { get; private set; }
+        /// <summary>Gets a read-only snapshot of raw CSV records, including a possible header; empty on failure.</summary>
         public IReadOnlyList<CsvRecord> Records { get; private set; }
+        /// <summary>Gets source-scope parser errors as a read-only snapshot.</summary>
         public IReadOnlyList<ImportDiagnostic> Diagnostics { get; private set; }
 
+        /// <summary>Creates a successful parse result by snapshotting the ordered raw records.</summary>
+        /// <param name="records">Ordered raw source records, snapshotted by the result.</param>
         public static CsvParseResult Success(IEnumerable<CsvRecord> records)
         {
             if (records == null) throw new ArgumentNullException(nameof(records));
@@ -33,6 +38,8 @@ namespace RecordSift.Application.Ports.Csv
                 new ReadOnlyCollection<ImportDiagnostic>(new List<ImportDiagnostic>()));
         }
 
+        /// <summary>Creates an atomic parse failure containing exactly one source-scoped diagnostic and no records.</summary>
+        /// <param name="diagnostic">One registered source-scope error.</param>
         public static CsvParseResult Failure(ImportDiagnostic diagnostic)
         {
             if (diagnostic == null) throw new ArgumentNullException(nameof(diagnostic));

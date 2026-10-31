@@ -24,6 +24,10 @@ namespace RecordSift.Application.Ports.Csv
         /// Caller retains ownership and disposal of source; result snapshots are
         /// immutable. No ambient current culture affects delimiter or error messages.
         /// </summary>
+        /// <param name="source">Caller-owned decoded text reader; implementations must leave it open.</param>
+        /// <param name="maxCharacters">Positive upper bound on consumed UTF-16 characters.</param>
+        /// <param name="options">Optional single-character delimiter; null uses the default comma.</param>
+        /// <returns>Read-only raw source records on success, otherwise a source diagnostic and no partial records.</returns>
         CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null);
     }
 }

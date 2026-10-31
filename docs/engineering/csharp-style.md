@@ -39,6 +39,12 @@ Microsoft's Roslyn naming analyzer does not consistently reject uppercase `UPPER
 
 This is **mandatory naming enforcement**, not proof that every Microsoft formatting and design recommendation has been automated. Existing code-style settings for braces, `var`, and qualification remain review guidance; a wider formatting/analyzer baseline should be introduced as independent work, not mixed into a non-behavioral naming migration. See [ADR 0012](decisions/0012-microsoft-csharp-naming-ci.md).
 
+## Public API XML documentation and build enforcement
+
+Engineering [#152](https://github.com/infoconex/RecordSift/issues/152) requires meaningful XML comments for **externally visible** types, constructors, members, enum values and relevant generic parameters across all five production assemblies. Document consumer-visible invariants, defaults, valid ranges, read-only snapshots, row/source coordinates, caller-owned streams/readers, structured diagnostics versus thrown programmer errors, and security boundaries. Do not claim atomic or partial results without checking the implementation and tests. Use `<summary>`, `<param>`, `<typeparam>`, `<returns>`, `<exception>`, `<remarks>`, `<see>`, or `<paramref>` where they add precision. A useful comment explains behavior and consequences, not merely the member name. For interfaces and implementations, use concise independent documentation so conventional non-SDK compiler XML output remains useful in IntelliSense.
+
+Conventional C# 7.3/.NET Framework 4.8 project files generate `bin\\Debug\\RecordSift.*.xml` and `bin\\Release\\RecordSift.*.xml`, adjacent to their assemblies. **CS1591 is elevated to an error**, without broad warning suppression, in both build configurations. Windows CI validates each Release XML output and runs a negative MSBuild probe that removes one required member comment and requires a CS1591 failure. Do not commit generated XML files or remove documentation checks. Internal implementation comments should explain non-obvious decisions, threat boundaries and tradeoffs; keep architecture history in ADRs and requirements in versioned specifications.
+
 ## Microsoft reference guides
 
 - [C# coding conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)

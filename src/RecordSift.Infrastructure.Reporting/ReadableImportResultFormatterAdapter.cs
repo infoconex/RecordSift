@@ -13,6 +13,9 @@ namespace RecordSift.Infrastructure.Reporting
     /// </summary>
     public sealed class ReadableImportResultFormatterAdapter : IImportResultFormatter
     {
+        /// <summary>Formats status, processed/accepted/rejected counts and safe diagnostic metadata using invariant templates, without reading input or including accepted record values.</summary>
+        /// <param name="result">Existing in-memory typed result; null throws an argument exception.</param>
+        /// <typeparam name="T">Accepted CLR record type; values are not included in output.</typeparam>
         public string Format<T>(TypedImportResult<T> result)
         {
             if (result == null)

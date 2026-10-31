@@ -15,6 +15,7 @@ namespace RecordSift.Infrastructure.Csv
     /// Decodes caller-owned CSV byte streams before invoking the format-neutral
     /// TextReader importer. No encoding or decoder implementation enters Domain.
     /// </summary>
+    /// <typeparam name="T">Accepted CLR record type.</typeparam>
     public sealed class CsvStreamImporterAdapter<T>
     {
         // StreamReader's leave-open constructor requires an explicit buffer size.
@@ -22,6 +23,8 @@ namespace RecordSift.Infrastructure.Csv
 
         private readonly CsvImporter<T> _importer;
 
+        /// <summary>Wraps a CSV importer with deterministic byte decoding; the supplied importer and stream remain caller-owned.</summary>
+        /// <param name="importer">Previously configured application CSV importer; cannot be null.</param>
         public CsvStreamImporterAdapter(CsvImporter<T> importer)
         {
             if (importer == null) throw new ArgumentNullException(nameof(importer));

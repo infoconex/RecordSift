@@ -16,7 +16,9 @@ namespace RecordSift.Domain.Schema
             SourceIndex = sourceIndex;
         }
 
+        /// <summary>Gets the declared source column name.</summary>
         public string Name { get; private set; }
+        /// <summary>Gets the zero-based index in the raw source field sequence.</summary>
         public int SourceIndex { get; private set; }
     }
 }

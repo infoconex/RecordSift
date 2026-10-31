@@ -8,6 +8,7 @@ namespace RecordSift.Domain.Schema
     /// The caller supplies an explicit typed selector; no parser, reflection or
     /// source-format dependency is part of this Domain contract.
     /// </summary>
+    /// <typeparam name="T">Type of already-converted records inspected by this rule.</typeparam>
     public sealed class FieldRangeRule<T>
     {
         private readonly Func<T, bool> _outsideRange;
@@ -18,8 +19,16 @@ namespace RecordSift.Domain.Schema
             _outsideRange = outsideRange;
         }
 
+        /// <summary>Gets the source field associated with out-of-range diagnostics.</summary>
         public string Field { get; private set; }
 
+        /// <summary>Creates a typed decimal interval rule with independently inclusive or exclusive bounds; at least one valid bound is required.</summary>
+        /// <param name="field">Source field named in any failure diagnostic.</param>
+        /// <param name="selector">Typed record accessor evaluated for validation.</param>
+        /// <param name="minimum">Optional lower bound; at least one bound must be specified.</param>
+        /// <param name="minimumInclusive">Whether equality with the lower bound is accepted.</param>
+        /// <param name="maximum">Optional upper bound; at least one bound must be specified.</param>
+        /// <param name="maximumInclusive">Whether equality with the upper bound is accepted.</param>
         public static FieldRangeRule<T> Numeric(string field, Func<T, decimal> selector,
             decimal? minimum, bool minimumInclusive, decimal? maximum, bool maximumInclusive)
         {
@@ -46,6 +55,13 @@ namespace RecordSift.Domain.Schema
             });
         }
 
+        /// <summary>Creates a typed DateTime interval rule with independently inclusive or exclusive bounds; at least one valid bound is required.</summary>
+        /// <param name="field">Source field named in any failure diagnostic.</param>
+        /// <param name="selector">Typed record accessor evaluated for validation.</param>
+        /// <param name="minimum">Optional lower bound; at least one bound must be specified.</param>
+        /// <param name="minimumInclusive">Whether equality with the lower bound is accepted.</param>
+        /// <param name="maximum">Optional upper bound; at least one bound must be specified.</param>
+        /// <param name="maximumInclusive">Whether equality with the upper bound is accepted.</param>
         public static FieldRangeRule<T> Date(string field, Func<T, DateTime> selector,
             DateTime? minimum, bool minimumInclusive, DateTime? maximum, bool maximumInclusive)
         {

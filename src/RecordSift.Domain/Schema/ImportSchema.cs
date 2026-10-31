@@ -11,6 +11,8 @@ namespace RecordSift.Domain.Schema
     /// </summary>
     public sealed class ImportSchema
     {
+        /// <summary>Creates a reusable, ordinal, read-only snapshot of declared columns; duplicate names and null declarations are invalid.</summary>
+        /// <param name="columns">Column declarations; null, duplicate names and null items are invalid.</param>
         public ImportSchema(IEnumerable<ExpectedColumn> columns)
         {
             if (columns == null) throw new ArgumentNullException(nameof(columns));
@@ -28,6 +30,7 @@ namespace RecordSift.Domain.Schema
             Columns = new ReadOnlyCollection<ExpectedColumn>(snapshot);
         }
 
+        /// <summary>Gets declared columns in their original order as a read-only snapshot.</summary>
         public IReadOnlyList<ExpectedColumn> Columns { get; private set; }
 
         /// <summary>
@@ -110,11 +113,6 @@ namespace RecordSift.Domain.Schema
         }
 
         /// <summary>
-        /// Bind to a supplied sequence of source header names, retaining declaration
-        /// order and zero-based source column indices. Invalid binding yields no partial
-        /// mappings, only source-scope errors for declared columns.
-        /// </summary>
-        /// <summary>
         /// Bind explicit zero-based source field positions for a source with the supplied
         /// field count. Reject ambiguous positions and all out-of-range declarations.
         /// This does not access a CSV/XLSX reader or materialize typed objects.
@@ -180,6 +178,8 @@ namespace RecordSift.Domain.Schema
             return new SchemaBindingResult(foundBindings, errors);
         }
 
+        /// <summary>Binds declared columns to exact-case header names, preserving declaration order and zero-based source indexes; missing required or ambiguous names fail atomically.</summary>
+        /// <param name="sourceHeaders">Header field names in physical source order; matching is ordinal and case-sensitive.</param>
         public SchemaBindingResult BindHeaders(IEnumerable<string> sourceHeaders)
         {
             if (sourceHeaders == null) throw new ArgumentNullException(nameof(sourceHeaders));

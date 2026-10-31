@@ -13,12 +13,16 @@ namespace RecordSift.Domain.Schema
 
         private readonly CultureInfo _culture;
 
+        /// <summary>Creates a converter with a defensive, read-only snapshot of the supplied culture.</summary>
+        /// <param name="culture">Explicit culture used for parsing, cloned to avoid later mutation.</param>
         public PrimitiveFieldConverter(CultureInfo culture)
         {
             if (culture == null) throw new ArgumentNullException(nameof(culture));
             _culture = CultureInfo.ReadOnly((CultureInfo)culture.Clone());
         }
 
+        /// <summary>Reports whether a CLR destination type is supported, including nullable forms.</summary>
+        /// <param name="destinationType">Requested CLR type; null is invalid.</param>
         public bool IsSupported(Type destinationType)
         {
             if (destinationType == null) throw new ArgumentNullException(nameof(destinationType));
@@ -28,6 +32,13 @@ namespace RecordSift.Domain.Schema
                 target == typeof(bool);
         }
 
+        /// <summary>Converts a source string to string, Int32, Decimal, DateTime or Boolean (including nullable value types) using the captured culture; rejects rounded decimal conversions.</summary>
+        /// <param name="value">Raw source string; null is preserved for a string destination.</param>
+        /// <param name="destinationType">Requested CLR type; null is invalid.</param>
+        /// <returns>The converted boxed value; null for a blank nullable value or a null source string mapped as string.</returns>
+        /// <exception cref="ArgumentNullException">The destination type is null.</exception>
+        /// <exception cref="ArgumentException">The destination CLR type is unsupported.</exception>
+        /// <exception cref="FormatException">The source value is invalid or would require a lossy decimal conversion.</exception>
         public object Convert(string value, Type destinationType)
         {
             if (destinationType == null) throw new ArgumentNullException(nameof(destinationType));

@@ -11,6 +11,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Application.Importing.Xlsx
 {
     /// <summary>Imports a selected or default XLSX worksheet through shared validation.</summary>
+    /// <typeparam name="T">CLR record type constructed or processed by this service.</typeparam>
     public sealed class XlsxImporter<T>
     {
         private readonly IXlsxWorksheetReader _reader;
@@ -19,6 +20,12 @@ namespace RecordSift.Application.Importing.Xlsx
         private readonly DuplicateIdentifierRule<T> _identifierRule;
         private readonly IReadOnlyList<RecordValidationRule<T>> _customRules;
 
+        /// <summary>Constructs a worksheet importer using a replaceable reader and mapper; optional validation declarations are snapshotted.</summary>
+        /// <param name="reader">Replaceable source port implemented by infrastructure.</param>
+        /// <param name="mapRecord">Maps exact-case input string fields into a CLR record.</param>
+        /// <param name="rangeRules">Optional range checks for already-converted records.</param>
+        /// <param name="identifierRule">Optional duplicate-key rule with independent validator state per import.</param>
+        /// <param name="customRules">Optional custom predicates evaluated after conversion and range checks.</param>
         public XlsxImporter(IXlsxWorksheetReader reader,
             Func<IReadOnlyDictionary<string, string>, T> mapRecord,
             IEnumerable<FieldRangeRule<T>> rangeRules = null,
@@ -34,6 +41,15 @@ namespace RecordSift.Application.Importing.Xlsx
             _customRules = Snapshot(customRules);
         }
 
+        /// <summary>Imports a named or first worksheet from a caller-owned byte stream; source failures return an atomic failed result, while invalid arguments throw.</summary>
+        /// <param name="source">Caller-owned stream or reader; implementations do not dispose it.</param>
+        /// <param name="maxBytes">Positive maximum raw XLSX stream length in bytes, before decompression.</param>
+        /// <param name="schema">Declared source field schema used for header matching.</param>
+        /// <param name="sourceId">Nonblank opaque source identifier supplied by the caller.</param>
+        /// <param name="limits">Optional worksheet row, column and cell-character limits; null selects defaults.</param>
+        /// <param name="worksheetName">Optional exact-case worksheet name; null selects the first worksheet.</param>
+        /// <remarks>Headers come from the first nonblank source row; no rows produces a missing-header source failure, while a header-only worksheet completes with zero data records. Logical diagnostic rows are one-based data-row ordinals excluding the header; physical worksheet row locations are retained separately. The source stream remains open.</remarks>
+        /// <returns>A typed result with accepted records on completion, or a source diagnostic and no accepted records on a source/header failure.</returns>
         public TypedImportResult<T> Import(Stream source, int maxBytes,
             ImportSchema schema, string sourceId, XlsxReadLimits limits = null,
             string worksheetName = null)
