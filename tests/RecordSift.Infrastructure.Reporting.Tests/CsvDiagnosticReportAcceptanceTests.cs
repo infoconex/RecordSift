@@ -36,21 +36,21 @@ namespace RecordSift.Infrastructure.Reporting.Tests
         [Property("Scenario", "FR-038-SC01")]
         public void FR_038_SC01_EscapesQuotedMultilineDiagnosticsAndPreservesOrderedProvenance()
         {
-            const string privateValue = "secret-record-value-038";
-            const string privateStatus = "secret caller status, do not export";
-            const string multilineMessage = "A value with a comma, \"quotes\" and\r\na second line";
-            const string unusualField = "Name,\"alias\"\nOther";
-            var record = ImportDiagnostic.ForRecord(2, unusualField,
+            const string PrivateValue = "secret-record-value-038";
+            const string PrivateStatus = "secret caller status, do not export";
+            const string MultilineMessage = "A value with a comma, \"quotes\" and\r\na second line";
+            const string UnusualField = "Name,\"alias\"\nOther";
+            var record = ImportDiagnostic.ForRecord(2, UnusualField,
                 DiagnosticCodes.ValidationFailed, "Sheet,\"One\"", 11, 23);
             // The Domain normally supplies resource-backed fixed messages. A synthetic
             // message tests serializer escaping without weakening Domain invariants.
             typeof(ImportDiagnostic).GetProperty("Message")
-                .GetSetMethod(true).Invoke(record, new object[] { multilineMessage });
+                .GetSetMethod(true).Invoke(record, new object[] { MultilineMessage });
             var source = ImportDiagnostic.ForSource(null,
                 DiagnosticCodes.MalformedSource, null, null, 29);
             var result = new TypedImportResult<string>("batch-038",
                 ImportResult.Failed(2, new[] { record, source }),
-                new[] { privateValue }, privateStatus);
+                new[] { PrivateValue }, PrivateStatus);
 
             IImportResultSerializer serializer = new CsvImportResultSerializerAdapter();
             var csv = serializer.Serialize(result);
@@ -61,8 +61,8 @@ namespace RecordSift.Infrastructure.Reporting.Tests
                 "Worksheet", "PhysicalRow", "PhysicalLine"
             }));
             Assert.That(rows[1], Is.EqualTo(new[] {
-                "batch-038", "Record", "2", unusualField,
-                DiagnosticCodes.ValidationFailed, multilineMessage, "Sheet,\"One\"", "11", "23"
+                "batch-038", "Record", "2", UnusualField,
+                DiagnosticCodes.ValidationFailed, MultilineMessage, "Sheet,\"One\"", "11", "23"
             }));
             Assert.That(rows[2], Is.EqualTo(new[] {
                 "batch-038", "Source", "", "", DiagnosticCodes.MalformedSource,
@@ -70,8 +70,8 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             }));
             Assert.That(csv, Does.Contain("\"\"quotes\"\""));
             Assert.That(csv, Does.Contain("\r\na second line"));
-            Assert.That(csv, Does.Not.Contain(privateValue));
-            Assert.That(csv, Does.Not.Contain(privateStatus));
+            Assert.That(csv, Does.Not.Contain(PrivateValue));
+            Assert.That(csv, Does.Not.Contain(PrivateStatus));
             Assert.That(serializer.Serialize(result), Is.EqualTo(csv));
             Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
             Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
