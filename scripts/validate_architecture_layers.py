@@ -397,6 +397,9 @@ def self_test():
         "RecordSift.Infrastructure.Reporting": [
             "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
         ],
+        "RecordSift.Infrastructure.Xlsx": [
+            "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        ],
     }
     assert verify_dependency_graph(valid) == [], "Valid graph rejected"
     assert verify_namespace("namespace RecordSift.Domain.Schema\n{ }",
