@@ -25,7 +25,7 @@ The review inspected the five production `.csproj` files, CSV/XLSX `packages.con
 
 **NFR-009-SC01:** No *unnecessary first-party platform-specific integration* was identified in the release 0.1 import paths reviewed. The Windows-only `.NET Framework 4.8` target and Windows build/test tooling are intentional baseline requirements, not incidental library dependencies. Real adapters remain isolated behind RecordSift-owned ports. The review does not claim every transitive dependency is certified on other operating systems.
 
-**Release 0.1 disposition:** NFR-009-SC01 has a repeatable manual platform-dependency review supported by successful Windows CI. This satisfies the Windows-scoped NFR-009 acceptance; issue #49 may be closed after the scope correction is merged and verified. The review does not certify other operating systems.
+**Release 0.1 disposition:** NFR-009-SC01 has a repeatable manual platform-dependency review supported by successful Windows CI. This satisfied the Windows-scoped NFR-009 acceptance; issue #49 was subsequently closed after the scope correction merged and Windows CI passed. The review does not certify other operating systems.
 
 ### Historical proposal — NFR-009-SC02 (retired, not an acceptance scenario)
 
