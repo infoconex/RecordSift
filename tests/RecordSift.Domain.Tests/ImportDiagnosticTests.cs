@@ -6,10 +6,14 @@ using RecordSift.Domain.Results;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class ImportDiagnosticTests
     {
         // FR-028 unit-contract tests: integration with actual validation and CSV readers is pending.
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-028")]
+        [Property("Scenario", "FR-028-SC01")]
         public void FR_028_SC01_RecordDiagnosticIdentifiesLogicalRowFieldAndLocation()
         {
             var error = ImportDiagnostic.ForRecord(2, "CustomerId",
@@ -27,6 +31,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-028")]
+        [Property("Scenario", "FR-028-SC02")]
         public void FR_028_SC02_IndependentErrorsRemainSeparateWithDistinctRowAccounting()
         {
             var a = ImportDiagnostic.ForRecord(1, "Amount", DiagnosticCodes.ConversionFailed);
@@ -42,6 +49,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-028")]
+        [Property("Scenario", "FR-028-SC03")]
         public void FR_028_SC03_SourceErrorDoesNotRejectDataRecords()
         {
             var error = ImportDiagnostic.ForSource(null, DiagnosticCodes.RequiredHeaderMissing);

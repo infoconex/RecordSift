@@ -7,10 +7,14 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class ImportSchemaTests
     {
         // FR-009 tests bind supplied source-header metadata; no file reader is implemented here.
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-009")]
+        [Property("Scenario", "FR-009-SC01")]
         public void FR_009_SC01_RequiredColumnsBindToSourcePositionsRegardlessOfOrder()
         {
             var schema = new ImportSchema(new[]
@@ -31,6 +35,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-009")]
+        [Property("Scenario", "FR-009-SC02")]
         public void FR_009_SC02_MissingRequiredSourceColumnReturnsSourceDiagnostic()
         {
             var schema = new ImportSchema(new[]
@@ -168,6 +175,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-017")]
+        [Property("Scenario", "FR-017-SC01")]
         public void FR_017_SC01_RequiredValuePolicyReportsBlankFieldsWithSourceProvenance()
         {
             var schema = new ImportSchema(new[] {
@@ -190,6 +200,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-017")]
+        [Property("Scenario", "FR-017-SC02")]
         public void FR_017_SC02_NonblankRequiredValuesAndBlankOptionalValuesAreAccepted()
         {
             var schema = new ImportSchema(new[] {

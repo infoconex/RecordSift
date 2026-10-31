@@ -5,6 +5,7 @@ using RecordSift.Domain.Schema;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class PropertyMappingSchemaTests
     {
         private static ImportSchema Schema()
@@ -16,6 +17,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-010")]
+        [Property("Scenario", "FR-010-SC02")]
         public void FR_010_SC02_ConflictingSourcesCannotTargetTheSameProperty()
         {
             var exception = Assert.Throws<ArgumentException>(() => new PropertyMappingSchema(

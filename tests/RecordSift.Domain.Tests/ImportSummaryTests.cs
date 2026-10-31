@@ -7,6 +7,7 @@ using RecordSift.Domain.Results;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class ImportSummaryTests
     {
         private static ImportDiagnostic RecordError(int row, string field = "CustomerId")
@@ -20,6 +21,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-030")]
+        [Property("Scenario", "FR-030-SC01")]
         public void FR_030_SC01_CompletedSummaryCountsDistinctRejectedRows()
         {
             var result = ImportResult.Completed(4, new[]
@@ -36,6 +40,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-030")]
+        [Property("Scenario", "FR-030-SC02")]
         public void FR_030_SC02_OptionalBlankFieldWithoutErrorsCountsAsAccepted()
         {
             // FR-012 owns optional-field validation; a validated row with no errors
@@ -47,6 +54,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-030")]
+        [Property("Scenario", "FR-030-SC03")]
         public void FR_030_SC03_CompletedEmptyAndMissingHeaderFailureDifferByStatus()
         {
             var empty = ImportResult.Completed(0, new ImportDiagnostic[0]);
@@ -67,6 +77,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-030")]
+        [Property("Scenario", "FR-030-SC04")]
         public void FR_030_SC04_MultipleErrorsPerRowDoNotInflateRejectedCount()
         {
             var result = ImportResult.Completed(5, new[]
@@ -85,6 +98,9 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-030")]
+        [Property("Scenario", "FR-030-SC05")]
         public void FR_030_SC05_RejectedRowsStillCompleteImportProcessing()
         {
             var result = ImportResult.Completed(5, new[]

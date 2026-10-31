@@ -7,6 +7,7 @@ using RecordSift.Domain.Results;
 namespace RecordSift.Domain.Tests
 {
     [TestFixture]
+    [Category("Unit")]
     public sealed class TypedImportResultTests
     {
         [Test]
