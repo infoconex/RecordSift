@@ -735,5 +735,36 @@ namespace RecordSift.Infrastructure.Csv.Tests
             Assert.That(result.AcceptedRecords[2].Name,
                 Is.EqualTo("cmd.exe /c echo marker"));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC01")]
+        public void FR_031_SC01_RealCsvStopsAfterFirstConversionFailureAndRetainsPrefix()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, true)
+            });
+            var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                fields => new Customer {
+                    Id = int.Parse(fields["Id"], System.Globalization.CultureInfo.InvariantCulture),
+                    Name = fields["Name"]
+                });
+            using (var reader = new StringReader("Id,Name\r\n1,Alice\r\nnot-int,private\r\n3,Carol"))
+            {
+                var result = importer.Import(reader, 4096, schema, CsvHeaderPolicy.WithHeader,
+                    "fr031-csv", null, null, true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Stopped));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("private"));
+            }
+        }
     }
 }
