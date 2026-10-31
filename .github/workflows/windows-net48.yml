@@ -181,6 +181,17 @@ jobs:
               [string]$adapterTestPackages[0].version -ne '3.14.0') {
             throw 'Unexpected adapter test dependency inventory.'
           }
+          [xml]$reportingTests = Get-Content tests/RecordSift.Infrastructure.Reporting.Tests/packages.config -Raw
+          $reportingTestPackages = @($reportingTests.packages.package)
+          if ($reportingTestPackages.Count -ne 1 -or
+              [string]$reportingTestPackages[0].id -ne 'NUnit' -or
+              [string]$reportingTestPackages[0].version -ne '3.14.0') {
+            throw 'Unexpected reporting test dependency inventory.'
+          }
+          $reportingProject = Get-Content src/RecordSift.Infrastructure.Reporting/RecordSift.Infrastructure.Reporting.csproj -Raw
+          if ($reportingProject -match 'CsvHelper|PackageReference|HintPath') {
+            throw 'Reporting adapter must not depend on CSV vendors or NuGet packages.'
+          }
           function Assert-DomainTestProjectDependencies([string]$projectContent) {
             if ($projectContent -match 'RecordSift\.Application|RecordSift\.Infrastructure|CsvHelper') {
               throw 'Domain tests must not reference Application, Infrastructure or CsvHelper.'
