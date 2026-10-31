@@ -9,7 +9,7 @@ These pages specify the product and engineering process for **release 0.1**. In-
 
 ## Specifications and verification
 
-- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and 109 scenarios (seven scenarios automated (five FR-030 summary-unit and two FR-011 conversion scenarios), the remaining 102 planned; FR-028, FR-009 and FR-013 have additional unit tests, and FR-001 has raw CSV parser tests and FR-004 has headed/headerless reader component tests, but all still need full importer acceptance tests).
+- [Acceptance scenarios](scenarios/README.md) — 49 authoritative requirement files and **108 active release scenarios**; scenario-level test mappings and observed Windows execution evidence are maintained in the [traceability matrix](testing/traceability.md). Historical NFR-009-SC02 is retired from release 0.1 acceptance and preserved in the [platform review](engineering/platform-dependencies-net48.md).
 - [Draft import specification](specifications/record-import.md)
 - [Versioned import result JSON contract](specifications/import-result.md) and [JSON Schema 1.0](specifications/schemas/import-result.schema.json) — documentation contract; expected JSON fixtures will live with contract tests when implemented.
 - [TDD and test types](testing/strategy.md)
