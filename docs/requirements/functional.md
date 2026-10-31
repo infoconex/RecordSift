@@ -1,6 +1,6 @@
 # Functional requirements — RecordSift
 
-**Baseline:** Release 0.1 is in implementation. Domain result summaries and an initial typed CSV importer, explicit source/property mapping, and culture-controlled primitive conversion now have automated unit/integration evidence. XLSX, complete validation, and full public import acceptance remain outstanding.
+**Baseline:** Release 0.1 targets Windows/.NET Framework 4.8. Typed CSV and XLSX import, shared schema mapping and conversion, validation, processing controls and structured/JSON/readable reporting have been implemented and accepted per the individual evidence in [scenario traceability](../testing/traceability.md). Error-only CSV diagnostics (FR-038) is the final targeted Should enhancement in this batch; acceptance depends on observed CI, not this catalog. Future-priority features remain out of release scope.
 
 **Scope:** Import CSV and XLSX into strongly typed records using a common schema, validate those records, and return consistent diagnostics plus JSON reports. Distinguish errors in source records from fatal failures to read a file.
 
