@@ -69,7 +69,16 @@ namespace RecordSift.Domain.Tests
                 var resource = resourceManager.GetString(code, CultureInfo.InvariantCulture);
                 Assert.That(resource, Is.EqualTo(HistoricalDiagnosticMessages[code]),
                     "Resource contract for " + code);
-                var diagnostic = DiagnosticCodes.IsRecordCode(code)
+                var recordCodes = new HashSet<string>(StringComparer.Ordinal)
+                {
+                    DiagnosticCodes.RequiredFieldMissing,
+                    DiagnosticCodes.ConversionFailed,
+                    DiagnosticCodes.ValidationFailed,
+                    DiagnosticCodes.FieldLengthOutOfRange,
+                    DiagnosticCodes.FieldRangeOutOfRange,
+                    DiagnosticCodes.DuplicateIdentifier
+                };
+                var diagnostic = recordCodes.Contains(code)
                     ? ImportDiagnostic.ForRecord(1, null, code)
                     : ImportDiagnostic.ForSource(null, code);
                 Assert.That(diagnostic.Code, Is.EqualTo(code));

@@ -6,8 +6,7 @@ namespace RecordSift.Application.Ports.Csv
     /// </summary>
     public sealed class CsvReadOptions
     {
-        public static readonly string DefaultDelimiter = ",";
-
+        private const string DefaultDelimiter = ",";
 
         /// <summary>Deterministic comma-delimited baseline; no ambient settings.</summary>
         public static CsvReadOptions Default { get; } = new CsvReadOptions(DefaultDelimiter);

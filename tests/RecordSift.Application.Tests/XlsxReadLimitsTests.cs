@@ -43,11 +43,11 @@ namespace RecordSift.Application.Tests
         [Test]
         public void LibraryConfigurationDefaultsRetainPublishedValues()
         {
-            Assert.That(RecordSift.Application.Ports.Csv.CsvReadOptions.DefaultDelimiter,
+            Assert.That(RecordSift.Application.Ports.Csv.CsvReadOptions.Default.Delimiter,
                 Is.EqualTo(","));
-            Assert.That(XlsxReadLimits.DefaultMaxRows, Is.EqualTo(100000));
-            Assert.That(XlsxReadLimits.DefaultMaxColumns, Is.EqualTo(256));
-            Assert.That(XlsxReadLimits.DefaultMaxCellCharacters, Is.EqualTo(32767));
+            Assert.That(XlsxReadLimits.Default.MaxRows, Is.EqualTo(100000));
+            Assert.That(XlsxReadLimits.Default.MaxColumns, Is.EqualTo(256));
+            Assert.That(XlsxReadLimits.Default.MaxCellCharacters, Is.EqualTo(32767));
         }
 
         [Test]

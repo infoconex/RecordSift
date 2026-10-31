@@ -22,12 +22,12 @@ namespace RecordSift.Domain.Diagnostics
         public static readonly string FieldRangeOutOfRange = "FIELD_RANGE_OUT_OF_RANGE";
         public static readonly string DuplicateIdentifier = "DUPLICATE_IDENTIFIER";
 
-        public static bool IsKnown(string code)
+        internal static bool IsKnown(string code)
         {
             return IsSourceCode(code) || IsRecordCode(code);
         }
 
-        public static bool IsSourceCode(string code)
+        internal static bool IsSourceCode(string code)
         {
             return code == SourceUnreadable || code == SourceDecodingFailed ||
                    code == SourceLimitExceeded ||
@@ -38,7 +38,7 @@ namespace RecordSift.Domain.Diagnostics
                    code == InvalidCsvDelimiter;
         }
 
-        public static bool IsRecordCode(string code)
+        internal static bool IsRecordCode(string code)
         {
             return code == RequiredFieldMissing || code == ConversionFailed ||
                    code == ValidationFailed || code == FieldLengthOutOfRange ||
