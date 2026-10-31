@@ -422,5 +422,57 @@ namespace RecordSift.Domain.Tests
                 new[] { new FieldPatternRule("Code", "^A$"), new FieldPatternRule("Code", "^B$") }));
         }
 
+
+        [Test]
+        [Property("Requirement", "FR-023")]
+        public void PatternValidationDistinguishesMissingOptionalFromPresentEmptyAndSnapshotsRules()
+        {
+            var rules = new List<FieldPatternRule> {
+                new FieldPatternRule("Optional", "^$")
+            };
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Optional", false)
+            }, rules);
+            rules.Add(new FieldPatternRule("Optional", "^must-not-be-added$"));
+
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string>(), 1), Is.Empty);
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                { "Optional", null }
+            }, 2), Is.Empty);
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                { "Optional", "" }
+            }, 3), Is.Empty);
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                { "Optional", "private-nonempty" }
+            }, 4), Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        [Property("Requirement", "FR-023")]
+        public void PatternValidationRemainsCaseSensitiveAndCultureInvariant()
+        {
+            var original = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                var schema = new ImportSchema(new[] { new ExpectedColumn("Code", true) },
+                    new[] { new FieldPatternRule("Code", "^I$") });
+                System.Globalization.CultureInfo.CurrentCulture =
+                    System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+
+                Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                    { "Code", "I" }
+                }, 1), Is.Empty);
+                Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                    { "Code", "ı" }
+                }, 2), Has.Count.EqualTo(1));
+                Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                    { "Code", "i" }
+                }, 3), Has.Count.EqualTo(1));
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = original;
+            }
+        }
     }
 }
