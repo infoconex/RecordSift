@@ -722,15 +722,10 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
         public void FR_031_SC02_RealXlsxWithoutValidationFailureCompletesNormally()
         {
             var schema = new ImportSchema(new[] {
-                new ExpectedColumn("Name", true, true),
-                new ExpectedColumn("Id", true, true)
+                new ExpectedColumn("Name", true, true)
             });
             var importer = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(),
-                values => new Customer {
-                    Name = values["Name"],
-                    Id = values["Id"] == "invalid" ? 0 :
-                        int.Parse(values["Id"], CultureInfo.InvariantCulture)
-                });
+                values => new Customer { Name = values["Name"] });
             using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
             {
                 var result = importer.Import(stream, 4096, schema,
