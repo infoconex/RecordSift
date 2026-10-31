@@ -12,15 +12,15 @@
 | NFR-006 | Actionable malformed-input failures | Release 0.1 quality gate | [#46](https://github.com/infoconex/RecordSift/issues/46) (`NFR-006-SC01`) · [All scenarios](../scenarios/non-functional/NFR-006.md) |
 | NFR-007 | Resource limits | Release 0.1 quality gate | [#47](https://github.com/infoconex/RecordSift/issues/47) (`NFR-007-SC01`) · [All scenarios](../scenarios/non-functional/NFR-007.md) |
 | NFR-008 | No execution of macros or input code | Release 0.1 quality gate | [#48](https://github.com/infoconex/RecordSift/issues/48) (`NFR-008-SC01`) · [All scenarios](../scenarios/non-functional/NFR-008.md) |
-| NFR-009 | Avoid unnecessary OS-specific components | Release 0.1 quality gate | [#49](https://github.com/infoconex/RecordSift/issues/49) (`NFR-009-SC01`) · [All scenarios](../scenarios/non-functional/NFR-009.md) |
+| NFR-009 | Avoid unnecessary platform integration on supported Windows/net48 target | Windows-only release 0.1 quality gate | [#49](https://github.com/infoconex/RecordSift/issues/49) (`NFR-009-SC01`) · [All scenarios](../scenarios/non-functional/NFR-009.md) |
 | NFR-010 | Observable public API compatibility | Release 0.1 quality gate | [#50](https://github.com/infoconex/RecordSift/issues/50) (`NFR-010-SC01`) · [All scenarios](../scenarios/non-functional/NFR-010.md) |
 
 ## Verification policy
 
-- Each issue is individually tracked and cannot be closed merely because another feature was implemented.
+- Every mandatory release requirement must be achievable and verifiable on the release's declared supported platform(s); no hypothetical future platform can block current-release acceptance. Each issue is individually tracked and cannot be closed merely because another feature was implemented.
 - Tests must cover functional and nonfunctional behavior where executable evidence is possible; design reviews supplement, not replace, testable guarantees.
 - Establish quantitative defaults and measurements (limits, benchmark budgets, acceptable variation) before treating performance/resource assertions as verified.
 - Source files and error reports may contain sensitive data. Avoid leaking source values in logs and diagnostics by default.
 - Dependencies must undergo compatibility, licensing, and vulnerability checks as part of the release process.
-- `.NET Framework 4.8` is the **first historical-style baseline**. Cross-platform support and later `net8.0` / newer SDK experiments are separate milestones, not claims of release 0.1.
+- **Release 0.1 supports Windows with .NET Framework 4.8 only.** Cross-platform support, Linux/macOS qualification and modern .NET migration are uncommitted future considerations, not release 0.1 requirements or open release acceptance gates. Any later expansion requires an independently approved requirement and CI matrix.
 - No Microsoft Excel installation or external network/service should be required for the core import API.
