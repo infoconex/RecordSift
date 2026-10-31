@@ -5,9 +5,9 @@ namespace RecordSift.Application.Ports.Xlsx
     /// <summary>Caller-configurable safety budgets for a selected worksheet.</summary>
     public sealed class XlsxReadLimits
     {
-        public const int DefaultMaxRows = 100000;
-        public const int DefaultMaxColumns = 256;
-        public const int DefaultMaxCellCharacters = 32767;
+        public static readonly int DefaultMaxRows = 100000;
+        public static readonly int DefaultMaxColumns = 256;
+        public static readonly int DefaultMaxCellCharacters = 32767;
 
         public XlsxReadLimits(int maxRows, int maxColumns, int maxCellCharacters)
         {

@@ -51,11 +51,17 @@ namespace RecordSift.Domain.Tests
         public void EveryRegisteredDiagnosticCodeMapsToUnchangedSafeResourceText()
         {
             var resourceManager = Catalog();
-            var codes = typeof(DiagnosticCodes).GetFields(
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
-                .Where(field => field.IsLiteral && field.FieldType == typeof(string))
-                .Select(field => (string)field.GetRawConstantValue())
-                .ToArray();
+            var codeFields = typeof(DiagnosticCodes).GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            Assert.That(codeFields, Has.Length.EqualTo(HistoricalDiagnosticMessages.Count));
+            foreach (var field in codeFields)
+            {
+                Assert.That(field.IsLiteral, Is.False, field.Name);
+                Assert.That(field.IsInitOnly, Is.True, field.Name);
+                Assert.That(field.FieldType, Is.EqualTo(typeof(string)), field.Name);
+            }
+
+            var codes = codeFields.Select(field => (string)field.GetValue(null)).ToArray();
 
             Assert.That(codes, Is.EquivalentTo(HistoricalDiagnosticMessages.Keys));
             foreach (var code in codes)
