@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 using System.IO;
-using RecordSift.Application.Mapping;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
+using RecordSift.Application.Mapping;
 using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
