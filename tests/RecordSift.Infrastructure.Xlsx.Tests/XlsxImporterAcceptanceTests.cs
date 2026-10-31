@@ -181,5 +181,23 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                 Assert.That(limitError.ParamName, Is.EqualTo("maxRows"));
             }
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "NFR-002")]
+        [Property("Scenario", "NFR-002-SC01")]
+        [Property("Scenario", "NFR-002-SC02")]
+        public void NFR_002_SC01_SC02_LocalXlsxImportCompletesWithNoServiceConfiguration()
+        {
+            using (var stream = new MemoryStream(Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = CreateImporter().Import(stream, 4096, Schema(), "offline-xlsx");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
+            }
+        }
     }
 }
