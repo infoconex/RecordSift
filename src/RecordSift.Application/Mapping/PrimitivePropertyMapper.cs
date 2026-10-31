@@ -104,6 +104,12 @@ namespace RecordSift.Application.Mapping
                 {
                     throw new FieldConversionException(sourceName);
                 }
+                catch (TargetInvocationException)
+                {
+                    // Public setters may reject converted values. Keep the failure
+                    // tied to its source field without exposing setter exception text.
+                    throw new FieldConversionException(sourceName);
+                }
             }
             return record;
         }
