@@ -10,7 +10,7 @@ using RecordSift.Domain.Schema;
 
 namespace RecordSift.Application.Importing.Xlsx
 {
-    /// <summary>Imports the first worksheet's stored values into the shared validation pipeline.</summary>
+    /// <summary>Imports a selected or default XLSX worksheet through shared validation.</summary>
     public sealed class XlsxImporter<T>
     {
         private readonly IXlsxWorksheetReader _reader;
