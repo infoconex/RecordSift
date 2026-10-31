@@ -26,6 +26,7 @@ EXPECTED = {
     },
     "RecordSift.Application": {
         "Ports/Csv": ("ICsvRecordReader", "CsvReadOptions", "CsvParseResult", "CsvRecord"),
+        "Ports/Reporting": ("IImportResultSerializer",),
         "Importing/Csv": ("CsvDataRow", "CsvHeaderPolicy", "CsvTableReader", "CsvTableResult", "CsvImporter"),
         "Messages": ("CsvMessageResources",),
         "Mapping": ("StringPropertyMapper", "PrimitivePropertyMapper"),
@@ -35,6 +36,10 @@ TEST_PROJECT_REFERENCES = {
     "RecordSift.Domain.Tests": ["RecordSift.Domain.csproj"],
     "RecordSift.Application.Tests": [
         "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
+    ],
+    "RecordSift.Infrastructure.Reporting.Tests": [
+        "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        "RecordSift.Infrastructure.Reporting.csproj",
     ],
     "RecordSift.Infrastructure.Csv.Tests": [
         "RecordSift.Application.Tests.csproj", "RecordSift.Domain.csproj",
@@ -99,6 +104,9 @@ def verify_dependency_graph(graph):
         "RecordSift.Domain": [],
         "RecordSift.Application": ["RecordSift.Domain.csproj"],
         "RecordSift.Infrastructure.Csv": [
+            "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
+        ],
+        "RecordSift.Infrastructure.Reporting": [
             "RecordSift.Application.csproj", "RecordSift.Domain.csproj",
         ],
     }
@@ -252,6 +260,33 @@ def verify_layout():
 
     else:
         errors.append("Infrastructure project missing")
+    reporting_name = "RecordSift.Infrastructure.Reporting"
+    reporting_path = ROOT / "src" / reporting_name
+    reporting_file = reporting_path / (reporting_name + ".csproj")
+    if not reporting_file.is_file():
+        errors.append("Missing format-independent reporting adapter project")
+    else:
+        reporting_project = project(reporting_file)
+        graph[reporting_name] = dependencies(reporting_project)
+        declared = includes(reporting_project, "Compile")
+        actual = {p.relative_to(reporting_path).as_posix() for p in reporting_path.rglob("*.cs")}
+        if set(declared) != actual or len(declared) != len(set(declared)):
+            errors.append("Reporting assembly source manifest mismatch")
+        if [i.text for i in items(reporting_project, "RootNamespace")] != [reporting_name]:
+            errors.append("Reporting assembly root namespace mismatch")
+        if [i.text for i in items(reporting_project, "AssemblyName")] != [reporting_name]:
+            errors.append("Reporting assembly name mismatch")
+        for file in reporting_path.rglob("*.cs"):
+            if file.name == "AssemblyInfo.cs":
+                continue
+            errors.extend(verify_namespace(file.read_text(encoding="utf-8"),
+                                           reporting_name, str(file.relative_to(ROOT))))
+        references = {ref.attrib.get("Include") for ref in items(reporting_project, "Reference")}
+        if references != {"System", "System.Core", "System.Runtime.Serialization", "System.Xml"}:
+            errors.append("Reporting may reference only approved .NET Framework assemblies")
+        for forbidden in ("PackageReference", "PackageDownload", "Analyzer", "COMReference"):
+            if items(reporting_project, forbidden):
+                errors.append("Reporting adapter must not reference third-party packages")
     errors.extend(verify_dependency_graph(graph))
 
     resource_project = DOMAIN / "RecordSift.Domain.csproj"
@@ -307,7 +342,7 @@ def verify_layout():
                 r"using\s+(?:RecordSift\.Infrastructure|CsvHelper)\b", data
             ):
                 errors.append(f"{source.relative_to(ROOT)}: forbidden Application test import")
-        if project_name != "RecordSift.Infrastructure.Csv.Tests":
+        if project_name not in ("RecordSift.Infrastructure.Csv.Tests", "RecordSift.Infrastructure.Reporting.Tests"):
             allowed = {"System", "System.Core", "nunit.framework"}
             for item in items(root, "Reference"):
                 assembly = item.attrib.get("Include", "").split(",", 1)[0]
@@ -323,6 +358,9 @@ def self_test():
         "RecordSift.Domain": [],
         "RecordSift.Application": ["RecordSift.Domain.csproj"],
         "RecordSift.Infrastructure.Csv": [
+            "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
+        ],
+        "RecordSift.Infrastructure.Reporting": [
             "RecordSift.Domain.csproj", "RecordSift.Application.csproj",
         ],
     }

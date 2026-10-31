@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BDB57FD3-3CB4-4E65-833A-EF8DBA54066B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>RecordSift.Infrastructure.Reporting.Tests</RootNamespace>
+    <AssemblyName>RecordSift.Infrastructure.Reporting.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <LangVersion>7.3</LangVersion>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols><DebugType>full</DebugType>
+    <Optimize>false</Optimize><OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants><WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize><OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants><WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\packages\NUnit.3.14.0\lib\net45\nunit.framework.dll</HintPath><Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="JsonReportAcceptanceTests.cs" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\RecordSift.Infrastructure.Reporting\RecordSift.Infrastructure.Reporting.csproj">
+      <Project>{A2C6F539-1648-42A5-A04D-F27389A6F22B}</Project>
+      <Name>RecordSift.Infrastructure.Reporting</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\RecordSift.Application\RecordSift.Application.csproj">
+      <Project>{A1EC796C-6724-4195-BFAF-98326A5C1868}</Project><Name>RecordSift.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\RecordSift.Domain\RecordSift.Domain.csproj">
+      <Project>{D107315D-E4EA-4C77-8A14-8F34F76B2100}</Project><Name>RecordSift.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

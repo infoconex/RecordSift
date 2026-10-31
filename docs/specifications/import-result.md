@@ -1,6 +1,6 @@
-# Import result JSON contract — version 1.0 (proposed)
+# Import result JSON contract — version 1.0
 
-**Status:** JSON report specification only. A minimal in-memory summary and status model exists for FR-030, but the import reader API, JSON serialization implementation and executable JSON Schema/contract tests do **not** exist yet.  
+**Status:** Release 0.1 versioned report contract. In-memory Domain result models and CSV import are implemented. FR-035 provides an Infrastructure reporting adapter and executable JSON acceptance tests; the JSON Schema remains the authoritative wire definition. Full Draft 2020-12 meta-schema execution is not required by the current NUnit suite.  
 **Related requirements:** [FR-028](../scenarios/functional/FR-028.md), [FR-030](../scenarios/functional/FR-030.md), [FR-035](../scenarios/functional/FR-035.md), [FR-036](../scenarios/functional/FR-036.md), [FR-037](../scenarios/functional/FR-037.md), [NFR-010](../scenarios/non-functional/NFR-010.md).  
 **Machine-readable definition:** [`schemas/import-result.schema.json`](schemas/import-result.schema.json) (JSON Schema Draft 2020-12).
 
@@ -66,11 +66,12 @@ Human-readable `message` wording is **not** a substitute for machine-readable `s
 ## Privacy, versioning and compatibility
 
 - Never include raw source values, credentials, absolute file paths or stack traces by default.
-- The `sourceId` must be a caller-controlled opaque identifier.
+- Callers should provide an opaque `sourceId`; the default JSON adapter redacts absolute filesystem paths and file URIs to `source-redacted`.
 - The JSON Schema rejects unknown properties for contract version 1.0.
 - The `schemaVersion` version is independent of RecordSift package and target-framework versions; incompatible public changes require deliberate schema versioning.
 - Preserve deterministic diagnostics ordering for identical inputs and explicit settings.
 - Serialize from the completed in-memory result; do not reopen the source file.
+- JSON `message` is a trusted invariant status description selected from reporting resources; arbitrary caller-controlled result message strings are not copied into default reports.
 - Any future warnings or other severities require a separately approved contract evolution and tests. They must not silently enter version 1.0.
 
 ## What JSON Schema cannot verify on its own
