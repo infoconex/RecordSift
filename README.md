@@ -2,11 +2,11 @@
 
 **Import, validate, and report on structured data.**
 
-RecordSift is a public-source .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
+RecordSift is an MIT-licensed .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
 
 ## Project status
 
-**Release 0.1 is undergoing unpublished release-candidate validation; no public NuGet package or release is available.** A RecordSift distribution license has not been approved (issue #186), so do not assume public redistribution rights. The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. All targeted functional and Windows-scoped nonfunctional acceptance is complete; packaging, clean-consumer verification, license approval and promotion are separate release gates.
+**Release 0.1 is undergoing unpublished release-candidate validation; no public NuGet package or release is available.** The repository owner approved MIT licensing with Copyright (c) 2026 Infoconex; see [LICENSE](LICENSE). This license permits redistribution subject to the MIT terms, but no 0.1 package has been published or authorized for release. The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. All targeted functional and Windows-scoped nonfunctional acceptance is complete; packaging and clean-consumer verification are implemented release gates; final versioning, promotion and publication remain separately authorized steps.
 
 ## Public API quick start (.NET Framework 4.8)
 
@@ -92,6 +92,7 @@ The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/Publ
 - [Candidate release notes and known limitations](docs/release/0.1-release-notes.md)
 - [Release verification and promotion checklist](docs/release/0.1-release-checklist.md)
 - [Dependency and licensing inventory](docs/release/0.1-dependencies.md)
+- [MIT project license](LICENSE) and [third-party notices](THIRD-PARTY-NOTICES.md)
 - [Historical net48 build and test instructions](docs/engineering/baseline.md)
 - [Requirements, specifications, and engineering documentation](docs/README.md)
 - [Functional requirements](docs/requirements/functional.md)
