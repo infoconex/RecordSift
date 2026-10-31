@@ -110,12 +110,12 @@ namespace RecordSift.Infrastructure.Xlsx
                 foreach (var entry in zip.Entries)
                 {
                     if (entry.Length > expandedLimit - expanded)
-                        return false;
+                        return DiagnosticCodes.SourceLimitExceeded;
                     expanded += entry.Length;
                     var path = entry.FullName.Replace('\\', '/');
                     if (path.StartsWith("xl/externalLinks/", StringComparison.OrdinalIgnoreCase) ||
                         path.EndsWith("vbaProject.bin", StringComparison.OrdinalIgnoreCase))
-                        return false;
+                        return DiagnosticCodes.MalformedSource;
                 }
                 return zip.GetEntry("xl/workbook.xml") == null
                     ? DiagnosticCodes.MalformedSource : null;
