@@ -87,6 +87,7 @@ The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/Publ
 
 ## Development baseline
 
+- [Release-candidate readiness assessment](docs/engineering/release-0.1-readiness.md)
 - [Candidate consumer guide](docs/release/0.1-consumer-guide.md)
 - [Candidate release notes and known limitations](docs/release/0.1-release-notes.md)
 - [Release verification and promotion checklist](docs/release/0.1-release-checklist.md)
