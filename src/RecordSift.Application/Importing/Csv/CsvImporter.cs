@@ -118,6 +118,24 @@ namespace RecordSift.Application.Importing.Csv
             IEnumerable<SourceColumnPosition> positions = null,
             CsvReadOptions options = null)
         {
+            return Import(source, maxCharacters, schema, policy, sourceId,
+                positions, options, false);
+        }
+
+        /// <summary>Imports CSV with an explicit optional fail-fast policy, stopping validation of later rows after the first rejected row.</summary>
+        /// <param name="source">Caller-owned text reader.</param>
+        /// <param name="maxCharacters">Positive decoded character input budget.</param>
+        /// <param name="schema">Declared source schema.</param>
+        /// <param name="policy">Header interpretation.</param>
+        /// <param name="sourceId">Opaque source identifier.</param>
+        /// <param name="positions">Optional positional mappings for headerless input.</param>
+        /// <param name="options">Optional parser configuration.</param>
+        /// <param name="failFast">Opt-in to stop row validation on its first error; source parsing is still eager.</param>
+        public TypedImportResult<T> Import(TextReader source, int maxCharacters,
+            ImportSchema schema, CsvHeaderPolicy policy, string sourceId,
+            IEnumerable<SourceColumnPosition> positions, CsvReadOptions options,
+            bool failFast)
+        {
             var table = CsvTableReader.Read(_reader, source, maxCharacters,
                 schema, policy, positions, options);
             if (table.Status == ImportStatus.Failed)
@@ -139,7 +157,8 @@ namespace RecordSift.Application.Importing.Csv
             return RecordValidationPipeline.Process(rows, table.Bindings, schema,
                 sourceId, _mapRecord, _rangeRules, _identifierRule, _customRules,
                 emptyMessage, CsvMessageResources.ImportCompleted,
-                CsvMessageResources.ImportCompletedWithErrors);
+                CsvMessageResources.ImportCompletedWithErrors, failFast,
+                CsvMessageResources.ImportStopped);
         }
 
         private static bool ContainsMissingHeader(IEnumerable<ImportDiagnostic> diagnostics)
