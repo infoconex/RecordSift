@@ -178,5 +178,22 @@ namespace RecordSift.Domain.Tests
             Assert.Throws<ArgumentException>(() =>
                 ImportResult.Completed(1, new ImportDiagnostic[] { null }));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-031")]
+        [Property("Scenario", "FR-031-SC01")]
+        public void FR_031_SC01_StoppedOutcomePreservesPartialCountsAndFirstRecordFailure()
+        {
+            var error = ImportDiagnostic.ForRecord(2, "Name", DiagnosticCodes.ValidationFailed);
+            var result = ImportResult.Stopped(2, new[] { error });
+            Assert.That(result.Status, Is.EqualTo(ImportStatus.Stopped));
+            Assert.That(result.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(result.Summary.AcceptedCount, Is.EqualTo(1));
+            Assert.That(result.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+            Assert.Throws<ArgumentException>(() =>
+                ImportResult.Stopped(2, new ImportDiagnostic[0]));
+        }
     }
 }
