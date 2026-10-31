@@ -195,5 +195,26 @@ namespace RecordSift.Domain.Tests
             Assert.Throws<ArgumentException>(() =>
                 ImportResult.Stopped(2, new ImportDiagnostic[0]));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_CanceledOutcomeRetainsProcessedPrefixWithoutInventingError()
+        {
+            var canceled = ImportResult.Canceled(2, new[] {
+                ImportDiagnostic.ForRecord(2, "Name", DiagnosticCodes.ValidationFailed)
+            });
+            Assert.That(canceled.Status, Is.EqualTo(ImportStatus.Canceled));
+            Assert.That(canceled.Summary.ProcessedCount, Is.EqualTo(2));
+            Assert.That(canceled.Summary.AcceptedCount, Is.EqualTo(1));
+            Assert.That(canceled.Summary.RejectedCount, Is.EqualTo(1));
+            var beforeFirst = ImportResult.Canceled(0, new ImportDiagnostic[0]);
+            Assert.That(beforeFirst.Status, Is.EqualTo(ImportStatus.Canceled));
+            Assert.That(beforeFirst.Diagnostics, Is.Empty);
+            Assert.That(beforeFirst.Summary.ProcessedCount, Is.Zero);
+            Assert.Throws<ArgumentException>(() => ImportResult.Canceled(0,
+                new[] { ImportDiagnostic.ForSource(null, DiagnosticCodes.SourceUnreadable) }));
+        }
     }
 }
