@@ -15,6 +15,10 @@ namespace RecordSift.Infrastructure.Csv
     /// </summary>
     public sealed class CsvRecordReaderAdapter : ICsvRecordReader
     {
+        /// <summary>Parses caller-owned, already-decoded CSV with invariant, explicit delimiter settings and a character budget; returns atomic, sanitized source diagnostics for read, malformed input or limit failures.</summary>
+        /// <param name="source">Caller-owned TextReader or Stream, which remains open after this call.</param>
+        /// <param name="maxCharacters">Positive maximum consumed decoded UTF-16 characters.</param>
+        /// <param name="options">Optional delimiter; null selects the invariant comma baseline.</param>
         public CsvParseResult Read(TextReader source, int maxCharacters, CsvReadOptions options = null)
         {
             if (source == null)

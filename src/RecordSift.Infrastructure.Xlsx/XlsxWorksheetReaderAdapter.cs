@@ -12,10 +12,19 @@ namespace RecordSift.Infrastructure.Xlsx
     /// <summary>ExcelDataReader-backed XLSX-only reader; never returns vendor types.</summary>
     public sealed class XlsxWorksheetReaderAdapter : IXlsxWorksheetReader
     {
+        // Release 0.1 defense-in-depth: cap ZIP entry count and expanded bytes in addition
+        // to the caller's compressed byte limit; these budgets are not caller overrides.
         private const int MaximumPackageEntries = 512;
         private const int MaximumUncompressedBytes = 67108864;
         private const int BufferSize = 8192;
 
+        /// <summary>Reads a selected XLSX worksheet using ExcelDataReader, first enforcing compressed-byte and ZIP expansion safeguards; failures are atomic and never expose cell values or vendor exceptions.</summary>
+        /// <param name="source">Caller-owned TextReader or Stream, which remains open after this call.</param>
+        /// <param name="maxBytes">Positive maximum compressed input bytes.</param>
+        /// <param name="maxRows">Positive maximum physical worksheet row index.</param>
+        /// <param name="maxColumns">Positive maximum decoded fields in any row.</param>
+        /// <param name="maxCellCharacters">Positive maximum UTF-16 code units per decoded cell.</param>
+        /// <param name="worksheetName">Optional exact-case worksheet name; null uses first available worksheet.</param>
         public XlsxReadResult Read(Stream source, int maxBytes,
             int maxRows, int maxColumns, int maxCellCharacters,
             string worksheetName = null)
