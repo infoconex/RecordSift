@@ -216,5 +216,27 @@ namespace RecordSift.Domain.Tests
             Assert.Throws<ArgumentException>(() => ImportResult.Canceled(0,
                 new[] { ImportDiagnostic.ForSource(null, DiagnosticCodes.SourceUnreadable) }));
         }
+
+        [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-032")]
+        [Property("Scenario", "FR-032-SC01")]
+        public void FR_032_SC01_CanceledOutcomeRetainsActualPartialCountsWithoutSourceFailure()
+        {
+            var empty = ImportResult.Canceled(0, new ImportDiagnostic[0]);
+            Assert.That(empty.Status, Is.EqualTo(ImportStatus.Canceled));
+            Assert.That(empty.Summary.ProcessedCount, Is.Zero);
+            Assert.That(empty.Diagnostics, Is.Empty);
+
+            var partial = ImportResult.Canceled(3, new[] {
+                ImportDiagnostic.ForRecord(2, "Name", DiagnosticCodes.ValidationFailed)
+            });
+            Assert.That(partial.Status, Is.EqualTo(ImportStatus.Canceled));
+            Assert.That(partial.Summary.ProcessedCount, Is.EqualTo(3));
+            Assert.That(partial.Summary.AcceptedCount, Is.EqualTo(2));
+            Assert.That(partial.Summary.RejectedCount, Is.EqualTo(1));
+            Assert.Throws<ArgumentException>(() => ImportResult.Canceled(0,
+                new[] { ImportDiagnostic.ForSource(null, DiagnosticCodes.SourceUnreadable) }));
+        }
     }
 }
