@@ -4,6 +4,7 @@ using System.IO;
 using NUnit.Framework;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Mapping;
+using RecordSift.Domain.Diagnostics;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
 using RecordSift.Infrastructure.Csv;
@@ -79,6 +80,44 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.AcceptedRecords[0].CustomerId, Is.EqualTo("C-1"));
                 Assert.That(result.AcceptedRecords[1].CustomerId, Is.EqualTo("C-2"));
                 Assert.That(result.Diagnostics, Is.Empty);
+            }
+        }
+
+        [Test]
+        public void FR_017_SC01_SC02_RealCsvRejectsBlankRequiredValuesAndKeepsValidTypedRows()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Customer Id", true, true),
+                new ExpectedColumn("Full Name", true, true)
+            });
+            var mapping = new PropertyMappingSchema(schema, new[] {
+                new SourcePropertyMapping("Customer Id", "CustomerId"),
+                new SourcePropertyMapping("Full Name", "Name")
+            });
+            var mapper = new PrimitivePropertyMapper<NumericCustomer>(
+                mapping, CultureInfo.InvariantCulture);
+            var importer = new CsvImporter<NumericCustomer>(
+                new CsvRecordReaderAdapter(), mapper.Map);
+
+            using (var source = new StringReader(
+                "Full Name,Customer Id\r\nAlice,1\r\n   ,2\r\nBob,3\r\n,"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "fixture-required");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(4));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+                Assert.That(result.AcceptedRecords[0].CustomerId, Is.EqualTo(1));
+                Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Bob"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(3));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Full Name"));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+                Assert.That(result.Diagnostics[1].Row, Is.EqualTo(4));
+                Assert.That(result.Diagnostics[2].Row, Is.EqualTo(4));
             }
         }
     }

@@ -53,9 +53,18 @@ namespace RecordSift.Application.Importing.Csv
                 foreach (var binding in table.Bindings)
                     values.Add(binding.Name, row.Fields[binding.SourceIndex]);
 
+                var recordValues = new ReadOnlyDictionary<string, string>(values);
+                var requiredErrors = schema.ValidateRequiredValues(
+                    recordValues, row.Row, row.PhysicalLine);
+                if (requiredErrors.Count != 0)
+                {
+                    diagnostics.AddRange(requiredErrors);
+                    continue;
+                }
+
                 try
                 {
-                    accepted.Add(_mapRecord(new ReadOnlyDictionary<string, string>(values)));
+                    accepted.Add(_mapRecord(recordValues));
                 }
                 catch (FieldConversionException error)
                 {
