@@ -17,6 +17,9 @@ namespace RecordSift.Infrastructure.Csv
     /// </summary>
     public sealed class CsvStreamImporterAdapter<T>
     {
+        // StreamReader's leave-open constructor requires an explicit buffer size.
+        private const int StreamReaderBufferSize = 1024;
+
         private readonly CsvImporter<T> _importer;
 
         public CsvStreamImporterAdapter(CsvImporter<T> importer)
@@ -46,7 +49,8 @@ namespace RecordSift.Infrastructure.Csv
 
             try
             {
-                using (var reader = new StreamReader(source, selectedEncoding, false, 1024, true))
+                using (var reader = new StreamReader(source, selectedEncoding, false,
+                    StreamReaderBufferSize, true))
                     return _importer.Import(reader, maxCharacters, schema,
                         policy, sourceId, positions, options);
             }
