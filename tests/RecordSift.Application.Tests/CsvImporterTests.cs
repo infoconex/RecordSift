@@ -154,5 +154,41 @@ namespace RecordSift.Application.Tests
             Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.ConversionFailed));
             Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("Secret Alice"));
         }
+
+        [Test]
+        public void FR_017_SC01_SC02_RequiredValueFailuresRejectOnlyTheirOwnRows()
+        {
+            var schema = new ImportSchema(new[] {
+                new ExpectedColumn("Id", true, true),
+                new ExpectedColumn("Name", true, true)
+            });
+            var raw = CsvParseResult.Success(new[] {
+                new CsvRecord(1, 1, new[] { "Id", "Name" }),
+                new CsvRecord(2, 2, new[] { "1", "Alice" }),
+                new CsvRecord(3, 3, new[] { "2", "   " }),
+                new CsvRecord(4, 4, new[] { "3", "Carol" }),
+                new CsvRecord(5, 5, new[] { "", "" })
+            });
+            var importer = new CsvImporter<Customer>(new FakeReader(raw), MapCustomer);
+            using (var source = new StringReader("unused"))
+            {
+                var result = importer.Import(source, 4096, schema,
+                    CsvHeaderPolicy.WithHeader, "customers");
+
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(4));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Summary.RejectedCount, Is.EqualTo(2));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("Carol"));
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(3));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.RequiredFieldMissing));
+                Assert.That(result.Diagnostics[0].Field, Is.EqualTo("Name"));
+                Assert.That(result.Diagnostics[0].Row, Is.EqualTo(2));
+                Assert.That(result.Diagnostics[0].PhysicalLine, Is.EqualTo(3));
+                Assert.That(result.Diagnostics[1].Row, Is.EqualTo(4));
+                Assert.That(result.Diagnostics[2].Row, Is.EqualTo(4));
+            }
+        }
     }
 }
