@@ -27,13 +27,27 @@ namespace RecordSift.Application.Tests
         }
 
         [Test]
+        public void ConfigurationDefaultFieldsAreNotExposedAsPublicLibraryApi()
+        {
+            var publicMembers = System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Static;
+            var csv = typeof(RecordSift.Application.Ports.Csv.CsvReadOptions);
+            Assert.That(csv.GetField("DefaultDelimiter", publicMembers), Is.Null);
+
+            var xlsx = typeof(XlsxReadLimits);
+            Assert.That(xlsx.GetField("DefaultMaxRows", publicMembers), Is.Null);
+            Assert.That(xlsx.GetField("DefaultMaxColumns", publicMembers), Is.Null);
+            Assert.That(xlsx.GetField("DefaultMaxCellCharacters", publicMembers), Is.Null);
+        }
+
+        [Test]
         public void LibraryConfigurationDefaultsRetainPublishedValues()
         {
-            Assert.That(RecordSift.Application.Ports.Csv.CsvReadOptions.DefaultDelimiter,
+            Assert.That(RecordSift.Application.Ports.Csv.CsvReadOptions.Default.Delimiter,
                 Is.EqualTo(","));
-            Assert.That(XlsxReadLimits.DefaultMaxRows, Is.EqualTo(100000));
-            Assert.That(XlsxReadLimits.DefaultMaxColumns, Is.EqualTo(256));
-            Assert.That(XlsxReadLimits.DefaultMaxCellCharacters, Is.EqualTo(32767));
+            Assert.That(XlsxReadLimits.Default.MaxRows, Is.EqualTo(100000));
+            Assert.That(XlsxReadLimits.Default.MaxColumns, Is.EqualTo(256));
+            Assert.That(XlsxReadLimits.Default.MaxCellCharacters, Is.EqualTo(32767));
         }
 
         [Test]
