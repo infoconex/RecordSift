@@ -2,9 +2,11 @@ name: Verify internal release candidate in clean Windows consumer
 on:
   pull_request:
     branches:
+      - main
       - 'release/**'
   push:
     branches:
+      - main
       - 'release/**'
   workflow_dispatch:
 
