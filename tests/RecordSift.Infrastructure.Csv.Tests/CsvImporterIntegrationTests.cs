@@ -780,12 +780,12 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
                     values => {
                         mapped++;
-                        var result = new Customer {
+                        var mappedCustomer = new Customer {
                             Id = int.Parse(values["Id"], CultureInfo.InvariantCulture),
                             Name = values["Name"]
                         };
                         if (mapped == 1) cancellation.Cancel();
-                        return result;
+                        return mappedCustomer;
                     });
                 var result = importer.Import(source, 4096, Schema(),
                     CsvHeaderPolicy.WithHeader, "fr032-real-csv",
