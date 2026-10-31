@@ -36,13 +36,13 @@ namespace RecordSift.Domain.Tests
         {
             var rule = DuplicateIdentifierRule<Customer>.ForKey("NumericId", x => x.NumericId);
             var first = rule.CreateValidator();
-            Assert.That(first(new Customer { NumericId = 42 }, 1), Is.Null);
-            Assert.That(first(new Customer { NumericId = 43 }, 2), Is.Null);
-            Assert.That(first(new Customer { NumericId = 42 }, 3).Code,
+            Assert.That(first(new Customer { NumericId = 42 }, 1, null), Is.Null);
+            Assert.That(first(new Customer { NumericId = 43 }, 2, null), Is.Null);
+            Assert.That(first(new Customer { NumericId = 42 }, 3, null).Code,
                 Is.EqualTo(DiagnosticCodes.DuplicateIdentifier));
 
             var second = rule.CreateValidator();
-            Assert.That(second(new Customer { NumericId = 42 }, 1), Is.Null);
+            Assert.That(second(new Customer { NumericId = 42 }, 1, null), Is.Null);
         }
 
         [Test]
@@ -50,8 +50,8 @@ namespace RecordSift.Domain.Tests
         {
             var rule = DuplicateIdentifierRule<Customer>.ForKey("Id", x => x.Id);
             var validate = rule.CreateValidator();
-            Assert.That(validate(new Customer { Id = null }, 1), Is.Null);
-            Assert.That(validate(new Customer { Id = null }, 2), Is.Null);
+            Assert.That(validate(new Customer { Id = null }, 1, null), Is.Null);
+            Assert.That(validate(new Customer { Id = null }, 2, null), Is.Null);
         }
 
         [Test]
