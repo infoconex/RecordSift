@@ -65,6 +65,18 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Acceptance")]
+        [Property("Requirement", "FR-018")]
+        [Property("Scenario", "FR-018-SC01")]
+        public void FR_018_SC01_DecimalConversionRejectsLossyPrecisionInsteadOfRounding()
+        {
+            var converter = new PrimitiveFieldConverter(CultureInfo.InvariantCulture);
+
+            Assert.Throws<FormatException>(() =>
+                converter.Convert("0.1234567890123456789012345678912345", typeof(decimal)));
+        }
+
+        [Test]
         public void MissingNonnullableValueAndUnsupportedTargetsDoNotCoerceDefaults()
         {
             var converter = new PrimitiveFieldConverter(CultureInfo.InvariantCulture);
