@@ -20,12 +20,12 @@ main
     └── other issue branches → PR / squash into release/0.1
 ```
 
-When all release scope, complete documentation review, and quality gates pass, open a **separate release PR** from `release/0.1` into `main`. Require all three Windows/consumer/docs workflows to pass on the promotion PR; **SQUASH merge** the release PR to produce **one consolidated `main` commit** and reverify all three workflows on that exact SHA. Record final SDK, framework, dependency and test evidence. **Promotion does not authorize creating a tag, GitHub release, or uploading a NuGet package**; those actions need explicit, separate owner authorization.
+When all release scope, complete documentation review and quality gates pass, open a **separate release PR** from `release/0.1` into `main`. First freeze the candidate and satisfy the [formal promotion governance](release-gates.md): active `main` ruleset with required job checks (zero reviewer approvals for sole maintainer), a documented owner second-pass technical/security/consumer review, and explicit release-owner GO **for that candidate SHA**. Require all three Windows/consumer/docs workflows (four GitHub job checks) on the promotion PR. Only then **SQUASH merge** the release PR to produce **one consolidated `main` commit**, and reverify all jobs on that SHA. Missing branch enforcement, missing required CI evidence, or missing documented owner GO is a **STOP** condition. Do not require an unavailable independent PR approval or mislabel a self-review as independent. Record SDK, framework, dependency and test evidence. **Promotion does not authorize creating a tag, GitHub release, or uploading a NuGet package**; those actions need explicit, separate owner authorization.
 
 ## Risk controls
 
-- Direct commits to `main` or `release/0.1` should be avoided after initialization.
-- Branch protection and merge-method enforcement are *not yet claimed as configured*; these are repository-admin follow-up settings.
+- Direct commits to `main` or `release/0.1` must be blocked by active rulesets after their administrator configuration.
+- As of 2026-10-31, `main` has active [ruleset #26295899](https://github.com/infoconex/RecordSift/rules/26295899), four mandatory GitHub Actions checks, squash-only PRs and no bypass actors. Sole-maintainer required approvals intentionally remain 0. [Issue #199](https://github.com/infoconex/RecordSift/issues/199) tracks remaining sign-off and enforcement evidence. Do **not** mistake successful CI for the owner's release GO.
 - Do not open or merge competing PRs that silently alter the same requirement contract.
 - Keep historical configuration deliberately constructed and plainly labeled.
 - An untested PR is not release-ready, even if a documentation check passes.

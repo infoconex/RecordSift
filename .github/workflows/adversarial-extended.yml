@@ -1,0 +1,94 @@
+name: Extended adversarial Windows net48 security validation
+
+on:
+  # Manual dispatch is not registered from an integration-only workflow file.
+  # Opt-in CI triggers only for edits to this dedicated extended workflow.
+  pull_request:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/adversarial-extended.yml'
+  push:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/adversarial-extended.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: net48-adversarial-extended
+  cancel-in-progress: true
+
+jobs:
+  extended-adversarial:
+    name: Isolated bounded adversarial corpus
+    runs-on: windows-2022
+    timeout-minutes: 12
+    steps:
+      - name: Checkout pinned source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Restore pinned dependencies
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+
+      - name: Build Windows .NET Framework 4.8 Release assemblies
+        shell: pwsh
+        run: |
+          $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found.' }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "MSBuild failed: $LASTEXITCODE" }
+
+      - name: Run selected explicit tests in a monitored child process
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          $runner = (Resolve-Path 'packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe').Path
+          $assembly = (Resolve-Path 'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll').Path
+          $xml = 'TestResults/extended-adversarial.xml'
+          $args = @($assembly, '--inprocess', '"--where=cat == ExtendedAdversarial"', '--noheader', "--result=$xml;format=nunit3")
+          # Child process termination is confined to a test runner; library code
+          # never attempts unsafe cancellation or thread termination.
+          $process = Start-Process -FilePath $runner -ArgumentList $args -PassThru -NoNewWindow
+          $deadline = [DateTime]::UtcNow.AddMinutes(3)
+          $maximumWorkingSet = [long](768 * 1024 * 1024)
+          $peakObserved = [long]0
+          while (-not $process.HasExited) {
+            $process.Refresh()
+            $workingSet = [long]$process.WorkingSet64
+            if ($workingSet -gt $peakObserved) { $peakObserved = $workingSet }
+            if ($workingSet -gt $maximumWorkingSet -or [DateTime]::UtcNow -gt $deadline) {
+              Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+              throw "Extended test exceeded its 768 MiB observed working-set ceiling or 3-minute time budget."
+            }
+            Start-Sleep -Milliseconds 250
+          }
+          $process.WaitForExit()
+          Write-Host "Observed runner working-set peak (sampled): $peakObserved bytes; ceiling $maximumWorkingSet."
+          if ($process.ExitCode -ne 0) { throw "Extended NUnit failed: $($process.ExitCode)" }
+          if (-not (Test-Path $xml)) { throw 'Extended NUnit XML result not produced.' }
+          [xml]$report = Get-Content $xml
+          $total = [int]$report.'test-run'.total
+          $failed = [int]$report.'test-run'.failed
+          $skipped = [int]$report.'test-run'.skipped
+          if ($total -lt 1 -or $failed -ne 0 -or $skipped -ne 0) {
+            throw "Extended suite must execute: total=$total failed=$failed skipped=$skipped"
+          }
+          Write-Host "Extended adversarial NUnit: $total executed, $failed failed."
+
+      - name: Preserve synthetic-only NUnit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: extended-adversarial-nunit
+          path: TestResults/*.xml
+          if-no-files-found: warn

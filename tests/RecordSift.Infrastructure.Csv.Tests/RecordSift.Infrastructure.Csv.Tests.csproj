@@ -44,6 +44,7 @@
     <Compile Include="CsvPropertyMappingIntegrationTests.cs" />
     <Compile Include="CsvPrimitiveConversionIntegrationTests.cs" />
     <Compile Include="CsvDelimiterTests.cs" />
+    <Compile Include="CsvAdversarialSecurityTests.cs" />
     <Compile Include="CsvEncodingIntegrationTests.cs" />
     <Compile Include="CsvRangeValidationIntegrationTests.cs" />
     <Compile Include="CsvDuplicateIdentifierIntegrationTests.cs" />

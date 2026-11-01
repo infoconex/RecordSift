@@ -135,7 +135,18 @@ jobs:
               if ($counts[$layer] -lt 1) { throw "$layer NUnit suite has no tests." }
             }
             $total = $counts.domain + $counts.application + $counts.adapter + $counts.reporting + $counts.xlsx
-            if ($failures -ne 0 -or $total -lt 126) {
+            # Release 0.1 accepted baseline: 387 tests across five separately built assemblies.
+            # A reviewed baseline change is required when tests are intentionally retired;
+            # extra tests in one assembly must not mask losses in another.
+            $minimumCounts = @{
+              domain = 121; application = 62; adapter = 122; reporting = 49; xlsx = 33
+            }
+            foreach ($layer in @('domain', 'application', 'adapter', 'reporting', 'xlsx')) {
+              if ($counts[$layer] -lt $minimumCounts[$layer]) {
+                throw "NUnit assembly count regression: $layer=$($counts[$layer]); required at least $($minimumCounts[$layer])."
+              }
+            }
+            if ($failures -ne 0 -or $total -lt 387) {
               throw "NUnit baseline regression: domain=$($counts.domain), application=$($counts.application), adapter=$($counts.adapter), reporting=$($counts.reporting), xlsx=$($counts.xlsx), failed=$failures."
             }
             Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), reporting NUnit=$($counts.reporting), XLSX NUnit=$($counts.xlsx), total=$total failed=$failures."

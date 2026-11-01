@@ -40,4 +40,17 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 - [ ] SOLID responsibilities, Microsoft C# naming/style (`.editorconfig`) and net48/C# 7.3 language compatibility reviewed.
 - [ ] Any third-party dependency is confined to an adapter/test assembly; exact version, license, framework compatibility, audit/CI inventory and ADR reviewed.
 
-**Merge policy:** squash merge issue PRs into `release/0.1`. The separately authorized release-promotion PR must also **SQUASH merge into `main`** (one consolidated release commit), after green Windows full test/security/API, independent NuGet consumer (RC and stable) and documentation PR checks. Reverify those gates on the exact resulting `main` SHA. **No release tag, GitHub release or public package publication** without a distinct owner authorization.
+## Additional gates — only for a release-promotion PR targeting `main`
+
+See [release promotion and publication governance](../docs/engineering/release-gates.md) and the [current 0.1 prepublication audit](../docs/engineering/release-0.1-prepublication-audit.md). If the links above do not resolve in your PR view, use `docs/engineering/release-gates.md` and `docs/engineering/release-0.1-prepublication-audit.md` directly.
+
+- [ ] The exact integration source HEAD SHA and target `main` base SHA are recorded, and the candidate is frozen.
+- [ ] All release-scoped requirements and deferrals are accounted for; blocker issues and residual risks are resolved or explicitly accepted.
+- [ ] The **sole maintainer** completed a documented second-pass, risk-based review of the code changes, API/compatibility, security/error paths and current documentation. Findings and risk acceptances are linked; any external review is optional and accurately attributed.
+- [ ] All **four job contexts** (Windows NUnit/API, dependency audit, installed consumer, docs) are required by the active `main` ruleset and green on the final PR SHA. Solo-maintainer required approval count is intentionally 0, not a waiver of any CI check.
+- [ ] The existing release candidate was validated through separately installed RC and stable local NuGet consumers with package metadata, license and dependency evidence.
+- [ ] The sole maintainer explicitly recorded **source-promotion GO for this exact candidate SHA** in the PR after second-pass review; neither assistant assessment nor CI success substitutes for that human decision.
+- [ ] The PR uses a **SQUASH merge**. On the resulting unique `main` commit, reverify all jobs and document their links.
+- [ ] Any public tagging, GitHub release, package feed upload or distribution has separate explicit release-owner authorization, outside this PR.
+
+**Merge policy:** Issue PRs squash-merge into `release/0.1`. Release-promotion PRs squash-merge into `main` only after the documented owner second-pass review and GO, active protection and mandatory CI gates in `docs/engineering/release-gates.md` are actually satisfied. If a required gate is unverified, **STOP**; do not auto-merge. A source merge never grants public distribution permission.
