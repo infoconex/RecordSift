@@ -8,6 +8,10 @@ RecordSift is an MIT-licensed .NET Framework 4.8 library under development for i
 
 **Release 0.1 has passed unpublished release-candidate and stable 0.1.0 package preflight; no public NuGet package or GitHub release has been published.** The repository owner approved MIT licensing with Copyright (c) 2026 Infoconex; see [LICENSE](LICENSE). This license permits redistribution subject to the MIT terms, but no 0.1 package has been published or authorized for release. The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. All targeted functional and Windows-scoped nonfunctional acceptance is complete; packaging and clean-consumer verification passed for the internal prerelease and stable package identities. Promotion into `main` and package publication are separately controlled release operations; public distribution still requires explicit authorization.
 
+## Getting started
+
+Follow the [complete customer CSV and Excel walkthrough](docs/getting-started.md) for the shared ten-column schema, all 20 CSV example records, the complete commented C# 7.3 console program, and four downloadable valid/invalid sample files. The brief API snippets below are retained as a quick reference.
+
 ## Public API quick start (.NET Framework 4.8)
 
 For source development, reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). An unpublished five-assembly NuGet candidate is available for local internal verification only, not public redistribution. Define a record type with public writable properties:

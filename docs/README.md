@@ -4,6 +4,8 @@ These pages document the **accepted release 0.1 Windows/.NET Framework 4.8 imple
 
 **How to read this documentation:** Requirement and scenario documents specify intended behavior; the [traceability matrix](testing/traceability.md) holds current observed execution status. ADRs and early issue/PR evidence document **historical decisions and intermediate milestones**, not the current feature-completion state. Do not interpret the mandatory `Planned` specification label in older FR files as proof that the associated acceptance tests remain unimplemented.
 
+For an end-to-end user example with downloadable CSV and XLSX datasets, see [Getting started](getting-started.md).
+
 ## Requirement catalogs
 
 - [Functional requirements](requirements/functional.md) — `FR-001` through `FR-039`, each with its own GitHub issue and acceptance scenario.

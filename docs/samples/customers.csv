@@ -1,0 +1,21 @@
+Id,Name,Email,RegistrationDate,LoyaltyPoints,CreditLimit,IsActive,CustomerTier,LastPurchaseDate,ReferralCode
+1001,John Smith,john.smith@example.com,2025-01-15,150,5000.00,true,Gold,2026-08-10,REF100
+1002,Jane Doe,jane.doe@example.com,2025-02-20,0,2500.50,true,Standard,2026-07-22,
+1003,Robert Johnson,robert.j@example.com,2025-03-10,500,10000.00,true,Platinum,2026-09-01,REF200
+1004,Emily Davis,emily.d@example.com,2025-04-05,25,0.00,false,Standard,,
+1005,Michael Brown,michael.b@example.com,2025-05-12,100,1500.75,true,Silver,2026-06-15,
+1006,Sarah Wilson,sarah.w@example.com,2025-06-18,0,0.00,true,Standard,,
+1007,David Miller,david.m@example.com,2025-07-01,750,25000.00,true,Platinum,2026-10-01,REF300
+1008,Lisa Anderson,lisa.a@example.com,2025-08-25,200,7500.25,false,Gold,2026-05-20,
+1009,Olivia Martin,olivia.m@example.com,2025-09-02,90,125.99,true,Silver,,FRIEND09
+1010,Noah Thompson,noah.t@example.com,2025-09-17,0,0.00,false,Standard,,
+1011,Ava White,ava.w@example.com,2025-10-08,320,8400.10,true,Gold,2026-09-21,AVAW
+1012,Liam Harris,liam.h@example.com,2025-10-29,14,100.00,true,Standard,2026-01-03,
+1013,Sophia Clark,sophia.c@example.com,2025-11-11,0,20.05,true,Standard,,
+1014,Mason Lewis,mason.l@example.com,2025-12-05,135,3000.00,false,Silver,2026-02-14,MASON
+1015,Isabella Young,isabella.y@example.com,2026-01-07,80,450.60,true,Gold,2026-08-12,
+1016,Ethan Hall,ethan.h@example.com,2026-02-12,990,50000.00,true,Platinum,2026-10-15,VIP990
+1017,Mia Allen,mia.a@example.com,2026-03-23,5,75.00,true,Standard,,
+1018,Lucas King,lucas.k@example.com,2026-04-30,240,12500.50,false,Gold,2026-05-01,
+1019,Amelia Wright,amelia.w@example.com,2026-05-15,30,1999.95,true,Silver,2026-06-18,WRIGHT
+1020,Benjamin Scott,ben.s@example.com,2026-06-28,0,0.00,true,Standard,,
