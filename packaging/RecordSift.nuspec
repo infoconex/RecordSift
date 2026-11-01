@@ -8,7 +8,7 @@
     <description>Windows-only .NET Framework 4.8 CSV and XLSX imports with schemas, validation, structured diagnostics and reports.</description>
     <summary>Import, validate and report on structured records.</summary>
     <projectUrl>https://github.com/infoconex/RecordSift</projectUrl>
-    <repository type="git" url="https://github.com/infoconex/RecordSift.git" branch="release/0.1" />
+    <repository type="git" url="https://github.com/infoconex/RecordSift.git" branch="main" />
     <readme>README.md</readme>
     <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

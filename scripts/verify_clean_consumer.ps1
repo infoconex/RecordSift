@@ -1,25 +1,40 @@
 # Run a standalone C# 7.3/.NET Framework 4.8 consumer from a local NuGet install.
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)][string]$CandidateDirectory,
-    [ValidateSet('0.1.0-rc.1', '0.1.0')][string]$PackageVersion = '0.1.0-rc.1'
+    [string]$CandidateDirectory,
+    [ValidateSet('0.1.0-rc.1', '0.1.0')][string]$PackageVersion = '0.1.0-rc.1',
+    [switch]$FromNuGetOrg,
+    [string]$ExpectedSourceCommit
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$feed = [IO.Path]::GetFullPath($CandidateDirectory)
-if (-not (Test-Path -LiteralPath (Join-Path $feed "RecordSift.$PackageVersion.nupkg"))) {
-    throw 'Unpublished local candidate is missing.'
+if ($FromNuGetOrg) {
+    if (-not [string]::IsNullOrWhiteSpace($CandidateDirectory) -or $PackageVersion -cne '0.1.0' -or
+        $ExpectedSourceCommit -cnotmatch '^[0-9a-fA-F]{40}$') {
+        throw 'Public NuGet verification requires stable 0.1.0 and an exact expected source SHA; do not specify a local feed.'
+    }
+    $sources = 'https://api.nuget.org/v3/index.json'
+} else {
+    if ([string]::IsNullOrWhiteSpace($CandidateDirectory)) {
+        throw 'Local candidate directory is required unless -FromNuGetOrg is selected.'
+    }
+    $feed = [IO.Path]::GetFullPath($CandidateDirectory)
+    if (-not (Test-Path -LiteralPath (Join-Path $feed "RecordSift.$PackageVersion.nupkg"))) {
+        throw 'Unpublished local candidate is missing.'
+    }
+    $sources = "$feed;https://api.nuget.org/v3/index.json"
 }
-$work = Join-Path $env:RUNNER_TEMP ('RecordSift-Consumer-' + [guid]::NewGuid().ToString('N'))
+$temporaryRoot = if ([string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) { [IO.Path]::GetTempPath() } else { $env:RUNNER_TEMP }
+$work = Join-Path $temporaryRoot ('RecordSift-Consumer-' + [guid]::NewGuid().ToString('N'))
 $packages = Join-Path $work 'packages'
 $output = Join-Path $work 'bin'
 New-Item -ItemType Directory -Force -Path $packages, $output | Out-Null
 try {
     $nuget = (Get-Command nuget -ErrorAction Stop).Source
     # Include nuget.org only to resolve the candidate's pinned third-party package dependencies.
-    & $nuget install RecordSift -Version $PackageVersion -Framework net48 -OutputDirectory $packages -Source "$feed;https://api.nuget.org/v3/index.json" -NonInteractive -NoCache
+    & $nuget install RecordSift -Version $PackageVersion -Framework net48 -OutputDirectory $packages -Source $sources -NonInteractive -NoCache
     if ($LASTEXITCODE -ne 0) { throw 'Clean NuGet install failed.' }
     $expectedPackages = @{
         CsvHelper = '33.1.0'
@@ -41,6 +56,21 @@ try {
         }
     }
     $installedRoot = Join-Path $packages "RecordSift.$PackageVersion"
+    if ($FromNuGetOrg) {
+        $installedNuspec = Join-Path $installedRoot 'RecordSift.nuspec'
+        if (-not (Test-Path -LiteralPath $installedNuspec)) { throw 'Installed public package nuspec missing.' }
+        [xml]$publishedManifest = Get-Content -LiteralPath $installedNuspec -Raw
+        $publishedMeta = $publishedManifest.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]')
+        $publishedRepo = $publishedMeta.SelectSingleNode('*[local-name()="repository"]')
+        if ($publishedMeta.SelectSingleNode('*[local-name()="version"]').InnerText -cne $PackageVersion -or
+            $null -eq $publishedRepo -or
+            $publishedRepo.GetAttribute('branch') -cne 'main' -or
+            $publishedRepo.GetAttribute('url') -cne 'https://github.com/infoconex/RecordSift.git' -or
+            $publishedRepo.GetAttribute('commit') -cne $ExpectedSourceCommit) {
+            throw 'Published NuGet package identity or exact source repository commit is wrong.'
+        }
+        Write-Host "PASS: nuget.org published package source commit $ExpectedSourceCommit"
+    }
     foreach ($notice in @('LICENSE', 'THIRD-PARTY-NOTICES.md')) {
         $file = Join-Path $installedRoot $notice
         if (-not (Test-Path -LiteralPath $file)) { throw "Installed NuGet package missing $notice" }
@@ -93,7 +123,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Standalone consumer C# compilation failed.' }
     & $exe
     if ($LASTEXITCODE -ne 0) { throw 'Standalone consumer execution failed.' }
-    Write-Host "PASS: separate installed RecordSift $PackageVersion NuGet consumer verified without repository binaries."
+    $origin = if ($FromNuGetOrg) { 'public nuget.org only' } else { 'unpublished local feed' }
+    Write-Host "PASS: separate installed RecordSift $PackageVersion NuGet consumer from $origin verified without repository binaries."
 } finally {
     Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 }
