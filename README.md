@@ -82,7 +82,8 @@ var csvImporter = new CsvImporter<Customer>(new CsvRecordReaderAdapter(), primit
 
 using (var stringReader = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
 {
-    var typedImportResult = csvImporter.Import(stringReader, 4096, importSchema,
+    var maxCsvCharacters = ReadPositiveLimit("RecordSift.MaxCsvCharacters");
+    var typedImportResult = csvImporter.Import(stringReader, maxCsvCharacters, importSchema,
         CsvHeaderPolicy.WithHeader, "customers", options: CsvReadOptions.Default);
 
     // Access typedImportResult.Status, typedImportResult.Summary, typedImportResult.AcceptedRecords,
@@ -109,12 +110,15 @@ using RecordSift.Infrastructure.Xlsx;
 var xlsxImporter = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(), primitivePropertyMapper.Map);
 using (var fileStream = File.OpenRead("customers.xlsx"))
 {
-    var typedImportResult = xlsxImporter.Import(fileStream, 4 * 1024 * 1024, importSchema,
+    var maxXlsxBytes = ReadPositiveLimit("RecordSift.MaxXlsxBytes");
+    var typedImportResult = xlsxImporter.Import(fileStream, maxXlsxBytes, importSchema,
         "customers", limits: XlsxReadLimits.Default);
     // The first worksheet is used by default; specify worksheetName to select one.
     // The typedImportResult exposes the same typed records, summary and diagnostic contract.
 }
 ```
+
+In both snippets, `ReadPositiveLimit` is the **application configuration helper provided in the [complete C# 7.3 tutorial](docs/usage/getting-started.md#3-configure-input-budgets-and-run-a-complete-csv-import)**; these README fragments are not independently runnable programs. The CSV `maxCharacters` and XLSX `maxBytes` parameters are **mandatory and have no built-in defaults**. Define `RecordSift.MaxCsvCharacters` and `RecordSift.MaxXlsxBytes` in your own application's `App.config` as shown in that tutorial, then choose suitable limits for your workload. A CSV character budget counts decoded UTF-16 characters; an XLSX byte budget measures compressed input bytes.
 
 Both importers use a caller-supplied resource budget. XLSX additionally supports explicit worksheet row, column, and cell-character limits. Stream ownership remains with the caller. A failed source import has no partially accepted records; completed imports may contain record-level rejections.
 
