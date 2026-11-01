@@ -102,7 +102,7 @@ CSV and XLSX importers return a **typed `TypedImportResult<T>`**, not a JSON str
 To produce an optional JSON **outcome/diagnostic report**, reference `RecordSift.Infrastructure.Reporting` and use:
 
 ```csharp
-var jsonReport = new JsonImportResultSerializerAdapter().Serialize(result);
+var jsonReport = new RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter().Serialize(result);
 ```
 
 This report contains the source ID, status, counts and diagnostic codes/messages, **not the accepted record values**. RecordSift deliberately does not automatically export imported customer data in diagnostic JSON. To export accepted rows to JSON, serialize `result.AcceptedRecords` in your own application using your preferred JSON library and appropriate privacy controls. See the [getting-started guide's expected console output and formatted JSON example](docs/usage/getting-started.md#2-run-a-complete-csv-import) and the [JSON contract](docs/specifications/import-result.md).
