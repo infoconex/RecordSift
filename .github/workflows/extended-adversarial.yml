@@ -1,5 +1,20 @@
 name: Extended Windows adversarial resource validation
 on:
+  # A workflow_dispatch-only file cannot run from this integration branch until
+  # the file exists on default main. These narrow triggers enable actual
+  # bounded Windows evidence without promoting anything to main.
+  pull_request:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/extended-adversarial.yml'
+      - 'scripts/run_adversarial_stress.ps1'
+  push:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/extended-adversarial.yml'
+      - 'scripts/run_adversarial_stress.ps1'
   workflow_dispatch:
     inputs:
       iterations:
