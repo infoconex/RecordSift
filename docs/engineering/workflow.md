@@ -20,12 +20,12 @@ main
     └── other issue branches → PR / squash into release/0.1
 ```
 
-When all release scope, complete documentation review, and quality gates pass, open a **separate release PR** from `release/0.1` into `main`. Require all three Windows/consumer/docs workflows to pass on the promotion PR; **SQUASH merge** the release PR to produce **one consolidated `main` commit** and reverify all three workflows on that exact SHA. Record final SDK, framework, dependency and test evidence. **Promotion does not authorize creating a tag, GitHub release, or uploading a NuGet package**; those actions need explicit, separate owner authorization.
+When all release scope, complete documentation review and quality gates pass, open a **separate release PR** from `release/0.1` into `main`. First freeze the candidate and satisfy the [formal promotion governance](release-gates.md): active `main` ruleset with required job checks and independent review, a documented technical/security/consumer readiness record, and explicit release-owner GO **for that candidate SHA**. Require all three Windows/consumer/docs workflows (four GitHub job checks) on the promotion PR. Only then **SQUASH merge** the release PR to produce **one consolidated `main` commit**, and reverify all jobs on that SHA. Missing branch enforcement or human approval is a **STOP** condition. Record SDK, framework, dependency and test evidence. **Promotion does not authorize creating a tag, GitHub release, or uploading a NuGet package**; those actions need explicit, separate owner authorization.
 
 ## Risk controls
 
-- Direct commits to `main` or `release/0.1` should be avoided after initialization.
-- Branch protection and merge-method enforcement are *not yet claimed as configured*; these are repository-admin follow-up settings.
+- Direct commits to `main` or `release/0.1` must be blocked by active rulesets after their administrator configuration.
+- As of 2026-10-31, `main` is **not protected** and has zero active rulesets. [Issue #199](https://github.com/infoconex/RecordSift/issues/199) tracks mandatory GitHub administrator configuration and enforcement verification. Do **not** infer protection from a workflow being defined or green.
 - Do not open or merge competing PRs that silently alter the same requirement contract.
 - Keep historical configuration deliberately constructed and plainly labeled.
 - An untested PR is not release-ready, even if a documentation check passes.
