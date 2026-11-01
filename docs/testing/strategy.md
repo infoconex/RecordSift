@@ -1,5 +1,14 @@
 # Testing strategy and TDD policy
 
+## Two-tier adversarial validation — 2026-10-31
+
+The **routine pull-request suite** now includes small, deterministic adversarial XLSX ZIP/XML/relationship fixtures, a 96-case seeded CSV malformed-input corpus, I/O failure/partial-read and Unicode boundary tests, bounded repeated regex timeout evaluation, and synthetic diagnostic secrecy assertions. These tests must pass under the existing four Windows/net48, API, dependency, consumer and documentation checks. They are not exhaustive fuzzing.
+
+The **opt-in extended suite** (#235, PR #236) contains an `[Explicit]` NUnit test selecting a reproducible 2,048-case CSV corpus tagged with the NUnit `Category=ExtendedAdversarial` property. It is intentionally skipped by regular NUnit execution; a skip is **not** a successful stress run. The proposed `.github/workflows/adversarial-extended.yml` manual Windows workflow restores/builds pinned dependencies, executes the selected test inside a child NUnit process with a three-minute timeout and a *sampled* 768 MiB working-set threshold, and uploads synthetic-only NUnit XML. The sampling detects sustained over-budget growth but is not a strict OS/job-object memory limit. No unbounded ZIP bombs or real secrets are used.
+
+**Execution status:** manual extended Windows run **not yet verified**. Manual workflow availability can depend on the workflow existing on the default branch; until that is possible under a separately authorized owner source promotion, the existing `windows-net48.yml` `workflow_dispatch` can select the test on the release branch via `test_filter` (for example `cat == ExtendedAdversarial`), but that existing path does **not** provide the new isolated process/memory monitor. Record the exact ref, runner, selected NUnit total, success/failure, XML artifact, elapsed time and memory readings before calling an extended run completed.
+
+
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
 **Status:** Engineering policy for release 0.1. Current acceptance status and observed Windows CI evidence are maintained per scenario in [traceability](traceability.md); earlier milestone test counts below are historical, not the current release total.
 

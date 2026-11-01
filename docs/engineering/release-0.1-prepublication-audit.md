@@ -1,5 +1,14 @@
 # Release 0.1 — preliminary prepublication audit and unresolved evidence
 
+## Adversarial security validation update — 2026-10-31 (current decision gate)
+
+The prior audit checkpoints below remain historical. Active tracking: #225, XLSX #221/#222, CSV #223/#224, diagnostics #226/#228, regex #229/#230, byte-stream #232/#234 and opt-in extended corpus #235/#236. No newly confirmed Critical or High security vulnerability arose from the completed bounded tests; this is **not** evidence of exhaustive coverage.
+
+**Status: NOT READY FOR OWNER RELEASE PROMOTION.** Verify four required Windows checks on the precise final `release/0.1` SHA **after all security and documentation PRs are squash-merged**. Verify full NUnit passed/failed/skipped counts (the explicit extended corpus must not be counted as a passed routine test), unchanged 425 public API entries, seven JSON fixtures, clean independently installed unpublished RC/stable 0.1.0 consumers, fresh pinned-package advisory audit, and documentation. Record all checked run URLs and SHA in #225. A manual extended runner has been proposed; it is **not verified** by PR CI alone, and should not be described as executed without its own successful Windows run.
+
+Risk owner must independently accept or decline remaining operational risks: cooperative cancellation within eager parsing, cumulative regex/validator time, arbitrary caller callbacks, exposure of intentionally retained diagnostic identifiers, spreadsheet formula interpretation by downstream CSV software, dependency supply-chain exposure and caller-selected budgets/ownership. This work does not alter previously accepted issue #200 semantics. `main` must remain unchanged; draft #209, issue #199, release tags, GitHub Releases and public NuGet publication remain explicitly on hold.
+
+
 **Assessment date:** 2026-10-31; **evidence refresh:** 2026-10-31. **Status: technical CI green; OWNER GO PENDING for any further source promotion; NO-GO for public publication.** This is a **targeted assistant-led technical review**, **not a human owner-performed second-pass code/security review** and not a certification that the entire source repository is free of defects. It does not replace the comprehensive tracked-document inventory review in [the prior documentation audit](release-0.1-documentation-audit.md).
 
 **Audited source state:** `main` commit `26facaff671599d20ff6e8a1745d0d01450b0757`; identical source tree at `release/0.1` commit `ccb010360f7de9aa98f52347ad7de7219b253f75` prior to the new governance issue branch. Source promotion was [PR #198](https://github.com/infoconex/RecordSift/pull/198), squash-only. Do not confuse later governance documentation commits with the binary candidate whose CI passed.

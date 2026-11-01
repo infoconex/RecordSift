@@ -1,5 +1,12 @@
 # RecordSift release 0.1 — release-candidate readiness assessment
 
+## Adversarial security acceptance — 2026-10-31 (latest review)
+
+The previously documented conditional technical GO was based on an earlier SHA. The current integration tree now includes bounded adversarial regressions for XLSX (#222), malformed/partial-read CSV (#224), diagnostics (#228), regex timeout boundaries (#230) and byte-stream failure/encoding ownership (#234). **No newly confirmed Critical or High finding** has appeared in those executed tests. The opt-in extended workflow/corpus (#236) requires separate Windows execution evidence before it is called tested.
+
+**Current recommendation: HOLD owner source-promotion and public publication.** Complete #225 final technical security review and require all four checks green at exact final integration HEAD; verify NUnit totals and explicit skips, API baseline (425), seven stable JSON fixtures, independent RC/stable NuGet consumer and dependency audit. Explicitly classify accepted residual risk and unexecuted stress/fuzz scenarios. Only the sole maintainer can approve the exact promotion candidate under #199, and publication requires separate authorization. No modifications to `main` or draft #209 are authorized by this technical addendum.
+
+
 **Initial review:** 2026-10-31; **documentation acceptance revision:** 2026-10-31. **Supported scope:** Windows only; .NET Framework 4.8; C# 7.3; NUnit 3; GitHub Actions Windows 2022 runners. **Integration branch:** release/0.1. The initial pre-documentation candidate SHA was `b56642252c8824f6d4bdcd09e0704842a3352a23`; subsequent milestones below supersede that historical checkpoint. **Historical promotion rule:** an earlier candidate was eligible only for an explicitly owner-authorized squash promotion; **the current security-modified candidate has no owner GO for promotion to `main`**. Four green CI checks alone are insufficient. Public tagging/package publication is not approved.
 
 ## Security reassessment superseding earlier promotion recommendation (2026-10-31)
