@@ -25,7 +25,7 @@ namespace RecordSift.Infrastructure.Xlsx
         /// <param name="maxColumns">Positive maximum decoded fields in any row.</param>
         /// <param name="maxCellCharacters">Positive maximum UTF-16 code units per decoded cell.</param>
         /// <param name="worksheetName">Optional exact-case worksheet name; null uses first available worksheet.</param>
-        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total declared expansion to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Entries containing macro binaries or external-link parts are rejected. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
+        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total expansion verified by streaming each ZIP entry to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Entries containing macro binaries or external-link parts are rejected. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
         /// <remarks>Stored worksheet values are formatted using invariant culture; DateTime cell values use the round-trip ISO 8601 format. No formula or macro code is evaluated by this reader.</remarks>
         public XlsxReadResult Read(Stream source, int maxBytes,
             int maxRows, int maxColumns, int maxCellCharacters,
@@ -137,17 +137,33 @@ namespace RecordSift.Infrastructure.Xlsx
                     return DiagnosticCodes.MalformedSource;
                 if (zip.Entries.Count > MaximumPackageEntries)
                     return DiagnosticCodes.SourceLimitExceeded;
-                long expanded = 0;
+                long declaredExpanded = 0;
+                long actualExpanded = 0;
                 var expandedLimit = Math.Min((long)MaximumUncompressedBytes, (long)maxBytes * 32);
+                var bytes = new byte[BufferSize];
                 foreach (var entry in zip.Entries)
                 {
-                    if (entry.Length > expandedLimit - expanded)
+                    if (entry.Length > expandedLimit - declaredExpanded)
                         return DiagnosticCodes.SourceLimitExceeded;
-                    expanded += entry.Length;
+                    declaredExpanded += entry.Length;
                     var path = entry.FullName.Replace('\\', '/');
                     if (path.StartsWith("xl/externalLinks/", StringComparison.OrdinalIgnoreCase) ||
                         path.EndsWith("vbaProject.bin", StringComparison.OrdinalIgnoreCase))
                         return DiagnosticCodes.MalformedSource;
+
+                    // ZIP central-directory lengths are supplied by the archive.
+                    // Count real inflated bytes before handing any part to the
+                    // eager workbook parser; do not trust declared sizes alone.
+                    using (var content = entry.Open())
+                    {
+                        int count;
+                        while ((count = content.Read(bytes, 0, bytes.Length)) != 0)
+                        {
+                            if (count > expandedLimit - actualExpanded)
+                                return DiagnosticCodes.SourceLimitExceeded;
+                            actualExpanded += count;
+                        }
+                    }
                 }
                 return zip.GetEntry("xl/workbook.xml") == null
                     ? DiagnosticCodes.MalformedSource : null;

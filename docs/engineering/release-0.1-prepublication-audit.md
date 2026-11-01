@@ -4,6 +4,12 @@
 
 **Audited source state:** `main` commit `26facaff671599d20ff6e8a1745d0d01450b0757`; identical source tree at `release/0.1` commit `ccb010360f7de9aa98f52347ad7de7219b253f75` prior to the new governance issue branch. Source promotion was [PR #198](https://github.com/infoconex/RecordSift/pull/198), squash-only. Do not confuse later governance documentation commits with the binary candidate whose CI passed.
 
+## Security reassessment checkpoint (2026-10-31)
+
+The source-based release security review identified a potential ZIP metadata accounting weakness; [SEC-XLSX-001 and the full security register](release-0.1-security-assessment.md) record scope, severity, limitations and owner decisions. [Issue #210](https://github.com/infoconex/RecordSift/issues/210) tracks a bounded actual-expansion preflight guard and regression tests targeting `release/0.1`. This is **not** a demonstrated vendor-parser exploit, but is a practical hardening change for attacker-controlled archives. **Status: source promotion HOLD** pending verified remediation and fresh owner review.
+
+**The earlier candidate SHA `0d381cdedd882cef5d36ddeabb4f7569f0358ea3`, staging PR #209 and its four green checks do not certify modified source.** Do not merge #209, overwrite a reviewed staging tree, promote to main, tag, or publish while the security review is in progress. Rebuild the exact new candidate and repeat all four checks and sole-owner security acceptance.
+
 ## Current release-branch verification checkpoint — issue #199
 
 **Evidence snapshot only; not a frozen or owner-approved release candidate.** Source branch `release/0.1` was verified at `b48f8c6654b28fdf6362324503ccc22a1afaa837` after [PR #203](https://github.com/infoconex/RecordSift/pull/203) was squash-merged. The unchanged promoted `main` source remains `26facaff671599d20ff6e8a1745d0d01450b0757`; the source tree no longer matches the newer release-branch documentation and tests, and a future source promotion would require a new explicit owner GO and a protected squash PR. Updating this audit creates a newer documentation commit, so run mandatory CI against that eventual integration SHA **before** any new candidate freeze.
