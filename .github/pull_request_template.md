@@ -42,7 +42,7 @@ Describe the smallest change that satisfies this single issue. Cross-reference r
 
 ## Additional gates — only for a release-promotion PR targeting `main`
 
-See [release promotion and publication governance](../blob/release/0.1/docs/engineering/release-gates.md) and the [current 0.1 prepublication audit](../blob/release/0.1/docs/engineering/release-0.1-prepublication-audit.md). If the links above do not resolve in your PR view, use `docs/engineering/release-gates.md` and `docs/engineering/release-0.1-prepublication-audit.md` directly.
+See [release promotion and publication governance](../docs/engineering/release-gates.md) and the [current 0.1 prepublication audit](../docs/engineering/release-0.1-prepublication-audit.md). If the links above do not resolve in your PR view, use `docs/engineering/release-gates.md` and `docs/engineering/release-0.1-prepublication-audit.md` directly.
 
 - [ ] The exact integration source HEAD SHA and target `main` base SHA are recorded, and the candidate is frozen.
 - [ ] All release-scoped requirements and deferrals are accounted for; blocker issues and residual risks are resolved or explicitly accepted.
