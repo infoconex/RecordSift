@@ -35,7 +35,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 using (var source = new StringReader(csv))
                 {
                     var result = parser.Read(source, 512);
-                    Assert.That(source.Peek(), Is.EqualTo(-1).Or.GreaterThanOrEqualTo(0),
+                    Assert.DoesNotThrow(() => source.Peek(),
                         "Source remains caller-owned for case " + caseIndex);
                     if (result.IsSuccessful)
                     {
@@ -61,13 +61,13 @@ namespace RecordSift.Infrastructure.Csv.Tests
         [Property("Requirement", "NFR-007")]
         public void SingleCharacterPartialReadsPreserveRecordValuesAndLocations()
         {
-            const string csv = "Id,Name\r\n1,\"Ada, Jr.\"\r\n2,\"Multi\nLine\"\r\n";
+            const string Csv = "Id,Name\r\n1,\"Ada, Jr.\"\r\n2,\"Multi\nLine\"\r\n";
             var parser = new CsvRecordReaderAdapter();
-            using (var ordinary = new StringReader(csv))
-            using (var partial = new SingleCharacterReadReader(csv))
+            using (var ordinary = new StringReader(Csv))
+            using (var partial = new SingleCharacterReadReader(Csv))
             {
-                var baseline = parser.Read(ordinary, csv.Length);
-                var tested = parser.Read(partial, csv.Length);
+                var baseline = parser.Read(ordinary, Csv.Length);
+                var tested = parser.Read(partial, Csv.Length);
                 Assert.That(baseline.IsSuccessful, Is.True);
                 Assert.That(tested.IsSuccessful, Is.True);
                 Assert.That(tested.Records.Count, Is.EqualTo(baseline.Records.Count));
@@ -107,13 +107,13 @@ namespace RecordSift.Infrastructure.Csv.Tests
         [Property("Requirement", "NFR-007")]
         public void UnicodeSurrogatePairConsumesTwoDecodedCharacterBudgetUnits()
         {
-            const string csv = "Name,\ud83d\ude00";
-            using (var exact = new StringReader(csv))
-            using (var shortBudget = new StringReader(csv))
+            const string Csv = "Name,\ud83d\ude00";
+            using (var exact = new StringReader(Csv))
+            using (var shortBudget = new StringReader(Csv))
             {
                 var parser = new CsvRecordReaderAdapter();
-                var complete = parser.Read(exact, csv.Length);
-                var rejected = parser.Read(shortBudget, csv.Length - 1);
+                var complete = parser.Read(exact, Csv.Length);
+                var rejected = parser.Read(shortBudget, Csv.Length - 1);
                 Assert.That(complete.IsSuccessful, Is.True);
                 Assert.That(complete.Records, Has.Count.EqualTo(1));
                 Assert.That(complete.Records[0].Fields[1],
