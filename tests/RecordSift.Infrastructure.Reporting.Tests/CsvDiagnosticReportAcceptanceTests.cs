@@ -23,6 +23,9 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             {
                 reader.TextFieldType = FieldType.Delimited;
                 reader.HasFieldsEnclosedInQuotes = true;
+                // The default trims leading/trailing whitespace, hiding exact-value
+                // regressions (including spreadsheet-sensitive tab/CR/LF prefixes).
+                reader.TrimWhiteSpace = false;
                 reader.SetDelimiters(delimiter);
                 while (!reader.EndOfData)
                     rows.Add(reader.ReadFields());
