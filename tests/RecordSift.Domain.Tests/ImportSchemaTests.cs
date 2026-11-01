@@ -401,6 +401,56 @@ namespace RecordSift.Domain.Tests
         }
 
         [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-007")]
+        public void RepeatedCatastrophicRegexInputsYieldSafeBoundedMatchFailures()
+        {
+            // This verifies a per-match budget, not a total import CPU budget.
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Code", true) },
+                new[] { new FieldPatternRule("Code", "^(a+)+$",
+                    TimeSpan.FromMilliseconds(1)) });
+            var values = new Dictionary<string, string> {
+                { "Code", new string('a', 256) + "SYNTHETIC_TEST_SECRET" }
+            };
+
+            for (var row = 1; row <= 12; row++)
+            {
+                var diagnostics = schema.ValidatePatterns(values, row);
+                Assert.That(diagnostics, Has.Count.EqualTo(1));
+                Assert.That(diagnostics[0].Row, Is.EqualTo(row));
+                Assert.That(diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.ValidationFailed));
+                Assert.That(diagnostics[0].Message,
+                    Does.Not.Contain("SYNTHETIC_TEST_SECRET"));
+                Assert.That(diagnostics[0].Message,
+                    Does.Not.Contain("a+"));
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-007")]
+        public void RegexTimeoutBoundariesRejectUnlimitedValuesWithoutRunningLongMatches()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new FieldPatternRule("Code", "^valid$",
+                    System.Text.RegularExpressions.Regex.InfiniteMatchTimeout));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new FieldPatternRule("Code", "^valid$",
+                    TimeSpan.FromTicks(TimeSpan.TicksPerMillisecond - 1)));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new FieldPatternRule("Code", "^valid$",
+                    TimeSpan.FromSeconds(10) + TimeSpan.FromTicks(1)));
+
+            var schema = new ImportSchema(new[] { new ExpectedColumn("Code", true) },
+                new[] { new FieldPatternRule("Code", "^valid$",
+                    TimeSpan.FromSeconds(10)) });
+            Assert.That(schema.ValidatePatterns(new Dictionary<string, string> {
+                { "Code", "valid" }
+            }, 1), Is.Empty);
+        }
+
+        [Test]
         public void RegexRuleConfigurationIsBoundedValidAndOrdinal()
         {
             Assert.Throws<ArgumentException>(() =>
