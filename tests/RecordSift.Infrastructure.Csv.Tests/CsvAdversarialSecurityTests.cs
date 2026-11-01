@@ -127,6 +127,53 @@ namespace RecordSift.Infrastructure.Csv.Tests
             }
         }
 
+
+        [Test]
+        [Explicit("Run only through the opt-in extended adversarial Windows workflow.")]
+        [Category("ExtendedAdversarial")]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-007")]
+        public void ExtendedFixedSeedCsvCorpusPreservesAtomicFailureAndCallerOwnership()
+        {
+            // Maximum ~8 MiB of source generated across 2,048 independent reads.
+            // An isolated Windows job measures process working set and time.
+            var random = new Random(2352026);
+            var alphabet = new[] { 'a', '1', '"', ',', '\r', '\n', '\t',
+                '\0', '\u00e9', '\u4e2d' };
+            var parser = new CsvRecordReaderAdapter();
+            for (var caseIndex = 0; caseIndex < 2048; caseIndex++)
+            {
+                var length = 16 + random.Next(4080);
+                var chars = new char[length];
+                for (var index = 0; index < length; index++)
+                    chars[index] = alphabet[random.Next(alphabet.Length)];
+
+                var input = "Field,Note\r\n" + new string(chars);
+                if (caseIndex % 16 == 0)
+                    input += "SYNTHETIC_TEST_SECRET";
+                using (var source = new StringReader(input))
+                {
+                    var result = parser.Read(source, 4096);
+                    if (result.IsSuccessful)
+                    {
+                        Assert.That(result.Diagnostics, Is.Empty,
+                            "Case " + caseIndex);
+                    }
+                    else
+                    {
+                        Assert.That(result.Records, Is.Empty,
+                            "Case " + caseIndex);
+                        Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                        Assert.That(result.Diagnostics[0].Scope,
+                            Is.EqualTo(DiagnosticScope.Source));
+                        Assert.That(result.Diagnostics[0].Message,
+                            Does.Not.Contain("SYNTHETIC_TEST_SECRET"));
+                    }
+                    Assert.DoesNotThrow(() => source.Peek());
+                }
+            }
+        }
+
         private sealed class SingleCharacterReadReader : StringReader
         {
             internal SingleCharacterReadReader(string value) : base(value) { }
