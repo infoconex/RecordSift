@@ -95,7 +95,7 @@ using RecordSift.Application.Ports.Xlsx;
 using RecordSift.Infrastructure.Xlsx;
 
 var xlsxImporter = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(), primitivePropertyMapper.Map);
-using (var fileStream = File.OpenRead("customers.xlsxImporter"))
+using (var fileStream = File.OpenRead("customers.xlsx"))
 {
     var typedImportResult = xlsxImporter.Import(fileStream, 4 * 1024 * 1024, importSchema,
         "customers", limits: XlsxReadLimits.Default);
