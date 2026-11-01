@@ -556,6 +556,119 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
             }
         }
 
+        [TestCase("1000001", "sharedStrings.xml")]
+        [TestCase("2147483647", "custom-metadata.xml")]
+        [Property("Requirement", "NFR-007")]
+        public void SharedStringCapacityHintCannotForceExcessiveAllocation(string advertisedCount,
+            string partName)
+        {
+            var bytes = WithSharedStrings("<sst xmlns=\"http://schemas.openxmlformats.org/" +
+                "spreadsheetml/2006/main\" uniqueCount=\"" + advertisedCount +
+                "\"><si><t>ignored</t></si></sst>", partName);
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, bytes.Length,
+                    Schema(), "forged-shared-string-count");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(result.Diagnostics[0].Message,
+                    Does.Not.Contain(advertisedCount));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "NFR-007")]
+        public void ValidWorkbookWithSharedStringMetadataRemainsImportable()
+        {
+            var bytes = WithSharedStrings("<sst xmlns=\"http://schemas.openxmlformats.org/" +
+                "spreadsheetml/2006/main\" uniqueCount=\"1\">" +
+                "<si><t>ordinary</t></si></sst>");
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, bytes.Length, Schema(),
+                    "legitimate-shared-strings");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.ProcessedCount, Is.EqualTo(3));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Alice"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "NFR-008")]
+        public void SharedStringXmlDtdIsRejectedWithoutResolvingExternalEntities()
+        {
+            var bytes = WithSharedStrings("<!DOCTYPE sst [<!ENTITY secret SYSTEM " +
+                "'file:///RecordSift-security-test-never-open'>]>" +
+                "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
+                "uniqueCount=\"1\"><si><t>&secret;</t></si></sst>");
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, bytes.Length,
+                    Schema(), "untrusted-xml");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("secret"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        private static byte[] WithSharedStrings(string sharedStringsXml,
+            string partName = "sharedStrings.xml")
+        {
+            var fixture = Convert.FromBase64String(ValidWorkbook);
+            using (var input = new MemoryStream(fixture))
+            using (var output = new MemoryStream())
+            using (var sourceZip = new System.IO.Compression.ZipArchive(input,
+                System.IO.Compression.ZipArchiveMode.Read, true))
+            {
+                using (var destinationZip = new System.IO.Compression.ZipArchive(output,
+                    System.IO.Compression.ZipArchiveMode.Create, true))
+                {
+                    var relationshipWritten = false;
+                    foreach (var entry in sourceZip.Entries)
+                    {
+                        var newEntry = destinationZip.CreateEntry(entry.FullName);
+                        using (var source = entry.Open())
+                        using (var destination = newEntry.Open())
+                        {
+                            if (entry.FullName == "xl/_rels/workbook.xml.rels")
+                            {
+                                using (var reader = new StreamReader(source))
+                                {
+                                    var relationships = reader.ReadToEnd();
+                                    Assert.That(relationships, Does.Contain("</Relationships>"));
+                                    var sharedStringsRelationship =
+                                        "<Relationship Id=\"sharedStringsGuardTest\" " +
+                                        "Type=\"http://schemas.openxmlformats.org/" +
+                                        "officeDocument/2006/relationships/sharedStrings\" " +
+                                        "Target=\"" + partName + "\"/>";
+                                    relationships = relationships.Replace("</Relationships>",
+                                        sharedStringsRelationship + "</Relationships>");
+                                    var encoded = System.Text.Encoding.UTF8.GetBytes(relationships);
+                                    destination.Write(encoded, 0, encoded.Length);
+                                    relationshipWritten = true;
+                                }
+                            }
+                            else
+                                source.CopyTo(destination);
+                        }
+                    }
+                    Assert.That(relationshipWritten, Is.True);
+                    var shared = destinationZip.CreateEntry("xl/" + partName);
+                    using (var writer = new StreamWriter(shared.Open()))
+                        writer.Write(sharedStringsXml);
+                }
+                return output.ToArray();
+            }
+        }
+
         [Test]
         [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-008")]

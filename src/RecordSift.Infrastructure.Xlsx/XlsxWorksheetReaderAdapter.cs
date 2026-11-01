@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Xml;
 using ExcelDataReader;
 using RecordSift.Application.Ports.Xlsx;
 using RecordSift.Domain.Diagnostics;
@@ -16,6 +17,7 @@ namespace RecordSift.Infrastructure.Xlsx
         // to the caller's compressed byte limit; these budgets are not caller overrides.
         private const int MaximumPackageEntries = 512;
         private const int MaximumUncompressedBytes = 67108864;
+        private const int MaximumSharedStringItems = 1000000;
         private const int BufferSize = 8192;
 
         /// <summary>Reads a selected XLSX worksheet using ExcelDataReader, first enforcing compressed-byte and ZIP expansion safeguards; failures are atomic and never expose cell values or vendor exceptions.</summary>
@@ -25,7 +27,7 @@ namespace RecordSift.Infrastructure.Xlsx
         /// <param name="maxColumns">Positive maximum decoded fields in any row.</param>
         /// <param name="maxCellCharacters">Positive maximum UTF-16 code units per decoded cell.</param>
         /// <param name="worksheetName">Optional exact-case worksheet name; null uses first available worksheet.</param>
-        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total expansion verified by streaming each ZIP entry to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Entries containing macro binaries or external-link parts are rejected. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
+        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total expansion verified by streaming each ZIP entry to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Shared-string capacity hints and item counts are limited to one million. Entries containing macro binaries or external-link parts are rejected. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
         /// <remarks>Stored worksheet values are formatted using invariant culture; DateTime cell values use the round-trip ISO 8601 format. No formula or macro code is evaluated by this reader.</remarks>
         public XlsxReadResult Read(Stream source, int maxBytes,
             int maxRows, int maxColumns, int maxCellCharacters,
@@ -164,9 +166,58 @@ namespace RecordSift.Infrastructure.Xlsx
                             actualExpanded += count;
                         }
                     }
+
+                    // ExcelDataReader 3.9.0 preallocates its shared-string list
+                    // from the untrusted <sst uniqueCount> hint before RecordSift
+                    // can apply worksheet limits. The relationship target may use
+                    // an arbitrary XML part name, so inspect every XML part root.
+                    if (path.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var sharedStringError = CheckSharedStringPart(entry, expandedLimit);
+                        if (sharedStringError != null)
+                            return sharedStringError;
+                    }
                 }
                 return zip.GetEntry("xl/workbook.xml") == null
                     ? DiagnosticCodes.MalformedSource : null;
+            }
+        }
+
+        private static string CheckSharedStringPart(ZipArchiveEntry entry, long maxCharacters)
+        {
+            var settings = new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null,
+                MaxCharactersInDocument = maxCharacters
+            };
+            using (var content = entry.Open())
+            using (var reader = XmlReader.Create(content, settings))
+            {
+                if (reader.MoveToContent() != XmlNodeType.Element ||
+                    !string.Equals(reader.LocalName, "sst", StringComparison.Ordinal) ||
+                    (reader.NamespaceURI != "http://schemas.openxmlformats.org/spreadsheetml/2006/main" &&
+                     reader.NamespaceURI != "http://purl.oclc.org/ooxml/spreadsheetml/main"))
+                    return null;
+
+                // The vendor's XmlSharedStringsReader uses int.TryParse, then
+                // XlsxWorkbook assigns List<string>.Capacity from this value.
+                var hint = reader.GetAttribute("uniqueCount");
+                int advertisedCount;
+                if (int.TryParse(hint, NumberStyles.Integer, CultureInfo.InvariantCulture,
+                        out advertisedCount) && advertisedCount > MaximumSharedStringItems)
+                    return DiagnosticCodes.SourceLimitExceeded;
+
+                var actualCount = 0;
+                while (reader.Read())
+                {
+                    if (reader.NodeType != XmlNodeType.Element ||
+                        !string.Equals(reader.LocalName, "si", StringComparison.Ordinal))
+                        continue;
+                    if (++actualCount > MaximumSharedStringItems)
+                        return DiagnosticCodes.SourceLimitExceeded;
+                }
+                return null;
             }
         }
 
