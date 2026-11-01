@@ -78,7 +78,7 @@ internal static class Program
         var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(
             propertyMappingSchema, CultureInfo.InvariantCulture);
 
-        // 3. Create an csvImporter with the real CSV adapter.
+        // 3. Create the CSV importer with the real CSV adapter.
         var csvImporter = new CsvImporter<Customer>(
             new CsvRecordReaderAdapter(), primitivePropertyMapper.Map);
 
@@ -98,13 +98,13 @@ internal static class Program
             foreach (var customer in typedImportResult.AcceptedRecords)
                 Console.WriteLine(customer.Id + ": " + customer.Name);
 
-            foreach (var diagnostic in typedImportResult.Diagnostics)
+            foreach (var importDiagnostic in typedImportResult.Diagnostics)
                 Console.WriteLine(
-                    "Error " + diagnostic.Code +
-                    " at data row " + diagnostic.Row +
-                    ", field " + diagnostic.Field);
+                    "Error " + importDiagnostic.Code +
+                    " at data row " + importDiagnostic.Row +
+                    ", field " + importDiagnostic.Field);
 
-            // 5. Reports are generated from the typedImportResult, not by re-reading CSV.
+            // 5. Reports are generated from the imported result, not by re-reading CSV.
             var jsonImportResultSerializerAdapter = new JsonImportResultSerializerAdapter();
             var jsonReport = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
             var readableImportResultFormatterAdapter = new ReadableImportResultFormatterAdapter();
