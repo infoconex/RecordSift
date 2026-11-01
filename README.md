@@ -85,6 +85,10 @@ Both importers use a caller-supplied resource budget. XLSX additionally supports
 
 The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs) and [XLSX acceptance tests](tests/RecordSift.Infrastructure.Xlsx.Tests/XlsxImporterAcceptanceTests.cs) compile and execute the same public workflow on the .NET Framework 4.8 Windows CI build. These examples describe the current API, not a published binary/package compatibility promise.
 
+## Diagnostic CSV security boundary
+
+`CsvImportResultSerializerAdapter` produces deterministic **machine-interchange CSV**, not a spreadsheet-safe export. Caller-controlled source, field and worksheet identifiers are preserved as original text. CSV quoting handles delimiters and line breaks but does not prevent applications such as Excel from treating values beginning with `=`, `+`, `-` or `@` as formulas. Do **not** directly open diagnostic exports containing untrusted metadata in spreadsheet software; import columns explicitly as text or apply a separately tested spreadsheet-specific transformation. This library does not silently alter metadata to provide spreadsheet formula protection. See the [FR-038 report contract](docs/scenarios/functional/FR-038.md) and [consumer safety guidance](docs/release/0.1-consumer-guide.md).
+
 ## Development baseline
 
 - [Release-candidate readiness assessment](docs/engineering/release-0.1-readiness.md)
