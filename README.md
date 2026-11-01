@@ -4,6 +4,19 @@
 
 RecordSift is an MIT-licensed Windows/.NET Framework 4.8 library for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports. **Stable version 0.1.0 is publicly available on [NuGet.org](https://www.nuget.org/packages/RecordSift/0.1.0).**
 
+## Why use RecordSift?
+
+**Reading a CSV file or Excel worksheet is only the first step of a business-data import.** Applications also need to match incoming columns to their data model, convert values, validate each record, decide which rows to accept, and explain rejected data. RecordSift supplies a **consistent CSV/XLSX import-and-validation workflow** so applications do not need to reinvent those surrounding steps for every file format.
+
+Choose RecordSift for Windows/.NET Framework 4.8 applications that need:
+- **Typed import and explicit mapping:** declare expected columns and map them to your own writable C# properties with culture-aware conversion.
+- **Reusable validation:** apply required-value, length, range, duplicate, pattern and custom-record checks.
+- **Useful outcomes:** accept valid records, reject problematic rows, and retain deterministic diagnostic codes with field and row locations.
+- **Optional reports:** inspect the typed result in memory or produce JSON, readable text or machine-interchange diagnostic CSV.
+- **Local processing with configurable resource budgets:** no Excel installation or runtime service; callers remain responsible for choosing sensible limits.
+
+**When not to use it:** for a simple parse-only task, direct CsvHelper or ExcelDataReader usage may be enough—RecordSift builds on those libraries and adds a higher-level pipeline, not a new parser. Release 0.1.0 is Windows/net48-only, synchronous and potentially eager; it is **not** intended for modern .NET-only/cross-platform applications, true streaming, or strict process memory/CPU ceilings. It does not automatically save accepted records or serialize them as data JSON. See the [working import example and decision guide](docs/usage/getting-started.md#why-use-recordsift).
+
 ## Start using RecordSift
 
 **[Getting started: install RecordSift 0.1.0, run a complete CSV example, import XLSX, and inspect errors](docs/usage/getting-started.md)**
@@ -44,28 +57,28 @@ using RecordSift.Application.Ports.Csv;
 using RecordSift.Domain.Schema;
 using RecordSift.Infrastructure.Csv;
 
-var schema = new ImportSchema(new[] {
+var importSchema = new ImportSchema(new[] {
     new ExpectedColumn("Id", true, true),
     new ExpectedColumn("Name", true, true)
 });
-var properties = new PropertyMappingSchema(schema, new[] {
+var propertyMappingSchema = new PropertyMappingSchema(importSchema, new[] {
     new SourcePropertyMapping("Id", "Id"),
     new SourcePropertyMapping("Name", "Name")
 });
-var mapper = new PrimitivePropertyMapper<Customer>(properties, CultureInfo.InvariantCulture);
-var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(), mapper.Map);
+var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(propertyMappingSchema, CultureInfo.InvariantCulture);
+var csvImporter = new CsvImporter<Customer>(new CsvRecordReaderAdapter(), primitivePropertyMapper.Map);
 
-using (var csv = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
+using (var stringReader = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
 {
-    var result = importer.Import(csv, 4096, schema,
+    var typedImportResult = csvImporter.Import(stringReader, 4096, importSchema,
         CsvHeaderPolicy.WithHeader, "customers", options: CsvReadOptions.Default);
 
-    // Access result.Status, result.Summary, result.AcceptedRecords,
-    // result.Diagnostics (including Code, Scope, Row, Field and PhysicalLine).
-    Console.WriteLine(result.Status);
-    Console.WriteLine(result.Summary.AcceptedCount);
-    foreach (var error in result.Diagnostics)
-        Console.WriteLine(error.Code);
+    // Access typedImportResult.Status, typedImportResult.Summary, typedImportResult.AcceptedRecords,
+    // typedImportResult.Diagnostics (including Code, Scope, Row, Field and PhysicalLine).
+    Console.WriteLine(typedImportResult.Status);
+    Console.WriteLine(typedImportResult.Summary.AcceptedCount);
+    foreach (var importDiagnostic in typedImportResult.Diagnostics)
+        Console.WriteLine(importDiagnostic.Code);
 }
 ```
 
@@ -73,7 +86,7 @@ using (var csv = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
 
 ### XLSX import
 
-Reference `RecordSift.Infrastructure.Xlsx` and its runtime dependencies as well. Reuse the `Customer`, `schema`, and `mapper` declarations above:
+Reference `RecordSift.Infrastructure.Xlsx` and its runtime dependencies as well. Reuse the `Customer`, `importSchema`, and `primitivePropertyMapper` declarations above:
 
 ```csharp
 using System.IO;
@@ -81,13 +94,13 @@ using RecordSift.Application.Importing.Xlsx;
 using RecordSift.Application.Ports.Xlsx;
 using RecordSift.Infrastructure.Xlsx;
 
-var xlsx = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(), mapper.Map);
-using (var stream = File.OpenRead("customers.xlsx"))
+var xlsxImporter = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(), primitivePropertyMapper.Map);
+using (var fileStream = File.OpenRead("customers.xlsxImporter"))
 {
-    var result = xlsx.Import(stream, 4 * 1024 * 1024, schema,
+    var typedImportResult = xlsxImporter.Import(fileStream, 4 * 1024 * 1024, importSchema,
         "customers", limits: XlsxReadLimits.Default);
     // The first worksheet is used by default; specify worksheetName to select one.
-    // The result exposes the same typed records, summary and diagnostic contract.
+    // The typedImportResult exposes the same typed records, summary and diagnostic contract.
 }
 ```
 
@@ -97,15 +110,17 @@ The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/Publ
 
 ## Results and JSON reports
 
-CSV and XLSX importers return a **typed `TypedImportResult<T>`**, not a JSON string. Read `result.AcceptedRecords` for accepted `T` objects and `result.Status`, `result.Summary` and `result.Diagnostics` for outcome and validation errors.
+CSV and XLSX importers return a **typed `TypedImportResult<T>`**, not a JSON string. Read `typedImportResult.AcceptedRecords` for accepted `T` objects and `typedImportResult.Status`, `typedImportResult.Summary` and `typedImportResult.Diagnostics` for outcome and validation errors.
 
 To produce an optional JSON **outcome/diagnostic report**, reference `RecordSift.Infrastructure.Reporting` and use:
 
 ```csharp
-var jsonReport = new RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter().Serialize(result);
+var jsonImportResultSerializerAdapter =
+    new RecordSift.Infrastructure.Reporting.JsonImportResultSerializerAdapter();
+var jsonReport = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
 ```
 
-This report contains the source ID, status, counts and diagnostic codes/messages, **not the accepted record values**. RecordSift deliberately does not automatically export imported customer data in diagnostic JSON. To export accepted rows to JSON, serialize `result.AcceptedRecords` in your own application using your preferred JSON library and appropriate privacy controls. See the [getting-started guide's expected console output and formatted JSON example](docs/usage/getting-started.md#2-run-a-complete-csv-import) and the [JSON contract](docs/specifications/import-result.md).
+This report contains the source ID, status, counts and diagnostic codes/messages, **not the accepted record values**. RecordSift deliberately does not automatically export imported customer data in diagnostic JSON. To export accepted rows to JSON, serialize `typedImportResult.AcceptedRecords` in your own application using your preferred JSON library and appropriate privacy controls. See the [getting-started guide's expected console output and formatted JSON example](docs/usage/getting-started.md#2-run-a-complete-csv-import) and the [JSON contract](docs/specifications/import-result.md).
 
 ## XLSX input security boundary
 
