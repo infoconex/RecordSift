@@ -1,6 +1,6 @@
 # RecordSift engineering documentation
 
-> **For application developers:** start with the [RecordSift 0.1.0 getting-started walkthrough](usage/getting-started.md) for installation, a complete C# 7.3 CSV example, XLSX import, mapping, validation and result reporting. This directory also contains historical engineering evidence, which is **not** a substitute for the usage guide.
+> **For application developers:** start with the [RecordSift 0.1.0 getting-started walkthrough](usage/getting-started.md) for installation, a complete commented C# 7.3 CSV example, four downloadable customer CSV/XLSX sample files, XLSX import, mapping, validation and result reporting. This directory also contains historical engineering evidence, which is **not** a substitute for the usage guide.
 
 > **Current release (2026-11-01):** [NuGet.org RecordSift 0.1.0](https://www.nuget.org/packages/RecordSift/0.1.0) and [GitHub `v0.1.0`](https://github.com/infoconex/RecordSift/releases/tag/v0.1.0) are publicly published and verified. Source tag is `2db5c86bc26010afcb83c2e455d2471d8c9340d6`. [Release governance #199](https://github.com/infoconex/RecordSift/issues/199) is closed as completed. Earlier dated statements that publication is pending are **historical**, not current status.
 

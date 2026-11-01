@@ -36,280 +36,280 @@ RecordSift provides five DLLs in one package: `RecordSift.Domain`, `RecordSift.A
 
 > **Important:** `nuget install RecordSift` from a terminal downloads packages to a folder but does **not** add a package reference to your Visual Studio project. Install the package into your **project**, as above.
 
+## Sample files
+
+Download the valid [CSV](../samples/customers.csv) and [Excel](../samples/customers.xlsx) datasets (20 customer rows each), or explore deliberately invalid [CSV](../samples/customers-invalid.csv) and [Excel](../samples/customers-invalid.xlsx) inputs (10 rows each). The CSV and Excel files have equivalent data, and section 2 displays all 20 valid CSV records directly. Place `customers.csv` in your Console App's working directory before running the program.
+
 ## 2. A shared customer schema for CSV and Excel
 
-Both formats use the **same six logical columns**, the same C# `Customer` type, and the same `ImportSchema` / `PropertyMappingSchema`. CSV headings and XLSX worksheet headings use the same names (case-sensitive).
-
-| Source column | C# destination property | Type | Column required? | Value required if present? | If the whole column is omitted |
+| Column | CLR type | Column required? | Value required? | Default when optional column is absent | Purpose |
 | --- | --- | --- | --- | --- | --- |
-| `Id` | `Id` | `int` | Yes | Yes | Source/schema error |
-| `Name` | `Name` | `string` | Yes | Yes | Source/schema error |
-| `LoyaltyPoints` | `LoyaltyPoints` | `int` | No | No | `0` |
-| `CreditLimit` | `CreditLimit` | `decimal` | No | No | `0.00` |
-| `IsActive` | `IsActive` | `bool` | No | No | `true` |
-| `Email` | `Email` | `string` | No | No | `null` (no explicit default) |
+| Id | `int` | Yes | Yes | — | Required integer conversion |
+| Name | `string` | Yes | Yes | — | Required text |
+| Email | `string` | Yes | Yes | — | Email field; syntax requires a separately configured validation rule |
+| RegistrationDate | `DateTime` | Yes | Yes | — | Required date conversion |
+| LoyaltyPoints | `int` | No | No | `0` | Optional integer default |
+| CreditLimit | `decimal` | No | No | `0.00` | Decimal parsing |
+| IsActive | `bool` | No | No | `true` | Boolean conversion |
+| CustomerTier | `string` | No | No | `Standard` | Optional text default |
+| LastPurchaseDate | `DateTime?` | No | No | None (`null` in model) | Nullable date |
+| ReferralCode | `string` | No | No | None (`null` in model) | Optional text |
 
-`ExpectedColumn.IsRequired` controls **whether the column exists**; `IsValueRequired` controls **whether a present row's value may be blank**. For optional value-type properties, use an explicit raw-string default (e.g. `"0"`, `"0.00"`, `"true"`) so your business default is documented and applied by the mapping pipeline. `Email` has no configured default, so a newly constructed `Customer.Email` remains `null` when that column is omitted. Without an explicit default, absent optional nonnullable value-type properties keep their CLR initialization (`0`, `false`, etc.); a property initializer could also affect the initial value.
+**Important:** A column that is *absent from the header* differs from a column that is present but has a *blank cell*. `ExpectedColumn.defaultValue` supplies a raw string only for an absent **optional field**; it is not a general substitution for empty cells. The 20-row downloadable dataset intentionally includes blank cells in optional columns. Do not expect `CustomerTier` or other defaults to be applied to those blank cells. The typed mapper interprets raw defaults according to destination property types and the supplied culture.
 
-**Defaults apply only when the entire optional source column is absent from the header**, not when an existing column has an empty cell. A blank value for a nonnullable `int`, `decimal`, or `bool` will fail primitive conversion instead of being replaced with the absence default; use a nullable value type (e.g., `int?`) when a blank is intended to represent `null`. An explicit default is parsed according to the mapper's supplied culture (`InvariantCulture` in this tutorial).
+### CSV (`customers.csv`) — all 20 rows
 
-These files both satisfy the shared schema and use the same import/mapping/validation rules:
-
-**CSV (`customers.csv`):**
+The block below is the complete content of the downloadable CSV, not an abbreviated illustration:
 
 ```csv
-Id,Name
-1,Alice
-not-an-integer,Bob
+Id,Name,Email,RegistrationDate,LoyaltyPoints,CreditLimit,IsActive,CustomerTier,LastPurchaseDate,ReferralCode
+1001,John Smith,john.smith@example.com,2025-01-15,150,5000.00,true,Gold,2026-08-10,REF100
+1002,Jane Doe,jane.doe@example.com,2025-02-20,0,2500.50,true,Standard,2026-07-22,
+1003,Robert Johnson,robert.j@example.com,2025-03-10,500,10000.00,true,Platinum,2026-09-01,REF200
+1004,Emily Davis,emily.d@example.com,2025-04-05,25,0.00,false,Standard,,
+1005,Michael Brown,michael.b@example.com,2025-05-12,100,1500.75,true,Silver,2026-06-15,
+1006,Sarah Wilson,sarah.w@example.com,2025-06-18,0,0.00,true,Standard,,
+1007,David Miller,david.m@example.com,2025-07-01,750,25000.00,true,Platinum,2026-10-01,REF300
+1008,Lisa Anderson,lisa.a@example.com,2025-08-25,200,7500.25,false,Gold,2026-05-20,
+1009,Olivia Martin,olivia.m@example.com,2025-09-02,90,125.99,true,Silver,,FRIEND09
+1010,Noah Thompson,noah.t@example.com,2025-09-17,0,0.00,false,Standard,,
+1011,Ava White,ava.w@example.com,2025-10-08,320,8400.10,true,Gold,2026-09-21,AVAW
+1012,Liam Harris,liam.h@example.com,2025-10-29,14,100.00,true,Standard,2026-01-03,
+1013,Sophia Clark,sophia.c@example.com,2025-11-11,0,20.05,true,Standard,,
+1014,Mason Lewis,mason.l@example.com,2025-12-05,135,3000.00,false,Silver,2026-02-14,MASON
+1015,Isabella Young,isabella.y@example.com,2026-01-07,80,450.60,true,Gold,2026-08-12,
+1016,Ethan Hall,ethan.h@example.com,2026-02-12,990,50000.00,true,Platinum,2026-10-15,VIP990
+1017,Mia Allen,mia.a@example.com,2026-03-23,5,75.00,true,Standard,,
+1018,Lucas King,lucas.k@example.com,2026-04-30,240,12500.50,false,Gold,2026-05-01,
+1019,Amelia Wright,amelia.w@example.com,2026-05-15,30,1999.95,true,Silver,2026-06-18,WRIGHT
+1020,Benjamin Scott,ben.s@example.com,2026-06-28,0,0.00,true,Standard,,
 ```
 
-**Excel (`customers.xlsx`, worksheet `Customers`):** put `Id` and `Name` in cells A1 and B1, with `1` / `Alice` in A2:B2 and `not-an-integer` / `Bob` in A3:B3. The other four optional columns are **absent** in both inputs. You can add those four columns later, using the exact names in the table, without changing the C# schema or model. For example, the full heading row in either CSV or the XLSX worksheet is `Id,Name,LoyaltyPoints,CreditLimit,IsActive,Email`.
-
-For Alice, RecordSift maps missing optional fields to `LoyaltyPoints = 0`, `CreditLimit = 0.00m`, `IsActive = true`, and `Email = null`. Bob is rejected because his required `Id` is invalid; the imported result can still have `Status = Completed`.
+The Excel workbook contains the same headers and values. Different customer tiers, zero/nonzero numbers, `true`/`false` values, nullable dates and empty referral codes demonstrate normal input variations. These files are intentionally valid for the basic import. No email syntax or business-range validation is implied solely by the `ExpectedColumn` declarations.
 
 ## 3. Configure input budgets and run a complete CSV import
 
-In 0.1.0, the CSV `maxCharacters` and XLSX `maxBytes` arguments are **required**. They do not have library-provided defaults because each application must choose appropriate resource limits for its inputs and threat model. `maxCharacters` counts **decoded UTF-16 characters** read by the `TextReader`; `maxBytes` counts the **compressed XLSX input bytes**. Neither is a maximum number of rows. Both must be positive.
+In 0.1.0, the CSV `maxCharacters` argument is **required** and has no built-in default. It bounds decoded UTF-16 characters processed by the reader, not row count; choose a conservative positive value based on the expected input. XLSX has a separate required compressed-byte budget. The limits below are tutorial choices, not universal safe defaults. No `App.config` is required.
 
-For a real application, keep these limits in application configuration rather than scattering unexplained integer literals through `Import(...)` calls. Add an **App.config** file to the **Console App project** (or edit its existing one) with the following sample values. They are **tutorial examples, not safe universal defaults**; choose limits from your own observed file sizes, resource constraints and acceptance policy.
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <appSettings>
-    <!-- Example decoded CSV character budget: 64 Ki UTF-16 code units -->
-    <add key="RecordSift.MaxCsvCharacters" value="65536" />
-    <!-- Example compressed XLSX file budget: 4 MiB -->
-    <add key="RecordSift.MaxXlsxBytes" value="4194304" />
-  </appSettings>
-</configuration>
-```
-
-The code below reads the configured CSV limit by name and rejects missing, invalid or nonpositive values. Add a reference to the .NET Framework **System.Configuration** assembly if your Console App project does not already reference it. `System.Configuration` is part of the .NET Framework 4.8 environment; this is application configuration, **not** a new RecordSift dependency.
-
-Replace the content of `Program.cs` in your Console App with this **complete C# 7.3 program** (no top-level statements). The sample imports the required columns only, so the optional defaults are exercised:
+Create a **Windows .NET Framework 4.8 Console App** with C# 7.3; reference `RecordSift.Domain`, `RecordSift.Application`, `RecordSift.Infrastructure.Csv`, and their runtime dependencies. Replace `Program.cs` with the following self-contained example (C# 7.3 compatible).
 
 ```csharp
 using System;
-using System.Configuration;
 using System.Globalization;
 using System.IO;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Mapping;
 using RecordSift.Application.Ports.Csv;
-using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
 using RecordSift.Infrastructure.Csv;
-using RecordSift.Infrastructure.Reporting;
 
-internal sealed class Customer
+namespace RecordSift.GettingStarted
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public int LoyaltyPoints { get; set; }
-    public decimal CreditLimit { get; set; }
-    public bool IsActive { get; set; }
-    public string Email { get; set; }
-}
-
-internal static class Program
-{
-    // Read explicit application budgets rather than relying on a hidden global limit.
-    private static int ReadPositiveLimit(string settingName)
+    public sealed class Customer
     {
-        var configuredValue = ConfigurationManager.AppSettings[settingName];
-        int limit;
-        if (!int.TryParse(configuredValue, NumberStyles.None,
-                CultureInfo.InvariantCulture, out limit) || limit < 1)
-            throw new ConfigurationErrorsException(
-                "A positive integer App.config value is required for " + settingName);
-        return limit;
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public DateTime RegistrationDate { get; set; }
+        public int LoyaltyPoints { get; set; }
+        public decimal CreditLimit { get; set; }
+        public bool IsActive { get; set; }
+        public string CustomerTier { get; set; }
+        public DateTime? LastPurchaseDate { get; set; }
+        public string ReferralCode { get; set; }
     }
 
-    private static void Main()
+    internal static class Program
     {
-        // 1. Declare which source columns are expected.
-        var importSchema = new ImportSchema(new[]
+        private static void Main()
         {
-            new ExpectedColumn("Id", true, true),
-            new ExpectedColumn("Name", true, true),
-            new ExpectedColumn("LoyaltyPoints", false, false, "0"),
-            new ExpectedColumn("CreditLimit", false, false, "0.00"),
-            new ExpectedColumn("IsActive", false, false, "true"),
-            new ExpectedColumn("Email", false, false)
-        });
+            // Location of the downloaded sample file (relative to the executable's working directory).
+            var csvFilePath = "customers.csv";
 
-        // 2. Map incoming column names to writable Customer properties.
-        var propertyMappingSchema = new PropertyMappingSchema(importSchema, new[]
-        {
-            new SourcePropertyMapping("Id", "Id"),
-            new SourcePropertyMapping("Name", "Name"),
-            new SourcePropertyMapping("LoyaltyPoints", "LoyaltyPoints"),
-            new SourcePropertyMapping("CreditLimit", "CreditLimit"),
-            new SourcePropertyMapping("IsActive", "IsActive"),
-            new SourcePropertyMapping("Email", "Email")
-        });
-        var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(
-            propertyMappingSchema, CultureInfo.InvariantCulture);
+            // Upper bound on decoded characters in one CSV field; choose a limit for your data.
+            var maximumFieldLength = 4096;
 
-        // 3. Create the CSV importer with the real CSV adapter.
-        var csvImporter = new CsvImporter<Customer>(
-            new CsvRecordReaderAdapter(), primitivePropertyMapper.Map);
+            // Non-sensitive logical identifier included in source-level diagnostics.
+            var sourceName = "customers";
 
-        // 4. Import. The second row contains an intentionally invalid Id.
-        using (var stringReader = new StringReader("Id,Name\n1,Alice\nnot-an-integer,Bob"))
-        {
-            var maxCsvCharacters = ReadPositiveLimit("RecordSift.MaxCsvCharacters");
-            var typedImportResult = csvImporter.Import(
-                stringReader, maxCsvCharacters, importSchema, CsvHeaderPolicy.WithHeader,
-                "demo-customers", options: CsvReadOptions.Default);
+            // The first row contains source-column names rather than customer data.
+            var csvHeaderPolicy = CsvHeaderPolicy.WithHeader;
 
-            Console.WriteLine("Status: " + typedImportResult.Status);
-            Console.WriteLine(
-                "Processed: " + typedImportResult.Summary.ProcessedCount +
-                ", accepted: " + typedImportResult.Summary.AcceptedCount +
-                ", rejected: " + typedImportResult.Summary.RejectedCount);
+            // Use RecordSift's default CSV delimiter and parsing settings.
+            var csvReadOptions = CsvReadOptions.Default;
 
-            foreach (var customer in typedImportResult.AcceptedRecords)
-                Console.WriteLine(
-                    customer.Id + ": " + customer.Name +
-                    " (points=" + customer.LoyaltyPoints +
-                    ", creditLimit=" + customer.CreditLimit.ToString("0.00", CultureInfo.InvariantCulture) +
-                    ", isActive=" + customer.IsActive +
-                    ", email=" + (customer.Email ?? "<none>") + ")");
+            // Make date, decimal and numeric conversion culture-independent.
+            var conversionCulture = CultureInfo.InvariantCulture;
 
-            foreach (var importDiagnostic in typedImportResult.Diagnostics)
-                Console.WriteLine(
-                    "Error " + importDiagnostic.Code +
-                    " at data row " + importDiagnostic.Row +
-                    ", field " + importDiagnostic.Field);
+            // Defines source columns, required values, and defaults for absent optional fields.
+            var importSchema = new ImportSchema(new[]
+            {
+                new ExpectedColumn(name: "Id", isRequired: true, isValueRequired: true),
+                new ExpectedColumn(name: "Name", isRequired: true, isValueRequired: true),
+                new ExpectedColumn(name: "Email", isRequired: true, isValueRequired: true),
+                new ExpectedColumn(name: "RegistrationDate", isRequired: true, isValueRequired: true),
+                new ExpectedColumn(name: "LoyaltyPoints", isRequired: false, isValueRequired: false, defaultValue: "0"),
+                new ExpectedColumn(name: "CreditLimit", isRequired: false, isValueRequired: false, defaultValue: "0.00"),
+                new ExpectedColumn(name: "IsActive", isRequired: false, isValueRequired: false, defaultValue: "true"),
+                new ExpectedColumn(name: "CustomerTier", isRequired: false, isValueRequired: false, defaultValue: "Standard"),
+                new ExpectedColumn(name: "LastPurchaseDate", isRequired: false, isValueRequired: false),
+                new ExpectedColumn(name: "ReferralCode", isRequired: false, isValueRequired: false)
+            });
 
-            // 5. Reports are generated from the imported result, not by re-reading CSV.
-            var jsonImportResultSerializerAdapter = new JsonImportResultSerializerAdapter();
-            var jsonReport = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
-            var readableImportResultFormatterAdapter = new ReadableImportResultFormatterAdapter();
-            var readableReport = readableImportResultFormatterAdapter.Format(typedImportResult);
-            Console.WriteLine("JSON report:");
-            Console.WriteLine(jsonReport);
-            Console.WriteLine("Readable summary:");
-            Console.WriteLine(readableReport);
+            // Maps each source column to the same-named property on Customer.
+            // Explicit mappings are required by the current public API.
+            var propertyMappingSchema = new PropertyMappingSchema(importSchema, new[]
+            {
+                new SourcePropertyMapping(sourceColumnName: "Id", propertyName: "Id"),
+                new SourcePropertyMapping(sourceColumnName: "Name", propertyName: "Name"),
+                new SourcePropertyMapping(sourceColumnName: "Email", propertyName: "Email"),
+                new SourcePropertyMapping(sourceColumnName: "RegistrationDate", propertyName: "RegistrationDate"),
+                new SourcePropertyMapping(sourceColumnName: "LoyaltyPoints", propertyName: "LoyaltyPoints"),
+                new SourcePropertyMapping(sourceColumnName: "CreditLimit", propertyName: "CreditLimit"),
+                new SourcePropertyMapping(sourceColumnName: "IsActive", propertyName: "IsActive"),
+                new SourcePropertyMapping(sourceColumnName: "CustomerTier", propertyName: "CustomerTier"),
+                new SourcePropertyMapping(sourceColumnName: "LastPurchaseDate", propertyName: "LastPurchaseDate"),
+                new SourcePropertyMapping(sourceColumnName: "ReferralCode", propertyName: "ReferralCode")
+            });
+
+            // Converts raw source values into writable Customer properties.
+            var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(
+                propertyMappingSchema, conversionCulture);
+
+            // Connects RecordSift's CSV reader to the typed mapping delegate.
+            var csvImporter = new CsvImporter<Customer>(
+                new CsvRecordReaderAdapter(), primitivePropertyMapper.Map);
+
+            // Owns and disposes the input reader; the importer does not own the stream.
+            using (var streamReader = File.OpenText(csvFilePath))
+            {
+                // Imports data and returns accepted records and structured diagnostics.
+                var typedImportResult = csvImporter.Import(
+                    streamReader,
+                    maximumFieldLength,
+                    importSchema,
+                    csvHeaderPolicy,
+                    sourceName,
+                    options: csvReadOptions);
+
+                // Prints the outcome without hiding unsuccessful source imports.
+                Console.WriteLine("Status: " + typedImportResult.Status);
+
+                // Prints the number of successfully mapped customer records.
+                Console.WriteLine("Accepted: " + typedImportResult.Summary.AcceptedCount);
+
+                // Process accepted customers in your application.
+                // ProcessCustomers(typedImportResult.AcceptedRecords);
+
+                // Log full diagnostic details or emit a JSON report as needed.
+                // ReportDiagnostics(typedImportResult.Diagnostics);
+
+                // Record additional summary metrics if your application needs them.
+                // LogImportSummary(typedImportResult.Summary);
+            }
         }
     }
 }
 ```
 
-Build and run the project. The **first four console lines** for this specific input are:
+The 20-row valid file should result in 20 accepted customers and no record-conversion failures under the normal invariant-culture pipeline. The example intentionally leaves business-level validation and lengthy logging helpers as comments; it still performs the real import. The source file must be in the process working directory or the path must be adjusted.
 
-```text
-Status: Completed
-Processed: 2, accepted: 1, rejected: 1
-1: Alice (points=0, creditLimit=0.00, isActive=True, email=<none>)
-Error CONVERSION_FAILED at data row 2, field Id
+### Why explicit mapping appears repetitive
+
+RecordSift 0.1 requires `SourcePropertyMapping(sourceColumnName: ..., propertyName: ...)` even when names match. We retain that existing API and use named arguments to clarify the intent. A possible opt-in same-name convenience API is tracked separately in [future issue #254](https://github.com/infoconex/RecordSift/issues/254); it is **not** part of this walkthrough or release.
+
+
+### Optional JSON and readable reports
+
+RecordSift returns a typed result, **not JSON**. Its JSON formatter reports the import outcome and diagnostic metadata; it does not serialize accepted `Customer` data. Reference `RecordSift.Infrastructure.Reporting` and, inside the import block from section 3, use:
+
+```csharp
+// Converts the existing result into a machine-readable diagnostic JSON report.
+var jsonImportResultSerializerAdapter = new JsonImportResultSerializerAdapter();
+
+// Contains status, counts and diagnostic details, not the accepted Customer objects.
+var jsonReport = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
+
+// Converts the same result to a display-oriented text summary.
+var readableImportResultFormatterAdapter = new ReadableImportResultFormatterAdapter();
+
+// The readable summary is intended for people, not for machine parsing.
+var readableReport = readableImportResultFormatterAdapter.Format(typedImportResult);
+
+// Your application decides whether to log, display or store these reports.
+// LogReports(jsonReport, readableReport);
 ```
 
-This explicitly demonstrates that the four absent optional source columns were handled consistently. The outcome counts and JSON diagnostic report remain the same regardless of whether the input is CSV or XLSX, given equivalent source rows.
-
-Next, the program prints `JSON report:` and a JSON string. The JSON below illustrates the **actual public 1.0 report contract** for this input, **pretty-printed for readability** (the adapter's string itself is compact):
-
-```json
-{
-  "schemaVersion": "1.0",
-  "sourceId": "demo-customers",
-  "status": "Completed",
-  "message": "Import completed with rejected records.",
-  "summary": {
-    "processedCount": 2,
-    "acceptedCount": 1,
-    "rejectedCount": 1
-  },
-  "diagnostics": [
-    {
-      "scope": "Record",
-      "row": 2,
-      "field": "Id",
-      "code": "CONVERSION_FAILED",
-      "message": "A field could not be converted.",
-      "physicalLine": 3
-    }
-  ]
-}
-```
-
-Finally, the program prints `Readable summary:` and the human-readable text report. Its text is intended for display, **not for machine parsing**. If you want to save a JSON report instead of printing it, call `File.WriteAllText("import-report.json", jsonReport);` in `Main` after creating the `jsonReport` variable (with appropriate filesystem error handling in production).
-
-**Important: the JSON report does not contain the accepted customer records.** The original typed `typedImportResult.AcceptedRecords` contains `Customer { Id = 1, Name = "Alice" }`; this is intentional to avoid exporting source record values in default diagnostic reports. If you need a **JSON file containing imported data**, serialize `typedImportResult.AcceptedRecords` in your *own application*, under an appropriate privacy policy, using your chosen JSON serializer. RecordSift's `JsonImportResultSerializerAdapter` is for reporting **outcomes and diagnostics**, not for exporting your data records.
-
-The JSON `schemaVersion` is independent of the NuGet package version: completed and source-failed results use **1.0**, opt-in fail-fast stopped results use **1.1**, and canceled results use **1.2**. See the [versioned JSON contract](../specifications/import-result.md) and the [tested golden fixtures](../../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/) for exact field guarantees.
-
-Use structured `Status`, `Summary` and `Diagnostics` members for application logic rather than parsing text messages. The example uses `StringReader` so you can run it immediately. For a real CSV file, replace it with `File.OpenText("customers.csv")` (or use the explicitly encoded byte-stream adapter described in the [consumer guide](../release/0.1-consumer-guide.md)).
+Add `using RecordSift.Infrastructure.Reporting;` to the complete program to use these optional snippets. To export accepted customer data as JSON, serialize `typedImportResult.AcceptedRecords` with your application's chosen serializer and privacy controls; these reporting adapters intentionally omit record values. See the [versioned diagnostic JSON contract](../specifications/import-result.md) for schema guarantees.
 
 ### What happens to bad rows?
 
-`Status == ImportStatus.Completed` means the source processing completed. It does **not** mean every row was valid. In the example, the valid Alice row is accepted; Bob is rejected because his `Id` cannot be converted to an `int`. One rejected row may have multiple diagnostics. Inspect `typedImportResult.Summary` for row counts and `typedImportResult.Diagnostics` for detailed machine-readable problems.
+A `Completed` status means processing completed, not necessarily that every record was accepted. Inspect `typedImportResult.Summary.RejectedCount` and `typedImportResult.Diagnostics` separately. A `Failed` status represents a source- or schema-level failure; `Stopped` and `Canceled` have their own partial-processing semantics.
 
-`ImportStatus.Failed` represents a source- or schema-level failure, not merely a bad data row. `Stopped` indicates a deliberate fail-fast stop; `Canceled` indicates cooperative cancellation. Do not treat these statuses as equivalent or assume they all contain the same accepted-record information.
+## 4. Use a real CSV file, another delimiter, or no headers
 
-## 4. Use a real CSV file, a different delimiter, or no headers
+The complete program in section 3 already opens the downloaded `customers.csv` using `File.OpenText(csvFilePath)`. Its `csvFilePath`, `maximumFieldLength`, `importSchema`, `csvImporter`, `csvHeaderPolicy`, `sourceName`, and `csvReadOptions` are locally defined above the import call. Change the path if the sample is not in the process working directory.
 
-For a regular UTF-8 CSV file with a header row:
-
-```csharp
-using (var streamReader = File.OpenText(@"C:\data\customers.csv"))
-{
-    var maxCsvCharacters = ReadPositiveLimit("RecordSift.MaxCsvCharacters");
-    var typedImportResult = csvImporter.Import(streamReader, maxCsvCharacters, importSchema,
-        CsvHeaderPolicy.WithHeader, "customer-upload",
-        options: CsvReadOptions.Default);
-    // Inspect typedImportResult.Status, typedImportResult.AcceptedRecords and typedImportResult.Diagnostics.
-}
-```
-
-Here `importSchema`, `csvImporter`, and the `ReadPositiveLimit` method are initialized in section 3; this is an **alternative** input block, not a second complete program. Its input budget comes from the same `RecordSift.MaxCsvCharacters` application setting, regardless of whether the source is a `StringReader` or a file-backed `StreamReader`.
-
-For a semicolon-delimited file, pass `options: new CsvReadOptions(";")`. For a headerless file, select `CsvHeaderPolicy.WithoutHeader` and provide explicit zero-based positions, for example:
+For a semicolon-delimited file, set `csvReadOptions = new CsvReadOptions(";")` before import. A headerless file needs `CsvHeaderPolicy.WithoutHeader` and explicit zero-based `SourceColumnPosition` bindings (one for each supplied source column). For example:
 
 ```csharp
-positions: new[]
+// Positions identify physical columns when a source has no header row.
+var sourceColumnPositions = new[]
 {
     new SourceColumnPosition("Id", 0),
     new SourceColumnPosition("Name", 1)
-}
+};
+
+// Select positional rather than header-based binding.
+var csvHeaderPolicy = CsvHeaderPolicy.WithoutHeader;
+
+// Pass positions: sourceColumnPositions to csvImporter.Import(...).
 ```
 
-Add the `positions:` named argument to the `Import(...)` call and supply a headerless source; **do not** combine positions with `CsvHeaderPolicy.WithHeader`. For non-UTF-8 files or strict decoding, use the byte-stream importer with an explicitly chosen encoding instead of relying on `File.OpenText` defaults.
+This illustration assumes a **different two-column source**, so use a matching import schema for it; do not apply the 10-column sample schema blindly. Never combine positional bindings with `WithHeader`. For explicitly encoded streams, use the public `CsvStreamImporterAdapter<T>` with an explicit `Encoding`.
 
-## 5. Import an Excel workbook (XLSX)
+## 5. Import the same schema from Excel
 
-The **same** `Customer`, `importSchema`, and `primitivePropertyMapper` from the shared column table and CSV example can be reused for an XLSX workbook with `Id` and `Name` column headers. Omitted optional headings use the same defaults. Add these namespaces:
-
-```csharp
-using RecordSift.Application.Importing.Xlsx;
-using RecordSift.Application.Ports.Xlsx;
-using RecordSift.Infrastructure.Xlsx;
-```
-
-Then, in `Main`, create the XLSX importer:
+Reference `RecordSift.Infrastructure.Xlsx` and its dependencies. Reuse `Customer`, `importSchema`, `propertyMappingSchema`, `conversionCulture`, and `primitivePropertyMapper` from above. Replace the CSV importer and CSV reader with:
 
 ```csharp
+// Path to the Excel equivalent of the twenty-row CSV example.
+var xlsxFilePath = "customers.xlsx";
+
+// Maximum compressed workbook size in bytes; budget is caller-controlled.
+var maximumWorkbookBytes = 4 * 1024 * 1024;
+
+// Non-sensitive logical dataset name for diagnostics.
+var sourceName = "customers";
+
+// Default worksheet row, column, and cell-character safety limits.
+var xlsxReadLimits = XlsxReadLimits.Default;
+
+// Creates an XLSX importer using the same Customer mapping as CSV.
 var xlsxImporter = new XlsxImporter<Customer>(
     new XlsxWorksheetReaderAdapter(), primitivePropertyMapper.Map);
 
-using (var fileStream = File.OpenRead(@"C:\data\customers.xlsx"))
+// Opens and disposes the workbook input stream.
+using (var fileStream = File.OpenRead(xlsxFilePath))
 {
-    var maxXlsxBytes = ReadPositiveLimit("RecordSift.MaxXlsxBytes");
+    // The first worksheet is the sample's Customers worksheet.
     var typedImportResult = xlsxImporter.Import(
-        fileStream, maxXlsxBytes, importSchema, "customer-workbook",
-        worksheetName: "Customers", limits: XlsxReadLimits.Default);
+        fileStream,
+        maximumWorkbookBytes,
+        importSchema,
+        sourceName,
+        limits: xlsxReadLimits);
 
+    // Show the completion status and accepted record count.
     Console.WriteLine(typedImportResult.Status);
-    Console.WriteLine("Accepted: " + typedImportResult.Summary.AcceptedCount);
-    foreach (var importDiagnostic in typedImportResult.Diagnostics)
-        Console.WriteLine(importDiagnostic.Code + " / " + importDiagnostic.Worksheet +
-                          " / row " + importDiagnostic.PhysicalRow);
+    Console.WriteLine(typedImportResult.Summary.AcceptedCount);
+
+    // ProcessCustomers(typedImportResult.AcceptedRecords);
+    // ReportDiagnostics(typedImportResult.Diagnostics);
 }
 ```
 
-`worksheetName: "Customers"` selects that worksheet by its **exact name**; omit it to read the first worksheet. Missing worksheets return a source-level diagnostic rather than silently selecting another sheet. `maxXlsxBytes` is the **compressed workbook byte limit** read from the `RecordSift.MaxXlsxBytes` App.config setting. It has no library default. `XlsxReadLimits.Default` independently limits the one-based physical worksheet row index to **100,000**, columns per row to **256**, and decoded UTF-16 characters per cell to **32,767**. These worksheet defaults do **not** override the mandatory file byte limit. The caller owns the stream. The library never starts Microsoft Excel or evaluates formulas/macros.
+The Excel snippet is an **alternative** import path within the same program, not a second standalone `Main`; include the namespaces `RecordSift.Application.Importing.Xlsx`, `RecordSift.Application.Ports.Xlsx`, and `RecordSift.Infrastructure.Xlsx` when using it. For Excel, byte and worksheet read limits are distinct from the CSV decoded-character limit.
 
 ## 6. Add record validation and create reports
 
@@ -319,10 +319,12 @@ For a custom record rule, construct a `CsvImporter<Customer>` using the existing
 // RecordValidationRule<T> is in RecordSift.Domain.Schema,
 // which is already imported by the complete example above.
 // In Main, instead of the earlier CsvImporter constructor:
+// Reject a customer when the name matches the deliberately blocked value.
 var recordValidationRules = new[]
 {
     new RecordValidationRule<Customer>("Name", customer => customer.Name != "Blocked")
 };
+// Creates a new importer with the additional record-level validation rules.
 var csvImporter = new CsvImporter<Customer>(
     new CsvRecordReaderAdapter(), primitivePropertyMapper.Map, null, null, recordValidationRules);
 ```
@@ -330,7 +332,9 @@ var csvImporter = new CsvImporter<Customer>(
 The same typed import-result object can be formatted as JSON or readable text (section 3), or as machine-interchange diagnostic CSV:
 
 ```csharp
+// Serializes the diagnostic result as machine-interchange CSV (not Excel-safe).
 var csvImportResultSerializerAdapter = new CsvImportResultSerializerAdapter();
+// Contains diagnostics and summary fields, not accepted customer rows.
 var diagnosticCsvReport = csvImportResultSerializerAdapter.Serialize(typedImportResult);
 ```
 

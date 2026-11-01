@@ -1,0 +1,11 @@
+Id,Name,Email,RegistrationDate,LoyaltyPoints,CreditLimit,IsActive,CustomerTier,LastPurchaseDate,ReferralCode
+2001,,blank.name@example.com,2025-01-15,10,100.00,true,Standard,,
+not-an-int,Invalid Id,invalid.id@example.com,2025-02-01,20,200.00,true,Gold,,
+2003,Bad Date,bad.date@example.com,not-a-date,20,200.00,true,Gold,,
+2004,Bad Points,bad.points@example.com,2025-03-01,many,200.00,true,Gold,,
+2005,Bad Credit,bad.credit@example.com,2025-04-01,20,no-credit,true,Gold,,
+2006,Bad Active,bad.active@example.com,2025-05-01,20,200.00,not-bool,Gold,,
+2007,Bad Last Purchase,bad.purchase@example.com,2025-06-01,20,200.00,true,Gold,never,
+2008,Missing Email,,2025-07-01,20,200.00,true,Gold,,
+2009,Malformed Email,not-an-email,2025-08-01,20,200.00,true,Gold,,
+2010,Negative Points,negative@example.com,2025-09-01,-5,200.00,true,Gold,,
