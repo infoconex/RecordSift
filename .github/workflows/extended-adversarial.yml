@@ -61,8 +61,8 @@ jobs:
       - name: Repeat bounded adversarial tests with sampled memory and process timeouts
         shell: pwsh
         env:
-          SECURITY_ITERATIONS: ${{ inputs.iterations }}
-          SECURITY_MAX_PRIVATE_MIB: ${{ inputs.max_private_megabytes }}
+          SECURITY_ITERATIONS: ${{ inputs.iterations || 3 }}
+          SECURITY_MAX_PRIVATE_MIB: ${{ inputs.max_private_megabytes || 768 }}
         run: |
           # PR and push events have no workflow_dispatch inputs; use the
           # same bounded defaults rather than casting an empty string to zero.
