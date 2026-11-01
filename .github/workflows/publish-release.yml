@@ -143,7 +143,7 @@ jobs:
           set -euo pipefail
           test "$RELEASE_VERSION" = "0.1.0"
           (cd dist && sha256sum --check SHA256SUMS.txt)
-          grep -Fxq "source_commit=$GITHUB_SHA" dist/SOURCE_COMMIT.txt
+          tr -d '\r' < dist/SOURCE_COMMIT.txt | grep -Fxq "source_commit=$GITHUB_SHA"
           test -f "dist/RecordSift.$RELEASE_VERSION.nupkg"
           main_sha="$(git ls-remote https://github.com/infoconex/RecordSift.git refs/heads/main | cut -f1)"
           test "$main_sha" = "$GITHUB_SHA" || { echo 'main moved after preflight; publication halted.'; exit 1; }
@@ -228,7 +228,7 @@ jobs:
         run: |
           set -euo pipefail
           (cd dist && sha256sum --check SHA256SUMS.txt)
-          grep -Fxq "source_commit=$GITHUB_SHA" dist/SOURCE_COMMIT.txt
+          tr -d '\r' < dist/SOURCE_COMMIT.txt | grep -Fxq "source_commit=$GITHUB_SHA"
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $tag already exists; refusing to overwrite." >&2
