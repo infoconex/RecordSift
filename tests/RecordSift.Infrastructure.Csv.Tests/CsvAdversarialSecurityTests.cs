@@ -130,7 +130,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
 
         [Test]
         [Explicit("Run only through the opt-in extended adversarial Windows workflow.")]
-        [Category("ExtendedAdversarial")]
+        [Property("Category", "ExtendedAdversarial")]
         [Property("Verification", "Regression")]
         [Property("Requirement", "NFR-007")]
         public void ExtendedFixedSeedCsvCorpusPreservesAtomicFailureAndCallerOwnership()
