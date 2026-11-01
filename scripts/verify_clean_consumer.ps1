@@ -26,7 +26,8 @@ if ($FromNuGetOrg) {
     }
     $sources = "$feed;https://api.nuget.org/v3/index.json"
 }
-$work = Join-Path $env:RUNNER_TEMP ('RecordSift-Consumer-' + [guid]::NewGuid().ToString('N'))
+$temporaryRoot = if ([string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) { [IO.Path]::GetTempPath() } else { $env:RUNNER_TEMP }
+$work = Join-Path $temporaryRoot ('RecordSift-Consumer-' + [guid]::NewGuid().ToString('N'))
 $packages = Join-Path $work 'packages'
 $output = Join-Path $work 'bin'
 New-Item -ItemType Directory -Force -Path $packages, $output | Out-Null
