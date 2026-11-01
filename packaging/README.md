@@ -1,9 +1,21 @@
-# RecordSift 0.1.0-rc.1 (internal validation only)
+# RecordSift {{PACKAGE_VERSION}}
 
-**Internal validation candidate — not yet published.** RecordSift is now licensed under the **MIT License**, copyright (c) 2026 Infoconex. The installed package includes the full `LICENSE` and `THIRD-PARTY-NOTICES.md`, and declares the SPDX `MIT` license expression. This locally staged artifact remains for **internal validation only**; publication, a final stable version, and promotion to `main` require separate release-owner authorization.
+**Import, validate and report on structured data.** RecordSift is an MIT-licensed library for **Windows and .NET Framework 4.8**. C# 7.3 is the project language baseline. It supports CSV and XLSX imports with typed schema mapping, validation, structured diagnostics and JSON, readable-text and machine-interchange CSV reports.
 
-RecordSift is currently supported on **Windows, .NET Framework 4.8, C# 7.3** only. This internal NuGet package groups five RecordSift assemblies (Domain, Application, CSV, XLSX, Reporting) and their XML documentation into one `lib/net48` folder. It declares exact CsvHelper 33.1.0 and ExcelDataReader 3.9.0 package dependencies; NuGet resolves their platform-specific dependency graphs. No Office installation or network service is needed at runtime. Dependencies have separate licenses described in the included third-party notices.
+## Install and use
 
-Use a local package source during internal testing, then reference `RecordSift` version `0.1.0-rc.1` in a net48 consumer. Imports are synchronous and in-memory; callers must configure the existing input resource limits and treat diagnostic identifiers as untrusted data. See [the repository README](https://github.com/infoconex/RecordSift/blob/release/0.1/README.md) for current import samples. The package is *not* published to nuget.org.
+Install `RecordSift` version **{{PACKAGE_VERSION}}** from the intended NuGet source into a Windows `net48` consumer. The package contains five RecordSift assemblies (Domain, Application, Infrastructure.Csv, Infrastructure.Xlsx and Infrastructure.Reporting) and their XML documentation in `lib/net48`; NuGet installs their declared dependencies separately.
 
-To rebuild from a clean Windows environment: restore `RecordSift.sln` with `NuGet.Config`, compile `Release|Any CPU` using MSBuild, and run `scripts/build_release_candidate.ps1`. Windows CI checks the compiled API baseline and internal package; package hashes may differ between builds due to ZIP timestamps. Packaging does not change any import behavior.
+Public API examples and a detailed consumer guide are available in the [RecordSift repository](https://github.com/infoconex/RecordSift/blob/main/README.md) and [0.1 consumer guide](https://github.com/infoconex/RecordSift/blob/main/docs/release/0.1-consumer-guide.md). No Microsoft Office installation or external runtime service is required.
+
+## Security and limitations
+
+Imports are synchronous and may eagerly buffer records. Configure input byte, worksheet and regex limits conservatively when handling untrusted data. The XLSX adapter performs bounded ZIP expansion and XML/shared-string preflight; these controls do **not** guarantee a hard maximum process heap or immediate cancellation of expensive vendor-parser operations. Only Windows/.NET Framework 4.8 is supported. Use a separate process and additional resource controls where stronger isolation is required.
+
+Diagnostic CSV is a lossless **machine-interchange** format, **not spreadsheet-formula-safe** output. Do not directly open exported diagnostics containing untrusted identifiers in Excel or similar applications; explicitly import affected columns as text. Review the [security assessment](https://github.com/infoconex/RecordSift/blob/main/docs/engineering/release-0.1-security-assessment.md) and [consumer guidance](https://github.com/infoconex/RecordSift/blob/main/docs/release/0.1-consumer-guide.md).
+
+## Licensing and support
+
+RecordSift itself is **MIT**, Copyright (c) 2026 Infoconex. The package includes `LICENSE` and `THIRD-PARTY-NOTICES.md`. The pinned runtime dependencies include CsvHelper 33.1.0 and ExcelDataReader 3.9.0 and are independently licensed and installed by NuGet; their vendor notices and the full eleven-package inventory are available in the [dependency review](https://github.com/infoconex/RecordSift/blob/main/docs/release/0.1-dependencies.md).
+
+Report defects and security-sensitive findings through the [repository's issue and responsible disclosure guidance](https://github.com/infoconex/RecordSift). No cross-platform, streaming, async or unbounded-resource safety promise is made for version {{PACKAGE_VERSION}}.
