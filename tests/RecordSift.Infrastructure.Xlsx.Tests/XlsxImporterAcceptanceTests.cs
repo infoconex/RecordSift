@@ -673,6 +673,165 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
             }
         }
 
+        // Deterministic adversarial regression: do not run unbounded ZIP bombs.
+        [TestCase(512, true)]
+        [TestCase(513, false)]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-007")]
+        public void XlsxEntryCountBoundaryIsEnforcedBeforeVendorParsing(
+            int entryCount, bool expectedSuccess)
+        {
+            var bytes = WithAdditionalEntries(entryCount);
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = new XlsxWorksheetReaderAdapter().Read(source, bytes.Length,
+                    10, 10, 32767);
+
+                Assert.That(result.IsSuccessful, Is.EqualTo(expectedSuccess));
+                if (expectedSuccess)
+                {
+                    Assert.That(result.Records, Is.Not.Empty);
+                    Assert.That(result.Error, Is.Null);
+                }
+                else
+                {
+                    Assert.That(result.Records, Is.Empty);
+                    Assert.That(result.Worksheet, Is.Null);
+                    Assert.That(result.Error.Code,
+                        Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                    Assert.That(result.Error.Message,
+                        Does.Not.Contain("extra-"));
+                }
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-008")]
+        public void TruncatedZipCentralDirectoryFailsAtomically()
+        {
+            var bytes = Convert.FromBase64String(ValidWorkbook);
+            // Remove part of the end-of-central-directory record; the
+            // small fixture cannot be treated as a complete ZIP package.
+            using (var source = new MemoryStream(bytes, 0, bytes.Length - 8, false))
+            {
+                var result = new XlsxWorksheetReaderAdapter().Read(source, bytes.Length,
+                    10, 10, 32767);
+                Assert.That(result.IsSuccessful, Is.False);
+                Assert.That(result.Error.Code,
+                    Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Error.Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(result.Records, Is.Empty);
+                Assert.That(result.Worksheet, Is.Null);
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [TestCase("<Relationships><Relationship Target='SYNTHETIC_TEST_SECRET'>")]
+        [TestCase("<!DOCTYPE Relationships [<!ENTITY injected SYSTEM " +
+            "'file:///SYNTHETIC_TEST_SECRET'>]><Relationships/>")]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-008")]
+        public void MalformedOrDtdRelationshipXmlIsRejectedWithoutDisclosure(
+            string relationshipXml)
+        {
+            var bytes = WithRelationshipXml(relationshipXml);
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = new XlsxWorksheetReaderAdapter().Read(source, bytes.Length,
+                    10, 10, 32767);
+                Assert.That(result.IsSuccessful, Is.False);
+                Assert.That(result.Records, Is.Empty);
+                Assert.That(result.Worksheet, Is.Null);
+                Assert.That(result.Error.Code,
+                    Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Error.Message,
+                    Does.Not.Contain("SYNTHETIC_TEST_SECRET"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-007")]
+        public void PartialStreamReadThenIoFailureReturnsAtomicSanitizedDiagnostic()
+        {
+            using (var source = new ThrowingAfterFirstReadStream(
+                Convert.FromBase64String(ValidWorkbook)))
+            {
+                var result = new XlsxWorksheetReaderAdapter().Read(
+                    source, (int)source.Length, 10, 10, 32767);
+                Assert.That(result.IsSuccessful, Is.False);
+                Assert.That(result.Error.Code,
+                    Is.EqualTo(DiagnosticCodes.SourceUnreadable));
+                Assert.That(result.Error.Message,
+                    Does.Not.Contain("SYNTHETIC_TEST_SECRET"));
+                Assert.That(result.Records, Is.Empty);
+                Assert.That(result.Worksheet, Is.Null);
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        private sealed class ThrowingAfterFirstReadStream : MemoryStream
+        {
+            private int _readCount;
+
+            internal ThrowingAfterFirstReadStream(byte[] bytes) : base(bytes) { }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (++_readCount > 1)
+                    throw new IOException("SYNTHETIC_TEST_SECRET");
+                return base.Read(buffer, offset, Math.Min(count, 7));
+            }
+        }
+
+        private static byte[] WithAdditionalEntries(int targetCount)
+        {
+            using (var source = new MemoryStream())
+            {
+                var fixture = Convert.FromBase64String(ValidWorkbook);
+                source.Write(fixture, 0, fixture.Length);
+                source.Position = 0;
+                using (var zip = new System.IO.Compression.ZipArchive(source,
+                    System.IO.Compression.ZipArchiveMode.Update, true))
+                {
+                    var existing = zip.Entries.Count;
+                    Assert.That(existing, Is.LessThan(targetCount));
+                    for (var index = existing; index < targetCount; index++)
+                    {
+                        var entry = zip.CreateEntry("adversarial/extra-" +
+                            index.ToString("D3", CultureInfo.InvariantCulture) + ".dat");
+                        using (var output = entry.Open())
+                            output.WriteByte(42);
+                    }
+                }
+                return source.ToArray();
+            }
+        }
+
+        private static byte[] WithRelationshipXml(string xml)
+        {
+            using (var source = new MemoryStream())
+            {
+                var fixture = Convert.FromBase64String(ValidWorkbook);
+                source.Write(fixture, 0, fixture.Length);
+                source.Position = 0;
+                using (var zip = new System.IO.Compression.ZipArchive(source,
+                    System.IO.Compression.ZipArchiveMode.Update, true))
+                {
+                    var existing = zip.GetEntry("xl/_rels/workbook.xml.rels");
+                    Assert.That(existing, Is.Not.Null);
+                    existing.Delete();
+                    var replacement = zip.CreateEntry("xl/_rels/workbook.xml.rels");
+                    using (var writer = new StreamWriter(replacement.Open()))
+                        writer.Write(xml);
+                }
+                return source.ToArray();
+            }
+        }
+
         private static byte[] WithSharedStrings(string sharedStringsXml,
             string partName = "sharedStrings.xml", string relationshipKind = "sharedStrings")
         {
