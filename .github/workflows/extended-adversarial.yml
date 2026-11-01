@@ -1,0 +1,87 @@
+name: Extended Windows adversarial resource validation
+on:
+  # A workflow_dispatch-only file cannot run from this integration branch until
+  # the file exists on default main. These narrow triggers enable actual
+  # bounded Windows evidence without promoting anything to main.
+  pull_request:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/extended-adversarial.yml'
+      - 'scripts/run_adversarial_stress.ps1'
+  push:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/extended-adversarial.yml'
+      - 'scripts/run_adversarial_stress.ps1'
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: 'Repeat bounded NFR-007 CSV/XLSX suite in separate processes (1-10)'
+        type: number
+        required: true
+        default: 3
+      max_private_megabytes:
+        description: 'Sampled private memory ceiling per NUnit process (256-2048 MiB)'
+        type: number
+        required: true
+        default: 768
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extended-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bounded-adversarial-stress:
+    name: Isolated Windows net48 adversarial resource sampling
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Restore pinned dependencies
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+      - name: Build net48 tests
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found.' }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "Build failed: $LASTEXITCODE" }
+      - name: Repeat bounded adversarial tests with sampled memory and process timeouts
+        shell: pwsh
+        env:
+          SECURITY_ITERATIONS: ${{ inputs.iterations || 3 }}
+          SECURITY_MAX_PRIVATE_MIB: ${{ inputs.max_private_megabytes || 768 }}
+        run: |
+          # PR and push events have no workflow_dispatch inputs; use the
+          # same bounded defaults rather than casting an empty string to zero.
+          $iterations = if ([string]::IsNullOrWhiteSpace($env:SECURITY_ITERATIONS)) {
+            3
+          } else {
+            [int]$env:SECURITY_ITERATIONS
+          }
+          $maximumMiB = if ([string]::IsNullOrWhiteSpace($env:SECURITY_MAX_PRIVATE_MIB)) {
+            768
+          } else {
+            [int]$env:SECURITY_MAX_PRIVATE_MIB
+          }
+          & .\scripts\run_adversarial_stress.ps1 -Iterations $iterations -MaximumPrivateMegabytes $maximumMiB -PerProcessTimeoutSeconds 90
+      - name: Preserve synthetic NUnit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: extended-nunit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/extended-*.xml
+          if-no-files-found: ignore
+          retention-days: 7

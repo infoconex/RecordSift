@@ -27,6 +27,7 @@
     <Reference Include="System" /><Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
     <Reference Include="ExcelDataReader"><HintPath>..\\..\\packages\\ExcelDataReader.3.9.0\\lib\\net462\\ExcelDataReader.dll</HintPath><Private>True</Private></Reference>
     
   </ItemGroup>
