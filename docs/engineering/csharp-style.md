@@ -17,6 +17,12 @@
 - Avoid hidden state, locale-dependent behavior, broad exception swallowing, and logging raw imported source values.
 - Favor focused, testable functions, dependency injection at third-party boundaries, and small interfaces with precisely specified semantics. Do not refactor working code into unnecessary abstractions.
 
+## C# usage examples in public documentation
+
+- Name instantiated objects after their **type**, converted to camelCase, so readers can identify their role immediately: `var csvImporter = new CsvImporter<Customer>(...);`, `var importSchema = new ImportSchema(...);`, `var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(...);`.
+- For returned values where the API returns a different type, prefer the actual type or a type-qualified descriptive name, e.g. `var typedImportResult = csvImporter.Import(...);`. For file resources, use `stringReader`, `streamReader` or `fileStream` where appropriate. Avoid ambiguous placeholder names such as `importer`, `mapper` or `result` in consumer-facing tutorials.
+- Apply this to **new or revised documentation code samples**. This is a readability convention, not a mandate to cosmetically rename existing production locals or public API members. Keep documentation C# 7.3 compatible and check code against real public API signatures.
+
 ## Domain messages and meaningful constants
 
 - Stable diagnostic identifiers are **nonlocalized core constants**. Their invariant English text lives in `src/RecordSift.Domain/Diagnostics/Resources/DomainMessages.resx` and is retrieved through a core-owned resource accessor. Never include source data, secrets, file paths or vendor exception messages.
