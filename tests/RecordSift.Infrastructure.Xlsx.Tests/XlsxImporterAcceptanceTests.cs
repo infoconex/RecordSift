@@ -556,14 +556,15 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
             }
         }
 
-        [TestCase("1000001")]
-        [TestCase("2147483647")]
+        [TestCase("1000001", "sharedStrings.xml")]
+        [TestCase("2147483647", "custom-metadata.xml")]
         [Property("Requirement", "NFR-007")]
-        public void SharedStringCapacityHintCannotForceExcessiveAllocation(string advertisedCount)
+        public void SharedStringCapacityHintCannotForceExcessiveAllocation(string advertisedCount,
+            string partName)
         {
             var bytes = WithSharedStrings("<sst xmlns=\"http://schemas.openxmlformats.org/" +
                 "spreadsheetml/2006/main\" uniqueCount=\"" + advertisedCount +
-                "\"><si><t>ignored</t></si></sst>");
+                "\"><si><t>ignored</t></si></sst>", partName);
             using (var source = new MemoryStream(bytes))
             {
                 var result = CreateImporter().Import(source, bytes.Length,
@@ -599,7 +600,27 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
             }
         }
 
-        private static byte[] WithSharedStrings(string sharedStringsXml)
+        [Test]
+        [Property("Requirement", "NFR-008")]
+        public void SharedStringXmlDtdIsRejectedWithoutResolvingExternalEntities()
+        {
+            var bytes = WithSharedStrings("<!DOCTYPE sst [<!ENTITY secret SYSTEM " +
+                "'file:///RecordSift-security-test-never-open'>]>" +
+                "<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" " +
+                "uniqueCount=\"1\"><si><t>&secret;</t></si></sst>");
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, bytes.Length,
+                    Schema(), "untrusted-xml");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Diagnostics[0].Code, Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Diagnostics[0].Message, Does.Not.Contain("secret"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        private static byte[] WithSharedStrings(string sharedStringsXml,
+            string partName = "sharedStrings.xml")
         {
             var fixture = Convert.FromBase64String(ValidWorkbook);
             using (var input = new MemoryStream(fixture))
@@ -627,7 +648,7 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                                         "<Relationship Id=\"sharedStringsGuardTest\" " +
                                         "Type=\"http://schemas.openxmlformats.org/" +
                                         "officeDocument/2006/relationships/sharedStrings\" " +
-                                        "Target=\"sharedStrings.xml\"/>";
+                                        "Target=\"" + partName + "\"/>";
                                     relationships = relationships.Replace("</Relationships>",
                                         sharedStringsRelationship + "</Relationships>");
                                     var encoded = System.Text.Encoding.UTF8.GetBytes(relationships);
@@ -640,7 +661,7 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                         }
                     }
                     Assert.That(relationshipWritten, Is.True);
-                    var shared = destinationZip.CreateEntry("xl/sharedStrings.xml");
+                    var shared = destinationZip.CreateEntry("xl/" + partName);
                     using (var writer = new StreamWriter(shared.Open()))
                         writer.Write(sharedStringsXml);
                 }
