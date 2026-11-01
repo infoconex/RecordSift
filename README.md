@@ -2,17 +2,25 @@
 
 **Import, validate, and report on structured data.**
 
-RecordSift is an MIT-licensed .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
+RecordSift is an MIT-licensed Windows/.NET Framework 4.8 library for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports. **Stable version 0.1.0 is publicly available on [NuGet.org](https://www.nuget.org/packages/RecordSift/0.1.0).**
 
-## Project status
+## Start using RecordSift
 
-**Release 0.1 source promotion is complete.** [PR #244](https://github.com/infoconex/RecordSift/pull/244) was squash-merged into `main` at `9ba0c3be740fea3b8f350648d43ec5341a34b2aa`; all four mandatory exact-commit postmerge jobs passed. The Windows/.NET Framework 4.8 library has CSV and XLSX import, named worksheet selection, typed mapping and validation, structured results, JSON serialization, readable summaries and diagnostic CSV reporting. All targeted release 0.1 functional and Windows-specific NFR acceptance is complete, including security regression testing. MIT licensing, Copyright (c) 2026 Infoconex, is approved.
+**[Getting started: install RecordSift 0.1.0, run a complete CSV example, import XLSX, and inspect errors](docs/usage/getting-started.md)**
 
-The prerelease and stable **0.1.0 package identities have both passed local unpublished installed-consumer preflight**. **Public NuGet and GitHub Release publication is a separate operation; do not infer that an upload has occurred merely from this repository status.** For the controlled `v0.1.0` tag, stable artifact checksum, owner sign-off, release packaging and public-feed installation procedure see the [0.1 publication procedure](docs/release/0.1-publication-procedure.md).
+In **Visual Studio on Windows**, create a **Console App (.NET Framework)** targeting **.NET Framework 4.8**. Install the package using **Manage NuGet Packages**, or in Package Manager Console:
+
+```powershell
+Install-Package RecordSift -Version 0.1.0
+```
+
+RecordSift is a library called from your own C# application. It does not provide a desktop UI or a standalone file-conversion command. The [full C# 7.3 walkthrough](docs/usage/getting-started.md) starts with a complete, runnable `Program.cs`, then explains CSV headers, XLSX worksheet selection, mapping/validation, accepted versus rejected rows, JSON/text/CSV reports, and troubleshooting. The snippets below illustrate specific API calls and **reuse variables** declared earlier; paste the complete program from the walkthrough when starting from an empty project.
+
+**Published release:** [RecordSift 0.1.0 on NuGet.org](https://www.nuget.org/packages/RecordSift/0.1.0) · [GitHub v0.1.0 release](https://github.com/infoconex/RecordSift/releases/tag/v0.1.0) · [consumer guide](docs/release/0.1-consumer-guide.md). The GitHub tag points to the original published source commit `2db5c86bc26010afcb83c2e455d2471d8c9340d6`. [Release governance #199](https://github.com/infoconex/RecordSift/issues/199) records package checksum and successful public-feed consumer verification. Later documentation changes do not alter the immutable 0.1.0 binaries.
 
 ## Public API quick start (.NET Framework 4.8)
 
-For source development, reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). The five-assembly stable 0.1.0 package can be prepared and tested from the verified source with the release workflow; obtain published binaries only from a confirmed release feed or its authenticated GitHub Release. Define a record type with public writable properties:
+Install the published NuGet package into your application first; NuGet supplies the five RecordSift assemblies and their declared runtime dependencies. The following are **short illustrative fragments**, not a standalone C# 7.3 file: see the [complete runnable Console App](docs/usage/getting-started.md) for full class, namespace and entry-point declarations. Define a record type with public writable properties:
 
 ```csharp
 public sealed class Customer
@@ -98,9 +106,9 @@ The XLSX reader independently checks ZIP entry count (512 maximum), both declare
 ## Development baseline
 
 - [Release-candidate readiness assessment](docs/engineering/release-0.1-readiness.md)
-- [Candidate consumer guide](docs/release/0.1-consumer-guide.md)
-- [Candidate release notes and known limitations](docs/release/0.1-release-notes.md)
-- [Release verification and promotion checklist](docs/release/0.1-release-checklist.md)
+- [Published 0.1.0 consumer guide](docs/release/0.1-consumer-guide.md)
+- [0.1.0 release notes and known limitations](docs/release/0.1-release-notes.md)
+- [Historical release verification and promotion checklist](docs/release/0.1-release-checklist.md)
 - [Stable 0.1.0 publication and public-feed verification procedure](docs/release/0.1-publication-procedure.md)
 - [Dependency and licensing inventory](docs/release/0.1-dependencies.md)
 - [MIT project license](LICENSE) and [third-party notices](THIRD-PARTY-NOTICES.md)
