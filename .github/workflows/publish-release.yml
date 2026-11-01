@@ -153,7 +153,9 @@ jobs:
         id: nuget_login
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         with:
-          user: infoconex
+          # NuGet/login identifies the personal account that created the organization's trust policy.
+          # Package ownership and Trusted Publishing policy scope remain infoconex.
+          user: ifx-jscott
 
       - name: Publish exact package to nuget.org
         shell: bash
