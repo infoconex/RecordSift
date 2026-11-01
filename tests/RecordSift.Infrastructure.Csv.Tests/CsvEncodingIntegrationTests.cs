@@ -184,7 +184,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
         {
             ImportSchema schema;
             var importer = CreateImporter(out schema);
-            var bytes = Encoding.UTF8.GetBytes("Id,Name\\r\\n1,Café\\r\\n2,漢字");
+            var bytes = Encoding.UTF8.GetBytes("Id,Name\r\n1,Café\r\n2,漢字");
             using (var stream = new SingleByteReadStream(bytes))
             {
                 var result = importer.Import(stream, 256, Encoding.UTF8,
@@ -206,7 +206,7 @@ namespace RecordSift.Infrastructure.Csv.Tests
             ImportSchema schema;
             var importer = CreateImporter(out schema);
             using (var stream = new FailingByteReadStream(
-                Encoding.UTF8.GetBytes("Id,Name\\r\\n1,SYNTHETIC_TEST_SECRET")))
+                Encoding.UTF8.GetBytes("Id,Name\r\n1,SYNTHETIC_TEST_SECRET")))
             {
                 var result = importer.Import(stream, 256, Encoding.UTF8,
                     schema, CsvHeaderPolicy.WithHeader, "io-failure");
