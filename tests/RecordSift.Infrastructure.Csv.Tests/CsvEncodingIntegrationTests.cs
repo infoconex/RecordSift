@@ -176,5 +176,102 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(stream.CanRead, Is.True);
             }
         }
+
+        [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-007")]
+        public void SingleByteStreamReadsPreserveSplitUtf8Characters()
+        {
+            ImportSchema schema;
+            var importer = CreateImporter(out schema);
+            var bytes = Encoding.UTF8.GetBytes("Id,Name\\r\\n1,Café\\r\\n2,漢字");
+            using (var stream = new SingleByteReadStream(bytes))
+            {
+                var result = importer.Import(stream, 256, Encoding.UTF8,
+                    schema, CsvHeaderPolicy.WithHeader, "partial-utf8");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(result.Diagnostics, Is.Empty);
+                Assert.That(result.AcceptedRecords[0].Name, Is.EqualTo("Café"));
+                Assert.That(result.AcceptedRecords[1].Name, Is.EqualTo("漢字"));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-006")]
+        public void ByteStreamIoExceptionAfterPartialReadFailsAtomicallyWithoutSecret()
+        {
+            ImportSchema schema;
+            var importer = CreateImporter(out schema);
+            using (var stream = new FailingByteReadStream(
+                Encoding.UTF8.GetBytes("Id,Name\\r\\n1,SYNTHETIC_TEST_SECRET")))
+            {
+                var result = importer.Import(stream, 256, Encoding.UTF8,
+                    schema, CsvHeaderPolicy.WithHeader, "io-failure");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceUnreadable));
+                Assert.That(result.Diagnostics[0].Message,
+                    Does.Not.Contain("SYNTHETIC_TEST_SECRET"));
+                Assert.That(stream.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Verification", "Regression")]
+        [Property("Requirement", "NFR-006")]
+        public void StrictDecoderFailureDoesNotMutateCallerEncodingFallback()
+        {
+            ImportSchema schema;
+            var importer = CreateImporter(out schema);
+            var encoding = (Encoding)Encoding.UTF8.Clone();
+            encoding.DecoderFallback = DecoderFallback.ReplacementFallback;
+            var originalFallback = encoding.DecoderFallback;
+            using (var stream = new MemoryStream(new byte[] {
+                0x49, 0x64, 0x2c, 0x4e, 0x61, 0x6d, 0x65, 0x0a,
+                0x31, 0x2c, 0xc3, 0x28
+            }))
+            {
+                var result = importer.Import(stream, 256, encoding,
+                    schema, CsvHeaderPolicy.WithHeader, "encoding-ownership",
+                    strictDecoding: true);
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceDecodingFailed));
+                Assert.That(stream.CanRead, Is.True);
+            }
+            Assert.That(encoding.DecoderFallback, Is.SameAs(originalFallback));
+        }
+
+        private sealed class SingleByteReadStream : MemoryStream
+        {
+            internal SingleByteReadStream(byte[] bytes) : base(bytes) { }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                return base.Read(buffer, offset, Math.Min(count, 1));
+            }
+        }
+
+        private sealed class FailingByteReadStream : MemoryStream
+        {
+            private int _reads;
+
+            internal FailingByteReadStream(byte[] bytes) : base(bytes) { }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (++_reads > 1)
+                    throw new IOException("SYNTHETIC_TEST_SECRET");
+                return base.Read(buffer, offset, Math.Min(count, 3));
+            }
+        }
+
     }
 }
