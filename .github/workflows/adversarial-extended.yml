@@ -1,6 +1,18 @@
 name: Extended adversarial Windows net48 security validation
 
 on:
+  # Manual dispatch is not registered from an integration-only workflow file.
+  # Opt-in CI triggers only for edits to this dedicated extended workflow.
+  pull_request:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/adversarial-extended.yml'
+  push:
+    branches:
+      - 'release/**'
+    paths:
+      - '.github/workflows/adversarial-extended.yml'
   workflow_dispatch:
 
 permissions:
