@@ -1,5 +1,12 @@
 # Release 0.1 — preliminary prepublication audit and unresolved evidence
 
+## Subsequent executed adversarial test evidence — 2026-10-31
+
+The extension to [#225](https://github.com/infoconex/RecordSift/issues/225), [PR #240](https://github.com/infoconex/RecordSift/pull/240), made both release-only opt-in workflows executable via narrow PR/push triggers, without touching default `main`. A workflow_dispatch-only YAML newly on the release branch cannot be manually registered through GitHub Actions until that workflow exists on default. On exact PR head `7d849328f2899b50643039af1646d88794e13655`, **six checks were green** (four required and two extended). A three-repetition isolated NFR-007 suite ran 9 CSV plus 14 XLSX cases per repetition, zero failures, sampled private memory 34.1–38.8 MiB. The second isolated runner completed one NUnit test containing 2,048 fixed-seed CSV variants, zero failures, sampled peak working set 46,530,560 bytes. Artifacts/logs: [NFR-007 resource suite](https://github.com/infoconex/RecordSift/actions/runs/41276302770) and [2,048-input corpus](https://github.com/infoconex/RecordSift/actions/runs/41276302727).
+
+Routine Windows discovery is **419 NUnit cases, 418 passed, zero failed, one intentionally explicit/skipped**; API425, seven JSON golden fixtures, dependency audit and independent unpublished RC/stable consumer remain the release compatibility gates. These bounded measurements do not rule out resource exhaustion under larger approved budgets, XLSX vendor allocations, cumulative validation CPU or arbitrary callbacks. The final squash SHA `2294009b4ae74d5ce2e3ea2d550690604ac509cd` needs its own exact-SHA CI evidence recorded in #225. No owner approval to change main, tags, release or packages is implied.
+
+
 ## Adversarial security validation update — 2026-10-31 (current decision gate)
 
 The prior audit checkpoints below remain historical. Active tracking: #225, XLSX #221/#222, CSV #223/#224, diagnostics #226/#228, regex #229/#230, byte-stream #232/#234 and opt-in extended corpus #235/#236. No newly confirmed Critical or High security vulnerability arose from the completed bounded tests; this is **not** evidence of exhaustive coverage.
