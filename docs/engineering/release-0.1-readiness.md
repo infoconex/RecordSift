@@ -1,5 +1,12 @@
 # RecordSift release 0.1 — release-candidate readiness assessment
 
+## Final-batch adversarial verification — 2026-10-31
+
+The originally opt-in extended tests have now been **executed on Windows PR CI**, rather than merely installed. [PR #240](https://github.com/infoconex/RecordSift/pull/240) verified six green exact-head checks: four standard gates plus two extended runner jobs. The sampled repeated NFR-007 test selected 9 CSV + 14 XLSX cases three times (69 executed), zero failures, with 34.1–38.8 MiB observed private-memory peaks. A separate 2,048-input explicit CSV corpus passed as one selected NUnit case; 46,530,560-byte sampled working set. Normal CI discovered 419 cases with 418 passing, none failing and one intentionally skipped explicit case, so the stress test is not falsely counted as a routine pass. The 425 compiled API entries, seven JSON fixtures, Windows net48 consumer and dependency audit remain unchanged.
+
+**Decision remains technical CONDITIONAL GO for the bounded Windows/net48 scope only** once six post-squash checks are verified on the latest integration SHA (`2294009b4ae74d5ce2e3ea2d550690604ac509cd`) and four standard checks on any subsequent docs-only SHA. Resource samples do not impose a strict total heap or elapsed import CPU cap. All owner promotion/publication controls in #199 and draft #209 remain HOLD; no technical check grants source promotion.
+
+
 ## Adversarial security acceptance — 2026-10-31 (latest review)
 
 The previously documented conditional technical GO was based on an earlier SHA. The current integration tree now includes bounded adversarial regressions for XLSX (#222), malformed/partial-read CSV (#224), diagnostics (#228), regex timeout boundaries (#230) and byte-stream failure/encoding ownership (#234). **No newly confirmed Critical or High finding** has appeared in those executed tests. The opt-in extended workflow/corpus (#236) requires separate Windows execution evidence before it is called tested.
