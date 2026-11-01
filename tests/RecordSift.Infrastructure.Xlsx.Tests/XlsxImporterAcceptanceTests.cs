@@ -622,11 +622,15 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
         // SEC-XLSX-003: the XLSX-only reader must reject binary spreadsheet
         // relationships even when their small payload would parse harmlessly.
         // Do not exercise huge untrusted BIFF allocation hints in Windows CI.
-        [Test]
+        [TestCase("sharedStrings")]
+        [TestCase("styles")]
+        [TestCase("worksheet")]
         [Property("Requirement", "NFR-007")]
-        public void BinarySharedStringsRelationshipFailsBeforeVendorBinaryParsing()
+        public void BinarySpreadsheetRelationshipFailsBeforeVendorBinaryParsing(
+            string relationshipKind)
         {
-            var bytes = WithSharedStrings(string.Empty, "sharedStrings.bin");
+            var bytes = WithSharedStrings(string.Empty, "small-part.bin",
+                relationshipKind);
             using (var source = new MemoryStream(bytes))
             {
                 var result = CreateImporter().Import(source, bytes.Length,
@@ -670,7 +674,7 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
         }
 
         private static byte[] WithSharedStrings(string sharedStringsXml,
-            string partName = "sharedStrings.xml")
+            string partName = "sharedStrings.xml", string relationshipKind = "sharedStrings")
         {
             var fixture = Convert.FromBase64String(ValidWorkbook);
             using (var input = new MemoryStream(fixture))
