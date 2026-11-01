@@ -72,7 +72,7 @@ def main() -> None:
     validate_pair("customers-invalid", 10)
 
     text = GUIDE.read_text(encoding="utf-8")
-    marker = "```csv\\n"
+    marker = "```csv" + chr(10)
     if marker not in text:
         raise AssertionError("Cannot find the complete customers.csv block")
     block = text.split(marker, 1)[1].split("```", 1)[0]
