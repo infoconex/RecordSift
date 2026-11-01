@@ -44,13 +44,20 @@ jobs:
           }
           $checkedOut = (& git rev-parse HEAD).Trim()
           if ($LASTEXITCODE -ne 0 -or $checkedOut -cne $env:GITHUB_SHA) { throw 'Checkout/source SHA mismatch.' }
-          $remote = (& git ls-remote origin refs/heads/main).Trim()
-          if ($LASTEXITCODE -ne 0 -or ($remote -split '\s+')[0] -cne $env:GITHUB_SHA) {
+          # Git ls-remote produces no output (PowerShell $null) when a ref is absent.
+          # Capture lines as an array instead of calling .Trim() on the possibly empty result.
+          $mainRefs = @(& git ls-remote origin refs/heads/main)
+          if ($LASTEXITCODE -ne 0 -or $mainRefs.Count -ne 1) {
+            throw 'Cannot determine the current main ref; publication halted.'
+          }
+          $remoteSha = ($mainRefs[0] -split '\s+')[0]
+          if ($remoteSha -cne $env:GITHUB_SHA) {
             throw 'main moved since workflow dispatch; do not publish an unreviewed/stale source.'
           }
           $tag = "refs/tags/v$env:RELEASE_VERSION"
-          $tagRef = (& git ls-remote origin $tag).Trim()
-          if ($LASTEXITCODE -ne 0 -or $tagRef) { throw 'Release tag already exists or cannot be checked.' }
+          $tagRefs = @(& git ls-remote origin $tag)
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot verify the release tag; publication halted.' }
+          if ($tagRefs.Count -ne 0) { throw 'Release tag already exists; publication halted.' }
           $headers = @{
             Authorization = "Bearer $env:GH_READ_TOKEN"
             Accept = 'application/vnd.github+json'
