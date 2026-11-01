@@ -67,13 +67,32 @@ not-an-integer,Bob
 
 For Alice, RecordSift maps missing optional fields to `LoyaltyPoints = 0`, `CreditLimit = 0.00m`, `IsActive = true`, and `Email = null`. Bob is rejected because his required `Id` is invalid; the imported result can still have `Status = Completed`.
 
-## 3. Run a complete CSV import
+## 3. Configure input budgets and run a complete CSV import
 
-Replace the content of `Program.cs` in your new .NET Framework 4.8 Console App with this **complete C# 7.3 program** (no top-level statements). The sample imports the required columns only, so the optional defaults are exercised:
+In 0.1.0, the CSV `maxCharacters` and XLSX `maxBytes` arguments are **required**. They do not have library-provided defaults because each application must choose appropriate resource limits for its inputs and threat model. `maxCharacters` counts **decoded UTF-16 characters** read by the `TextReader`; `maxBytes` counts the **compressed XLSX input bytes**. Neither is a maximum number of rows. Both must be positive.
+
+For a real application, keep these limits in application configuration rather than scattering unexplained integer literals through `Import(...)` calls. Add an **App.config** file to the **Console App project** (or edit its existing one) with the following sample values. They are **tutorial examples, not safe universal defaults**; choose limits from your own observed file sizes, resource constraints and acceptance policy.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <appSettings>
+    <!-- Example decoded CSV character budget: 64 Ki UTF-16 code units -->
+    <add key="RecordSift.MaxCsvCharacters" value="65536" />
+    <!-- Example compressed XLSX file budget: 4 MiB -->
+    <add key="RecordSift.MaxXlsxBytes" value="4194304" />
+  </appSettings>
+</configuration>
+```
+
+The code below reads the configured CSV limit by name and rejects missing, invalid or nonpositive values. Add a reference to the .NET Framework **System.Configuration** assembly if your Console App project does not already reference it. `System.Configuration` is part of the .NET Framework 4.8 environment; this is application configuration, **not** a new RecordSift dependency.
+
+Replace the content of `Program.cs` in your Console App with this **complete C# 7.3 program** (no top-level statements). The sample imports the required columns only, so the optional defaults are exercised:
 
 ```csharp
 using System;
 using System.Globalization;
+using System.Configuration;
 using System.IO;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Mapping;
@@ -95,6 +114,18 @@ internal sealed class Customer
 
 internal static class Program
 {
+    // Read explicit application budgets rather than relying on a hidden global limit.
+    private static int ReadPositiveLimit(string settingName)
+    {
+        var configuredValue = ConfigurationManager.AppSettings[settingName];
+        int limit;
+        if (!int.TryParse(configuredValue, NumberStyles.None,
+                CultureInfo.InvariantCulture, out limit) || limit < 1)
+            throw new ConfigurationErrorsException(
+                "A positive integer App.config value is required for " + settingName);
+        return limit;
+    }
+
     private static void Main()
     {
         // 1. Declare which source columns are expected.
@@ -128,8 +159,9 @@ internal static class Program
         // 4. Import. The second row contains an intentionally invalid Id.
         using (var stringReader = new StringReader("Id,Name\n1,Alice\nnot-an-integer,Bob"))
         {
+            var maxCsvCharacters = ReadPositiveLimit("RecordSift.MaxCsvCharacters");
             var typedImportResult = csvImporter.Import(
-                stringReader, 4096, importSchema, CsvHeaderPolicy.WithHeader,
+                stringReader, maxCsvCharacters, importSchema, CsvHeaderPolicy.WithHeader,
                 "demo-customers", options: CsvReadOptions.Default);
 
             Console.WriteLine("Status: " + typedImportResult.Status);
@@ -224,14 +256,15 @@ For a regular UTF-8 CSV file with a header row:
 ```csharp
 using (var streamReader = File.OpenText(@"C:\data\customers.csv"))
 {
-    var typedImportResult = csvImporter.Import(streamReader, 1000000, importSchema,
+    var maxCsvCharacters = ReadPositiveLimit("RecordSift.MaxCsvCharacters");
+    var typedImportResult = csvImporter.Import(streamReader, maxCsvCharacters, importSchema,
         CsvHeaderPolicy.WithHeader, "customer-upload",
         options: CsvReadOptions.Default);
     // Inspect typedImportResult.Status, typedImportResult.AcceptedRecords and typedImportResult.Diagnostics.
 }
 ```
 
-Here `importSchema` and `csvImporter` are the objects initialized in section 3; this is an **alternative** input block, not a second complete program. `1000000` is an example **decoded-character budget** for this `TextReader` API, not a recommended universal maximum.
+Here `importSchema`, `csvImporter`, and the `ReadPositiveLimit` method are initialized in section 3; this is an **alternative** input block, not a second complete program. Its input budget comes from the same `RecordSift.MaxCsvCharacters` application setting, regardless of whether the source is a `StringReader` or a file-backed `StreamReader`.
 
 For a semicolon-delimited file, pass `options: new CsvReadOptions(";")`. For a headerless file, select `CsvHeaderPolicy.WithoutHeader` and provide explicit zero-based positions, for example:
 
@@ -263,8 +296,9 @@ var xlsxImporter = new XlsxImporter<Customer>(
 
 using (var fileStream = File.OpenRead(@"C:\data\customers.xlsx"))
 {
+    var maxXlsxBytes = ReadPositiveLimit("RecordSift.MaxXlsxBytes");
     var typedImportResult = xlsxImporter.Import(
-        fileStream, 4 * 1024 * 1024, importSchema, "customer-workbook",
+        fileStream, maxXlsxBytes, importSchema, "customer-workbook",
         worksheetName: "Customers", limits: XlsxReadLimits.Default);
 
     Console.WriteLine(typedImportResult.Status);
@@ -275,7 +309,7 @@ using (var fileStream = File.OpenRead(@"C:\data\customers.xlsx"))
 }
 ```
 
-`worksheetName: "Customers"` selects that worksheet by its **exact name**; omit it to read the first worksheet. Missing worksheets return a source-level diagnostic rather than silently selecting another sheet. The `4 * 1024 * 1024` value is the **compressed workbook byte limit**, and `XlsxReadLimits` separately controls row/column/cell-character budgets. The caller owns the stream. The library never starts Microsoft Excel or evaluates formulas/macros.
+`worksheetName: "Customers"` selects that worksheet by its **exact name**; omit it to read the first worksheet. Missing worksheets return a source-level diagnostic rather than silently selecting another sheet. `maxXlsxBytes` is the **compressed workbook byte limit** read from the `RecordSift.MaxXlsxBytes` App.config setting. It has no library default. `XlsxReadLimits.Default` independently limits the one-based physical worksheet row index to **100,000**, columns per row to **256**, and decoded UTF-16 characters per cell to **32,767**. These worksheet defaults do **not** override the mandatory file byte limit. The caller owns the stream. The library never starts Microsoft Excel or evaluates formulas/macros.
 
 ## 6. Add record validation and create reports
 
@@ -303,6 +337,10 @@ var diagnosticCsvReport = csvImportResultSerializerAdapter.Serialize(typedImport
 Here `typedImportResult` refers to the completed import result in scope. It is **not** a spreadsheet-safe report. If data contains untrusted source IDs, field names or worksheet names, opening the diagnostic CSV directly in Excel may execute spreadsheet formulas. Import CSV columns as text in spreadsheet software, or transform untrusted values using a separately verified spreadsheet-safe exporter.
 
 For predefined rules (required values, length, numeric/date range, duplicates and regex), see the [functional behavior specification](../specifications/record-import.md) and [acceptance tests](../../tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs). For machine-readable JSON guarantees, see the [versioned result contract](../specifications/import-result.md).
+
+### Why no built-in CSV or XLSX size default?
+
+A generous global default could silently admit files too large for a latency-sensitive or memory-constrained application; a low one could unexpectedly reject normal customer input. The **0.1.0 public API intentionally requires the caller** to specify positive `maxCharacters` and `maxBytes`. This is different from the optional `CsvReadOptions.Default` (comma delimiter) and `XlsxReadLimits.Default` (worksheet budgets). A future overload with an explicit documented limit policy could be considered as a separately reviewed API enhancement, but do not assume it exists in 0.1.0.
 
 ## 7. Common questions and pitfalls
 
