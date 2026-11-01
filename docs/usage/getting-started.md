@@ -93,14 +93,16 @@ internal static class Program
             // 5. Reports are generated from the result, not by re-reading CSV.
             var json = new JsonImportResultSerializerAdapter().Serialize(result);
             var text = new ReadableImportResultFormatterAdapter().Format(result);
+            Console.WriteLine("JSON report:");
             Console.WriteLine(json);
+            Console.WriteLine("Readable summary:");
             Console.WriteLine(text);
         }
     }
 }
 ```
 
-Build and run the project. For this specific input, expect:
+Build and run the project. The **first four console lines** for this specific input are:
 
 ```text
 Status: Completed
@@ -109,7 +111,39 @@ Processed: 2, accepted: 1, rejected: 1
 Error CONVERSION_FAILED at data row 2, field Id
 ```
 
-The program then prints a JSON report and a readable summary. **The exact report text may be longer**; use the structured `Status`, `Summary`, and `Diagnostics` members for application logic rather than parsing human-readable messages. The example uses `StringReader` so you can run it immediately. To read a real CSV file, replace the `StringReader` with `File.OpenText("customers.csv")` (or use the explicitly encoded byte-stream adapter described in the [consumer guide](../release/0.1-consumer-guide.md)).
+Next, the program prints `JSON report:` and a JSON string. The JSON below illustrates the **actual public 1.0 report contract** for this input, **pretty-printed for readability** (the adapter's string itself is compact):
+
+```json
+{
+  "schemaVersion": "1.0",
+  "sourceId": "demo-customers",
+  "status": "Completed",
+  "message": "Import completed with rejected records.",
+  "summary": {
+    "processedCount": 2,
+    "acceptedCount": 1,
+    "rejectedCount": 1
+  },
+  "diagnostics": [
+    {
+      "scope": "Record",
+      "row": 2,
+      "field": "Id",
+      "code": "CONVERSION_FAILED",
+      "message": "A field could not be converted.",
+      "physicalLine": 3
+    }
+  ]
+}
+```
+
+Finally, the program prints `Readable summary:` and the human-readable text report. Its text is intended for display, **not for machine parsing**. If you want to save a JSON report instead of printing it, call `File.WriteAllText("import-report.json", json);` in `Main` after creating the `json` variable (with appropriate filesystem error handling in production).
+
+**Important: the JSON report does not contain the accepted customer records.** The original typed `result.AcceptedRecords` contains `Customer { Id = 1, Name = "Alice" }`; this is intentional to avoid exporting source record values in default diagnostic reports. If you need a **JSON file containing imported data**, serialize `result.AcceptedRecords` in your *own application*, under an appropriate privacy policy, using your chosen JSON serializer. RecordSift's `JsonImportResultSerializerAdapter` is for reporting **outcomes and diagnostics**, not for exporting your data records.
+
+The JSON `schemaVersion` is independent of the NuGet package version: completed and source-failed results use **1.0**, opt-in fail-fast stopped results use **1.1**, and canceled results use **1.2**. See the [versioned JSON contract](../specifications/import-result.md) and the [tested golden fixtures](../../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/) for exact field guarantees.
+
+Use structured `Status`, `Summary` and `Diagnostics` members for application logic rather than parsing text messages. The example uses `StringReader` so you can run it immediately. For a real CSV file, replace it with `File.OpenText("customers.csv")` (or use the explicitly encoded byte-stream adapter described in the [consumer guide](../release/0.1-consumer-guide.md)).
 
 ### What happens to bad rows?
 
