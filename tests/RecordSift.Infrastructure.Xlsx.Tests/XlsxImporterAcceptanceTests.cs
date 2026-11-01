@@ -619,6 +619,56 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
             }
         }
 
+        // SEC-XLSX-003: the XLSX-only reader must reject binary spreadsheet
+        // relationships even when their small payload would parse harmlessly.
+        // Do not exercise huge untrusted BIFF allocation hints in Windows CI.
+        [Test]
+        [Property("Requirement", "NFR-007")]
+        public void BinarySharedStringsRelationshipFailsBeforeVendorBinaryParsing()
+        {
+            var bytes = WithSharedStrings(string.Empty, "sharedStrings.bin");
+            using (var source = new MemoryStream(bytes))
+            {
+                var result = CreateImporter().Import(source, bytes.Length,
+                    Schema(), "hybrid-binary");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.MalformedSource));
+                Assert.That(result.Diagnostics[0].Message,
+                    Does.Not.Contain("hybrid-binary"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "NFR-007")]
+        public void UnrelatedBinaryAttachmentDoesNotInvalidateValidXlsx()
+        {
+            using (var source = new MemoryStream())
+            {
+                var valid = Convert.FromBase64String(ValidWorkbook);
+                source.Write(valid, 0, valid.Length);
+                source.Position = 0;
+                using (var archive = new System.IO.Compression.ZipArchive(source,
+                    System.IO.Compression.ZipArchiveMode.Update, true))
+                {
+                    var entry = archive.CreateEntry("xl/media/unrelated.bin");
+                    using (var content = entry.Open())
+                        content.WriteByte(42);
+                }
+
+                source.Position = 0;
+                var result = CreateImporter().Import(source, (int)source.Length,
+                    Schema(), "unrelated-binary");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(result.Summary.AcceptedCount, Is.EqualTo(2));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
         private static byte[] WithSharedStrings(string sharedStringsXml,
             string partName = "sharedStrings.xml")
         {
