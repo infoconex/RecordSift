@@ -701,7 +701,7 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
                                     var sharedStringsRelationship =
                                         "<Relationship Id=\"sharedStringsGuardTest\" " +
                                         "Type=\"http://schemas.openxmlformats.org/" +
-                                        "officeDocument/2006/relationships/sharedStrings\" " +
+                                        "officeDocument/2006/relationships/" + relationshipKind + "\" " +
                                         "Target=\"" + partName + "\"/>";
                                     relationships = relationships.Replace("</Relationships>",
                                         sharedStringsRelationship + "</Relationships>");
