@@ -22,6 +22,7 @@
 - Name instantiated objects after their **type**, converted to camelCase, so readers can identify their role immediately: `var csvImporter = new CsvImporter<Customer>(...);`, `var importSchema = new ImportSchema(...);`, `var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(...);`.
 - For returned values where the API returns a different type, prefer the actual type or a type-qualified descriptive name, e.g. `var typedImportResult = csvImporter.Import(...);`. For file resources, use `stringReader`, `streamReader` or `fileStream` where appropriate. Avoid ambiguous placeholder names such as `importer`, `mapper` or `result` in consumer-facing tutorials.
 - Apply this to **new or revised documentation code samples**. This is a readability convention, not a mandate to cosmetically rename existing production locals or public API members. Keep documentation C# 7.3 compatible and check code against real public API signatures.
+- Do not leave unexplained resource-budget literals at call sites in consumer examples. In RecordSift 0.1.0, CSV `maxCharacters` and XLSX `maxBytes` are mandatory **caller-selected** positive limits without defaults; read named settings from application configuration (and validate positive values), or use clearly documented named constants for intentionally self-contained tests. Never confuse `CsvReadOptions.Default` or `XlsxReadLimits.Default` with defaults for those mandatory source-size arguments.
 
 ## Domain messages and meaningful constants
 
