@@ -506,6 +506,57 @@ namespace RecordSift.Infrastructure.Xlsx.Tests
         }
 
         [Test]
+        [Property("Requirement", "NFR-007")]
+        public void MisreportedZipExpansionIsRejectedAgainstActuallyDecodedBytes()
+        {
+            // The ZIP central directory is attacker-controlled. Its uncompressed
+            // size is changed from 131072 bytes to zero without changing deflate
+            // data. Declared-size-only preflight cannot identify this overrun.
+            byte[] archiveBytes;
+            using (var output = new MemoryStream())
+            {
+                using (var archive = new System.IO.Compression.ZipArchive(output,
+                    System.IO.Compression.ZipArchiveMode.Create, true))
+                {
+                    var workbook = archive.CreateEntry("xl/workbook.xml",
+                        System.IO.Compression.CompressionLevel.Optimal);
+                    using (var writer = new StreamWriter(workbook.Open()))
+                        writer.Write(new string('A', 131072));
+                }
+                archiveBytes = output.ToArray();
+            }
+
+            var changed = false;
+            for (var offset = 0; offset <= archiveBytes.Length - 46; offset++)
+            {
+                if (archiveBytes[offset] != 0x50 || archiveBytes[offset + 1] != 0x4B ||
+                    archiveBytes[offset + 2] != 0x01 || archiveBytes[offset + 3] != 0x02)
+                    continue;
+                // Central-directory uncompressed-size field, little-endian.
+                for (var index = 24; index < 28; index++)
+                    archiveBytes[offset + index] = 0;
+                changed = true;
+                break;
+            }
+            Assert.That(changed, Is.True, "The test must alter the ZIP central directory.");
+
+            using (var source = new MemoryStream(archiveBytes))
+            {
+                var result = CreateImporter().Import(source, archiveBytes.Length,
+                    Schema(), "forged-zip-length");
+                Assert.That(result.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(result.Summary.ProcessedCount, Is.Zero);
+                Assert.That(result.AcceptedRecords, Is.Empty);
+                Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(result.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(result.Diagnostics[0].Message,
+                    Does.Not.Contain("forged-zip-length"));
+                Assert.That(source.CanRead, Is.True);
+            }
+        }
+
+        [Test]
         [Property("Verification", "Acceptance")]
         [Property("Requirement", "NFR-008")]
         [Property("Scenario", "NFR-008-SC01")]
