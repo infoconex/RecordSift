@@ -1,0 +1,100 @@
+name: Prepare verified 0.1.0 publication artifact
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: 'Exact 40-character main commit to release (must equal current main HEAD)'
+        required: true
+        type: string
+
+# Preparation only. This workflow NEVER creates tags/releases or pushes to feeds.
+permissions:
+  contents: read
+  checks: read
+
+jobs:
+  prepare:
+    name: Verify and package 0.1.0 for owner publication
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact main source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Verify exact main SHA and all four required CI gates
+        shell: pwsh
+        env:
+          EXPECTED_SHA: ${{ inputs.source_sha }}
+          GH_READ_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:EXPECTED_SHA -cnotmatch '^[0-9a-fA-F]{40}$' -or
+              $env:EXPECTED_SHA -cne $env:GITHUB_SHA) {
+            throw "Requested SHA must match dispatch main HEAD $env:GITHUB_SHA."
+          }
+          $checkedOut = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $checkedOut -cne $env:EXPECTED_SHA) {
+            throw "Checkout mismatch: $checkedOut"
+          }
+          $mainRemote = (& git ls-remote origin refs/heads/main).Trim()
+          if ($LASTEXITCODE -ne 0 -or ($mainRemote -split '\s+')[0] -cne $env:EXPECTED_SHA) {
+            throw 'main moved; revalidate and explicitly select the current commit.'
+          }
+          $headers = ${{
+            Authorization = "Bearer $env:GH_READ_TOKEN"
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+          $uri = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/commits/$env:EXPECTED_SHA/check-runs?per_page=100"
+          $checks = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+          $required = @(
+            'Windows restore, MSBuild and NUnit',
+            'Verify pinned packages and audit vulnerabilities',
+            'Standalone NuGet net48 consumer',
+            'Requirement catalogs and internal links'
+          )
+          foreach ($name in $required) {
+            $found = @($checks.check_runs | Where-Object {
+              $_.name -ceq $name -and $_.status -ceq 'completed' -and $_.conclusion -ceq 'success'
+            })
+            if ($found.Count -eq 0) { throw "Required main check not successful: $name" }
+            Write-Host "PASS: $name"
+          }
+          Write-Host "PASS: main=$env:EXPECTED_SHA, four required job checks all successful."
+      - name: Restore exact pinned packages
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw 'NuGet restore failed.' }
+      - name: Build five .NET Framework 4.8 assemblies in Release
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found.' }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw 'Release MSBuild failed.' }
+      - name: Build stable package, independently install and execute net48 consumer, record SHA256
+        shell: pwsh
+        run: |
+          $output = Join-Path $env:RUNNER_TEMP 'RecordSift-Verified-0.1.0'
+          & .\scripts\build_release_candidate.ps1 -OutputDirectory $output -PackageVersion '0.1.0'
+          & .\scripts\verify_clean_consumer.ps1 -CandidateDirectory $output -PackageVersion '0.1.0'
+          $package = Join-Path $output 'RecordSift.0.1.0.nupkg'
+          if (-not (Test-Path -LiteralPath $package)) { throw 'Stable package missing.' }
+          $dist = Join-Path $env:GITHUB_WORKSPACE 'dist'
+          New-Item -ItemType Directory -Force -Path $dist | Out-Null
+          Copy-Item -LiteralPath $package -Destination $dist
+          $sha256 = (Get-FileHash -LiteralPath (Join-Path $dist 'RecordSift.0.1.0.nupkg') -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$sha256  RecordSift.0.1.0.nupkg" | Set-Content -LiteralPath (Join-Path $dist 'SHA256SUMS.txt') -Encoding ascii
+          "source_commit=$env:GITHUB_SHA" | Set-Content -LiteralPath (Join-Path $dist 'SOURCE_COMMIT.txt') -Encoding ascii
+          Write-Host "FINAL LOCAL PREPUBLICATION ARTIFACT: RecordSift.0.1.0.nupkg SHA256=$sha256"
+          Write-Host 'Not published; owner must approve and upload these exact bytes.'
+      - name: Retain exact package, hash and source commit for owner inspection
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recordsift-0.1.0-publish-ready-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 90
