@@ -9,6 +9,9 @@ namespace RecordSift.Infrastructure.Reporting
     /// <summary>
     /// Exports only existing structured diagnostic metadata as deterministic CSV.
     /// It never reads input data or exports accepted records or caller status messages.
+    /// This is lossless machine-interchange CSV, not a spreadsheet-safe export:
+    /// formula-like caller-controlled source, field and worksheet identifiers are
+    /// deliberately preserved, not neutralized for spreadsheet evaluation.
     /// </summary>
     public sealed class CsvImportResultSerializerAdapter : IImportResultSerializer
     {
@@ -42,6 +45,9 @@ namespace RecordSift.Infrastructure.Reporting
         /// record endings. Empty diagnostics yield a header-only report. No source is reopened,
         /// and no accepted CLR values or caller-provided summary message are included.
         /// Encoding is the responsibility of the consumer writing this string to bytes.
+        /// Spreadsheet programs may interpret formula-like metadata as formulas; RFC-style
+        /// CSV quoting alone does not prevent this. Consumers must not open untrusted
+        /// diagnostic CSV in a spreadsheet without separate spreadsheet-specific safeguards.
         /// </summary>
         /// <typeparam name="T">The type of accepted records; their values are never inspected.</typeparam>
         /// <param name="result">An existing immutable typed import result.</param>
