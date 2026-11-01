@@ -6,11 +6,13 @@ RecordSift is an MIT-licensed .NET Framework 4.8 library under development for i
 
 ## Project status
 
-**Release 0.1 has passed unpublished release-candidate and stable 0.1.0 package preflight; no public NuGet package or GitHub release has been published.** The repository owner approved MIT licensing with Copyright (c) 2026 Infoconex; see [LICENSE](LICENSE). This license permits redistribution subject to the MIT terms, but no 0.1 package has been published or authorized for release. The current source builds as separate Domain, Application, and vendor-isolated Infrastructure assemblies. CSV and XLSX import, named worksheet selection, typed mapping, validation, structured results, JSON serialization, and readable summaries are implemented and covered by automated tests. All targeted functional and Windows-scoped nonfunctional acceptance is complete; packaging and clean-consumer verification passed for the internal prerelease and stable package identities. Promotion into `main` and package publication are separately controlled release operations; public distribution still requires explicit authorization.
+**Release 0.1 source promotion is complete.** [PR #244](https://github.com/infoconex/RecordSift/pull/244) was squash-merged into `main` at `9ba0c3be740fea3b8f350648d43ec5341a34b2aa`; all four mandatory exact-commit postmerge jobs passed. The Windows/.NET Framework 4.8 library has CSV and XLSX import, named worksheet selection, typed mapping and validation, structured results, JSON serialization, readable summaries and diagnostic CSV reporting. All targeted release 0.1 functional and Windows-specific NFR acceptance is complete, including security regression testing. MIT licensing, Copyright (c) 2026 Infoconex, is approved.
+
+The prerelease and stable **0.1.0 package identities have both passed local unpublished installed-consumer preflight**. **Public NuGet and GitHub Release publication is a separate operation; do not infer that an upload has occurred merely from this repository status.** For the controlled `v0.1.0` tag, stable artifact checksum, owner sign-off, release packaging and public-feed installation procedure see the [0.1 publication procedure](docs/release/0.1-publication-procedure.md).
 
 ## Public API quick start (.NET Framework 4.8)
 
-For source development, reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). An unpublished five-assembly NuGet candidate is available for local internal verification only, not public redistribution. Define a record type with public writable properties:
+For source development, reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). The five-assembly stable 0.1.0 package can be prepared and tested from the verified source with the release workflow; obtain published binaries only from a confirmed release feed or its authenticated GitHub Release. Define a record type with public writable properties:
 
 ```csharp
 public sealed class Customer
@@ -99,6 +101,7 @@ The XLSX reader independently checks ZIP entry count (512 maximum), both declare
 - [Candidate consumer guide](docs/release/0.1-consumer-guide.md)
 - [Candidate release notes and known limitations](docs/release/0.1-release-notes.md)
 - [Release verification and promotion checklist](docs/release/0.1-release-checklist.md)
+- [Stable 0.1.0 publication and public-feed verification procedure](docs/release/0.1-publication-procedure.md)
 - [Dependency and licensing inventory](docs/release/0.1-dependencies.md)
 - [MIT project license](LICENSE) and [third-party notices](THIRD-PARTY-NOTICES.md)
 - [Historical net48 build and test instructions](docs/engineering/baseline.md)
