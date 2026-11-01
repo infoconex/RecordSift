@@ -1,5 +1,14 @@
 # Testing strategy and TDD policy
 
+## Release 0.1 adversarial security suites
+
+**PR security regressions** execute with the five normal NUnit assemblies on all relevant Windows PRs and integration pushes. The fixed-seed CSV mutation corpus (96 bounded cases inside one test), XLSX ZIP/XML boundary tests, synthetic-secret reporting tests and regex timeout repetition are normal deterministic tests, not a comprehensive fuzzing guarantee. Prefer reproducible tiny fixtures, no actual out-of-memory payloads, no external secret values and no flaky timing thresholds.
+
+**Extended stress** is isolated from the normal PR gate. Use GitHub Actions → **Extended Windows adversarial resource validation** → **Run workflow** on an intended `release/0.1` commit. The [workflow](../../.github/workflows/extended-adversarial.yml) restores and builds on `windows-2022`, then invokes [run_adversarial_stress.ps1](../../scripts/run_adversarial_stress.ps1) with 1–10 repetitions (default 3), 90s per selected NUnit process and sampled private-memory limit 256–2048MiB (default 768MiB). It selects actual existing NFR-007 CSV/XLSX cases, including fixed-seed malformed CSV, and executes NUnit `--inprocess` in a child process so the workflow runner can stop it on timeout or observed memory overrun. It fails on zero selected tests, NUnit failures or nonzero process exit and retains synthetic NUnit XML artifacts for seven days.
+
+Memory sampling every ~100ms is **not** an instantaneous peak/total heap limit, and the run is not coverage-guided fuzzing. Start/stop/exit handling and process monitoring are not verified until a real manual workflow run is recorded; a regular PR build does not execute this workflow. On a manual execution, log the exact workflow run URL, source SHA, input settings, test counts, sampled peak per process and any limit violations in security tracker [#225](https://github.com/infoconex/RecordSift/issues/225). Do not infer production security properties from a single Windows runner measurement.
+
+
 **Issue:** [#52](https://github.com/infoconex/RecordSift/issues/52)  
 **Status:** Engineering policy for release 0.1. Current acceptance status and observed Windows CI evidence are maintained per scenario in [traceability](traceability.md); earlier milestone test counts below are historical, not the current release total.
 
