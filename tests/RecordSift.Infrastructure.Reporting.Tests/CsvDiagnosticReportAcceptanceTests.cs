@@ -191,6 +191,38 @@ namespace RecordSift.Infrastructure.Reporting.Tests
             Assert.Throws<ArgumentException>(() => new CsvImportResultSerializerAdapter(delimiter));
         }
 
+        [TestCase("=1+2")]
+        [TestCase("+1+2")]
+        [TestCase("-1+2")]
+        [TestCase("@SUM(1,2)")]
+        [TestCase("\t=1+2")]
+        [TestCase("\r\n=1+2")]
+        [TestCase("=1+2,second-field")]
+        [TestCase("\"=1+2,\"")]
+        [Property("Requirement", "FR-038")]
+        public void FormulaLikeMetadataIsLosslesslyPreservedForMachineCsvConsumers(string metadata)
+        {
+            // Interchange CSV preserves caller-controlled metadata as data; it does
+            // not promise to neutralize formulas in spreadsheet applications.
+            // A real CSV parser validates field boundaries, not spreadsheet behavior.
+            var diagnostic = ImportDiagnostic.ForRecord(1, metadata,
+                DiagnosticCodes.ValidationFailed, metadata, 4, null);
+            var result = new TypedImportResult<string>(metadata,
+                ImportResult.Completed(1, new[] { diagnostic }),
+                new string[0], "do not export");
+
+            var csv = new CsvImportResultSerializerAdapter().Serialize(result);
+            var rows = ReadRows(csv);
+
+            Assert.That(rows, Has.Count.EqualTo(2));
+            Assert.That(rows[1].Length, Is.EqualTo(9));
+            Assert.That(rows[1][0], Is.EqualTo(metadata));
+            Assert.That(rows[1][3], Is.EqualTo(metadata));
+            Assert.That(rows[1][6], Is.EqualTo(metadata));
+            Assert.That(rows[1][8], Is.Empty);
+            Assert.That(csv, Does.Not.Contain("do not export"));
+        }
+
         [Test]
         [Property("Requirement", "FR-038")]
         public void NullResultIsRejectedAndAbsoluteSourcePathIsRedacted()
