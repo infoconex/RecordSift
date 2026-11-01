@@ -95,6 +95,18 @@ Both importers use a caller-supplied resource budget. XLSX additionally supports
 
 The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs) and [XLSX acceptance tests](tests/RecordSift.Infrastructure.Xlsx.Tests/XlsxImporterAcceptanceTests.cs) compile and execute the same public workflow on the .NET Framework 4.8 Windows CI build. These examples describe the current API, not a published binary/package compatibility promise.
 
+## Results and JSON reports
+
+CSV and XLSX importers return a **typed `TypedImportResult<T>`**, not a JSON string. Read `result.AcceptedRecords` for accepted `T` objects and `result.Status`, `result.Summary` and `result.Diagnostics` for outcome and validation errors.
+
+To produce an optional JSON **outcome/diagnostic report**, reference `RecordSift.Infrastructure.Reporting` and use:
+
+```csharp
+var jsonReport = new JsonImportResultSerializerAdapter().Serialize(result);
+```
+
+This report contains the source ID, status, counts and diagnostic codes/messages, **not the accepted record values**. RecordSift deliberately does not automatically export imported customer data in diagnostic JSON. To export accepted rows to JSON, serialize `result.AcceptedRecords` in your own application using your preferred JSON library and appropriate privacy controls. See the [getting-started guide's expected console output and formatted JSON example](docs/usage/getting-started.md#2-run-a-complete-csv-import) and the [JSON contract](docs/specifications/import-result.md).
+
 ## XLSX input security boundary
 
 The XLSX reader independently checks ZIP entry count (512 maximum), both declared and actually decompressed package bytes (the smaller of 64 MiB or 32 times the caller's compressed-byte budget), and shared-string capacity hints and item counts (one million maximum). XML inspected during shared-string preflight prohibits DTDs and external entity resolution. These checks run before ExcelDataReader 3.9.0 parses the workbook, in addition to caller-controlled row/column/cell limits. The read is synchronous and eagerly buffers data; these safeguards do **not** guarantee a fixed maximum process heap, interrupt an expensive parse immediately on cancellation, or establish that all malformed files are harmless. Set conservative input budgets for untrusted XLSX. See the [release security assessment](docs/engineering/release-0.1-security-assessment.md).
