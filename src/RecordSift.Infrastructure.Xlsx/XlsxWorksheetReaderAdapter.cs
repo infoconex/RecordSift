@@ -27,7 +27,7 @@ namespace RecordSift.Infrastructure.Xlsx
         /// <param name="maxColumns">Positive maximum decoded fields in any row.</param>
         /// <param name="maxCellCharacters">Positive maximum UTF-16 code units per decoded cell.</param>
         /// <param name="worksheetName">Optional exact-case worksheet name; null uses first available worksheet.</param>
-        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total expansion verified by streaming each ZIP entry to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Shared-string capacity hints and item counts are limited to one million. Entries containing macro binaries or external-link parts are rejected. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
+        /// <remarks>Release 0.1 package preflight independently limits the archive to 512 ZIP entries and total expansion verified by streaming each ZIP entry to the smaller of 64 MiB or 32 times the supplied compressed-byte budget. Shared-string capacity hints and item counts are limited to one million. Entries containing macro binaries or external-link parts are rejected. Relationship-linked binary workbook, worksheet, style and shared-string parts are rejected before vendor parsing. These internal guards supplement the caller's row, column and cell-character budgets.</remarks>
         /// <remarks>Stored worksheet values are formatted using invariant culture; DateTime cell values use the round-trip ISO 8601 format. No formula or macro code is evaluated by this reader.</remarks>
         public XlsxReadResult Read(Stream source, int maxBytes,
             int maxRows, int maxColumns, int maxCellCharacters,
@@ -177,10 +177,69 @@ namespace RecordSift.Infrastructure.Xlsx
                         if (sharedStringError != null)
                             return sharedStringError;
                     }
+
+                    // ExcelDataReader 3.9.0 also accepts BIFF .bin worksheet,
+                    // style and shared-string relationship targets in otherwise
+                    // XML workbooks. Its BIFF reader allocates a buffer from an
+                    // untrusted record-length header before reading the body.
+                    // RecordSift 0.1 supports XML XLSX only: fail closed on these
+                    // relationships rather than handing them to the BIFF parser.
+                    if (path.EndsWith(".rels", StringComparison.OrdinalIgnoreCase) &&
+                        ContainsBinarySpreadsheetRelationship(entry, expandedLimit))
+                        return DiagnosticCodes.MalformedSource;
                 }
                 return zip.GetEntry("xl/workbook.xml") == null
                     ? DiagnosticCodes.MalformedSource : null;
             }
+        }
+
+        private static bool ContainsBinarySpreadsheetRelationship(
+            ZipArchiveEntry entry, long maxCharacters)
+        {
+            var settings = new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null,
+                MaxCharactersInDocument = maxCharacters
+            };
+            using (var content = entry.Open())
+            using (var reader = XmlReader.Create(content, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType != XmlNodeType.Element ||
+                        !string.Equals(reader.LocalName, "Relationship",
+                            StringComparison.Ordinal))
+                        continue;
+                    var target = reader.GetAttribute("Target");
+                    if (target == null ||
+                        !target.EndsWith(".bin", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var type = reader.GetAttribute("Type");
+                    if (IsVendorBinarySpreadsheetPartType(type))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool IsVendorBinarySpreadsheetPartType(string type)
+        {
+            const string Transitional =
+                "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
+            const string Strict =
+                "http://purl.oclc.org/ooxml/officeDocument/relationships/";
+            string kind;
+            if (type != null && type.StartsWith(Transitional, StringComparison.Ordinal))
+                kind = type.Substring(Transitional.Length);
+            else if (type != null && type.StartsWith(Strict, StringComparison.Ordinal))
+                kind = type.Substring(Strict.Length);
+            else
+                return false;
+
+            return kind == "officeDocument" || kind == "worksheet" ||
+                kind == "styles" || kind == "sharedStrings";
         }
 
         private static string CheckSharedStringPart(ZipArchiveEntry entry, long maxCharacters)
