@@ -6,6 +6,20 @@ RecordSift imports **CSV and XLSX** data into your own C# classes, validates row
 
 **Published package:** [RecordSift 0.1.0 on NuGet.org](https://www.nuget.org/packages/RecordSift/0.1.0) · [GitHub v0.1.0 release](https://github.com/infoconex/RecordSift/releases/tag/v0.1.0) · [release notes](../release/0.1-release-notes.md)
 
+## Why use RecordSift?
+
+Use RecordSift when your application must **import, validate, and explain structured business records**, not merely read rows or worksheet cells. A single import brings together:
+
+- CSV or XLSX source reading behind format-specific adapters, with a common typed result model.
+- Declared source-column schema and explicit mapping to writable C# properties, with culture-aware primitive conversion.
+- Required-value, length, range, duplicate, pattern and custom-record checks, so valid records can be accepted while invalid rows are explained.
+- Ordered diagnostics with codes, record/field locations and source identifiers, plus optional JSON, readable-text and machine-interchange CSV **diagnostic reports**.
+- Caller-configurable input/resource limits and a deterministic, in-process workflow; no Excel installation or runtime service dependency.
+
+For example, a Windows line-of-business application could import a supplier's CSV today and an Excel workbook tomorrow, applying the same downstream validation and reporting conventions before saving accepted rows. **RecordSift does not persist them to a database**; your application decides what to do with the accepted records.
+
+**Choose a simpler parser instead** if you only need to read cells or CSV rows with little mapping/validation/reporting. RecordSift builds on CsvHelper and ExcelDataReader; it does not replace their low-level parsing capabilities or promise to be faster. Release 0.1.0 also is **not a good fit** for modern .NET-only or cross-platform applications, very large streams requiring incremental processing, or workloads demanding strict process memory/CPU ceilings: this release is Windows/net48, synchronous and potentially eager.
+
 ## 1. Install the library in your own application
 
 1. In **Visual Studio on Windows**, create a **Console App (.NET Framework)** project, selecting **.NET Framework 4.8**. This is not the similarly named modern **Console App** (.NET 8/9/etc.).
@@ -49,54 +63,56 @@ internal static class Program
     private static void Main()
     {
         // 1. Declare which source columns are expected.
-        var schema = new ImportSchema(new[]
+        var importSchema = new ImportSchema(new[]
         {
             new ExpectedColumn("Id", true, true),
             new ExpectedColumn("Name", true, true)
         });
 
         // 2. Map incoming column names to writable Customer properties.
-        var mapping = new PropertyMappingSchema(schema, new[]
+        var propertyMappingSchema = new PropertyMappingSchema(importSchema, new[]
         {
             new SourcePropertyMapping("Id", "Id"),
             new SourcePropertyMapping("Name", "Name")
         });
-        var mapper = new PrimitivePropertyMapper<Customer>(
-            mapping, CultureInfo.InvariantCulture);
+        var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(
+            propertyMappingSchema, CultureInfo.InvariantCulture);
 
-        // 3. Create an importer with the real CSV adapter.
-        var importer = new CsvImporter<Customer>(
-            new CsvRecordReaderAdapter(), mapper.Map);
+        // 3. Create an csvImporter with the real CSV adapter.
+        var csvImporter = new CsvImporter<Customer>(
+            new CsvRecordReaderAdapter(), primitivePropertyMapper.Map);
 
         // 4. Import. The second row contains an intentionally invalid Id.
-        using (var source = new StringReader("Id,Name\n1,Alice\nnot-an-integer,Bob"))
+        using (var stringReader = new StringReader("Id,Name\n1,Alice\nnot-an-integer,Bob"))
         {
-            var result = importer.Import(
-                source, 4096, schema, CsvHeaderPolicy.WithHeader,
+            var typedImportResult = csvImporter.Import(
+                stringReader, 4096, importSchema, CsvHeaderPolicy.WithHeader,
                 "demo-customers", options: CsvReadOptions.Default);
 
-            Console.WriteLine("Status: " + result.Status);
+            Console.WriteLine("Status: " + typedImportResult.Status);
             Console.WriteLine(
-                "Processed: " + result.Summary.ProcessedCount +
-                ", accepted: " + result.Summary.AcceptedCount +
-                ", rejected: " + result.Summary.RejectedCount);
+                "Processed: " + typedImportResult.Summary.ProcessedCount +
+                ", accepted: " + typedImportResult.Summary.AcceptedCount +
+                ", rejected: " + typedImportResult.Summary.RejectedCount);
 
-            foreach (var customer in result.AcceptedRecords)
+            foreach (var customer in typedImportResult.AcceptedRecords)
                 Console.WriteLine(customer.Id + ": " + customer.Name);
 
-            foreach (var diagnostic in result.Diagnostics)
+            foreach (var diagnostic in typedImportResult.Diagnostics)
                 Console.WriteLine(
                     "Error " + diagnostic.Code +
                     " at data row " + diagnostic.Row +
                     ", field " + diagnostic.Field);
 
-            // 5. Reports are generated from the result, not by re-reading CSV.
-            var json = new JsonImportResultSerializerAdapter().Serialize(result);
-            var text = new ReadableImportResultFormatterAdapter().Format(result);
+            // 5. Reports are generated from the typedImportResult, not by re-reading CSV.
+            var jsonImportResultSerializerAdapter = new JsonImportResultSerializerAdapter();
+            var jsonReport = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
+            var readableImportResultFormatterAdapter = new ReadableImportResultFormatterAdapter();
+            var readableReport = readableImportResultFormatterAdapter.Format(typedImportResult);
             Console.WriteLine("JSON report:");
-            Console.WriteLine(json);
+            Console.WriteLine(jsonReport);
             Console.WriteLine("Readable summary:");
-            Console.WriteLine(text);
+            Console.WriteLine(readableReport);
         }
     }
 }
@@ -137,9 +153,9 @@ Next, the program prints `JSON report:` and a JSON string. The JSON below illust
 }
 ```
 
-Finally, the program prints `Readable summary:` and the human-readable text report. Its text is intended for display, **not for machine parsing**. If you want to save a JSON report instead of printing it, call `File.WriteAllText("import-report.json", json);` in `Main` after creating the `json` variable (with appropriate filesystem error handling in production).
+Finally, the program prints `Readable summary:` and the human-readable text report. Its text is intended for display, **not for machine parsing**. If you want to save a JSON report instead of printing it, call `File.WriteAllText("import-report.json", jsonReport);` in `Main` after creating the `jsonReport` variable (with appropriate filesystem error handling in production).
 
-**Important: the JSON report does not contain the accepted customer records.** The original typed `result.AcceptedRecords` contains `Customer { Id = 1, Name = "Alice" }`; this is intentional to avoid exporting source record values in default diagnostic reports. If you need a **JSON file containing imported data**, serialize `result.AcceptedRecords` in your *own application*, under an appropriate privacy policy, using your chosen JSON serializer. RecordSift's `JsonImportResultSerializerAdapter` is for reporting **outcomes and diagnostics**, not for exporting your data records.
+**Important: the JSON report does not contain the accepted customer records.** The original typed `typedImportResult.AcceptedRecords` contains `Customer { Id = 1, Name = "Alice" }`; this is intentional to avoid exporting source record values in default diagnostic reports. If you need a **JSON file containing imported data**, serialize `typedImportResult.AcceptedRecords` in your *own application*, under an appropriate privacy policy, using your chosen JSON serializer. RecordSift's `JsonImportResultSerializerAdapter` is for reporting **outcomes and diagnostics**, not for exporting your data records.
 
 The JSON `schemaVersion` is independent of the NuGet package version: completed and source-failed results use **1.0**, opt-in fail-fast stopped results use **1.1**, and canceled results use **1.2**. See the [versioned JSON contract](../specifications/import-result.md) and the [tested golden fixtures](../../tests/RecordSift.Infrastructure.Reporting.Tests/Fixtures/Compatibility/) for exact field guarantees.
 
@@ -147,7 +163,7 @@ Use structured `Status`, `Summary` and `Diagnostics` members for application log
 
 ### What happens to bad rows?
 
-`Status == ImportStatus.Completed` means the source processing completed. It does **not** mean every row was valid. In the example, the valid Alice row is accepted; Bob is rejected because his `Id` cannot be converted to an `int`. One rejected row may have multiple diagnostics. Inspect `result.Summary` for row counts and `result.Diagnostics` for detailed machine-readable problems.
+`Status == ImportStatus.Completed` means the source processing completed. It does **not** mean every row was valid. In the example, the valid Alice row is accepted; Bob is rejected because his `Id` cannot be converted to an `int`. One rejected row may have multiple diagnostics. Inspect `typedImportResult.Summary` for row counts and `typedImportResult.Diagnostics` for detailed machine-readable problems.
 
 `ImportStatus.Failed` represents a source- or schema-level failure, not merely a bad data row. `Stopped` indicates a deliberate fail-fast stop; `Canceled` indicates cooperative cancellation. Do not treat these statuses as equivalent or assume they all contain the same accepted-record information.
 
@@ -156,16 +172,16 @@ Use structured `Status`, `Summary` and `Diagnostics` members for application log
 For a regular UTF-8 CSV file with a header row:
 
 ```csharp
-using (var reader = File.OpenText(@"C:\data\customers.csv"))
+using (var streamReader = File.OpenText(@"C:\data\customers.csv"))
 {
-    var result = importer.Import(reader, 1000000, schema,
+    var typedImportResult = csvImporter.Import(streamReader, 1000000, importSchema,
         CsvHeaderPolicy.WithHeader, "customer-upload",
         options: CsvReadOptions.Default);
-    // Inspect result.Status, result.AcceptedRecords and result.Diagnostics.
+    // Inspect typedImportResult.Status, typedImportResult.AcceptedRecords and typedImportResult.Diagnostics.
 }
 ```
 
-Here `schema` and `importer` are the objects initialized in section 2; this is an **alternative** input block, not a second complete program. `1000000` is an example **decoded-character budget** for this `TextReader` API, not a recommended universal maximum.
+Here `importSchema` and `csvImporter` are the objects initialized in section 2; this is an **alternative** input block, not a second complete program. `1000000` is an example **decoded-character budget** for this `TextReader` API, not a recommended universal maximum.
 
 For a semicolon-delimited file, pass `options: new CsvReadOptions(";")`. For a headerless file, select `CsvHeaderPolicy.WithoutHeader` and provide explicit zero-based positions, for example:
 
@@ -181,7 +197,7 @@ Add the `positions:` named argument to the `Import(...)` call and supply a heade
 
 ## 4. Import an Excel workbook (XLSX)
 
-The same `Customer`, `schema`, and `mapper` from section 2 can be reused for an XLSX workbook with `Id` and `Name` column headers. Add these namespaces:
+The same `Customer`, `importSchema`, and `primitivePropertyMapper` from section 2 can be reused for an XLSX workbook with `Id` and `Name` column headers. Add these namespaces:
 
 ```csharp
 using RecordSift.Application.Importing.Xlsx;
@@ -193,19 +209,19 @@ Then, in `Main`, create the XLSX importer:
 
 ```csharp
 var xlsxImporter = new XlsxImporter<Customer>(
-    new XlsxWorksheetReaderAdapter(), mapper.Map);
+    new XlsxWorksheetReaderAdapter(), primitivePropertyMapper.Map);
 
-using (var workbook = File.OpenRead(@"C:\data\customers.xlsx"))
+using (var fileStream = File.OpenRead(@"C:\data\customers.xlsx"))
 {
-    var result = xlsxImporter.Import(
-        workbook, 4 * 1024 * 1024, schema, "customer-workbook",
+    var typedImportResult = xlsxImporter.Import(
+        fileStream, 4 * 1024 * 1024, importSchema, "customer-workbook",
         worksheetName: "Customers", limits: XlsxReadLimits.Default);
 
-    Console.WriteLine(result.Status);
-    Console.WriteLine("Accepted: " + result.Summary.AcceptedCount);
-    foreach (var error in result.Diagnostics)
-        Console.WriteLine(error.Code + " / " + error.Worksheet +
-                          " / row " + error.PhysicalRow);
+    Console.WriteLine(typedImportResult.Status);
+    Console.WriteLine("Accepted: " + typedImportResult.Summary.AcceptedCount);
+    foreach (var importDiagnostic in typedImportResult.Diagnostics)
+        Console.WriteLine(importDiagnostic.Code + " / " + importDiagnostic.Worksheet +
+                          " / row " + importDiagnostic.PhysicalRow);
 }
 ```
 
@@ -219,21 +235,22 @@ For a custom record rule, construct a `CsvImporter<Customer>` using the existing
 // RecordValidationRule<T> is in RecordSift.Domain.Schema,
 // which is already imported by the complete example above.
 // In Main, instead of the earlier CsvImporter constructor:
-var rules = new[]
+var recordValidationRules = new[]
 {
     new RecordValidationRule<Customer>("Name", customer => customer.Name != "Blocked")
 };
-var importer = new CsvImporter<Customer>(
-    new CsvRecordReaderAdapter(), mapper.Map, null, null, rules);
+var csvImporter = new CsvImporter<Customer>(
+    new CsvRecordReaderAdapter(), primitivePropertyMapper.Map, null, null, recordValidationRules);
 ```
 
 The same typed import-result object can be formatted as JSON or readable text (section 2), or as machine-interchange diagnostic CSV:
 
 ```csharp
-var diagnosticCsv = new CsvImportResultSerializerAdapter().Serialize(result);
+var csvImportResultSerializerAdapter = new CsvImportResultSerializerAdapter();
+var diagnosticCsvReport = csvImportResultSerializerAdapter.Serialize(typedImportResult);
 ```
 
-Here `result` refers to the completed import result in scope. It is **not** a spreadsheet-safe report. If data contains untrusted source IDs, field names or worksheet names, opening the diagnostic CSV directly in Excel may execute spreadsheet formulas. Import CSV columns as text in spreadsheet software, or transform untrusted values using a separately verified spreadsheet-safe exporter.
+Here `typedImportResult` refers to the completed import result in scope. It is **not** a spreadsheet-safe report. If data contains untrusted source IDs, field names or worksheet names, opening the diagnostic CSV directly in Excel may execute spreadsheet formulas. Import CSV columns as text in spreadsheet software, or transform untrusted values using a separately verified spreadsheet-safe exporter.
 
 For predefined rules (required values, length, numeric/date range, duplicates and regex), see the [functional behavior specification](../specifications/record-import.md) and [acceptance tests](../../tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs). For machine-readable JSON guarantees, see the [versioned result contract](../specifications/import-result.md).
 
