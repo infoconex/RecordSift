@@ -1,5 +1,12 @@
 # RecordSift release 0.1 — release-candidate readiness assessment
 
+## Adversarial security milestone and current promotion hold (2026-10-31)
+
+Security validation tracker [#225](https://github.com/infoconex/RecordSift/issues/225) records bounded adversarial test additions: XLSX ZIP/XML/stream failures (#221/PR #222; 404/404 exact postmerge), CSV 96-input deterministic mutation corpus and stream/Unicode handling (#223/PR #224; combined 408/408 exact postmerge), reporting secrecy and intentionally visible caller metadata (#226/PR #228), and regex finite per-match timeout/repetition (#229/PR #230). These are regression **checks of selected behaviors** without production changes or confirmed new defects; they are not full fuzzing or process-memory certification. A dedicated manually dispatched bounded Windows resource-stress workflow (#231/PR #233) requires an actual run before its result can be accepted. [Security assessment](release-0.1-security-assessment.md) describes remaining low/informational and caller-responsibility risks.
+
+**Technical assessment: CONDITIONAL GO only within tested Windows/.NET Framework 4.8 scope after four green checks on the exact final integration SHA.** Verify 425 compiled public API entries, seven JSON fixtures, pinned package audit, real locally installed unpublished RC/stable NuGet consumers, and full NUnit counts. The final documentation merge also creates another SHA requiring fresh verification. No owner source-promotion GO has been recorded for this newer tree; issue #199 remains the gate and draft PR #209 cannot be promoted. No public package, tags or GitHub Releases are authorized.
+
+
 **Initial review:** 2026-10-31; **documentation acceptance revision:** 2026-10-31. **Supported scope:** Windows only; .NET Framework 4.8; C# 7.3; NUnit 3; GitHub Actions Windows 2022 runners. **Integration branch:** release/0.1. The initial pre-documentation candidate SHA was `b56642252c8824f6d4bdcd09e0704842a3352a23`; subsequent milestones below supersede that historical checkpoint. **Historical promotion rule:** an earlier candidate was eligible only for an explicitly owner-authorized squash promotion; **the current security-modified candidate has no owner GO for promotion to `main`**. Four green CI checks alone are insufficient. Public tagging/package publication is not approved.
 
 ## Security reassessment superseding earlier promotion recommendation (2026-10-31)
