@@ -40,12 +40,16 @@ public sealed class Customer
 {
     public int Id { get; set; }
     public string Name { get; set; }
+    public int LoyaltyPoints { get; set; }
+    public decimal CreditLimit { get; set; }
+    public bool IsActive { get; set; }
+    public string Email { get; set; }
 }
 ```
 
 ### CSV import
 
-The following example uses the public schema, property mapping, and CSV adapter. The caller chooses the character limit, header policy, source identifier, and conversion culture; no internal initializer is required.
+The following example uses the **same six-column customer schema as Excel** (including optional typed defaults) and the public CSV adapter. Both input samples supply only the required `Id` and `Name` columns; RecordSift fills in the optional defaults. See the [column-by-column table, value types, and missing-value rules](docs/usage/getting-started.md#2-a-shared-customer-schema-for-csv-and-excel). The caller chooses the character limit, header policy, source identifier, and conversion culture; no internal initializer is required.
 
 ```csharp
 using System;
@@ -59,11 +63,19 @@ using RecordSift.Infrastructure.Csv;
 
 var importSchema = new ImportSchema(new[] {
     new ExpectedColumn("Id", true, true),
-    new ExpectedColumn("Name", true, true)
+    new ExpectedColumn("Name", true, true),
+    new ExpectedColumn("LoyaltyPoints", false, false, "0"),
+    new ExpectedColumn("CreditLimit", false, false, "0.00"),
+    new ExpectedColumn("IsActive", false, false, "true"),
+    new ExpectedColumn("Email", false, false)
 });
 var propertyMappingSchema = new PropertyMappingSchema(importSchema, new[] {
     new SourcePropertyMapping("Id", "Id"),
-    new SourcePropertyMapping("Name", "Name")
+    new SourcePropertyMapping("Name", "Name"),
+    new SourcePropertyMapping("LoyaltyPoints", "LoyaltyPoints"),
+    new SourcePropertyMapping("CreditLimit", "CreditLimit"),
+    new SourcePropertyMapping("IsActive", "IsActive"),
+    new SourcePropertyMapping("Email", "Email")
 });
 var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(propertyMappingSchema, CultureInfo.InvariantCulture);
 var csvImporter = new CsvImporter<Customer>(new CsvRecordReaderAdapter(), primitivePropertyMapper.Map);
@@ -86,7 +98,7 @@ using (var stringReader = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
 
 ### XLSX import
 
-Reference `RecordSift.Infrastructure.Xlsx` and its runtime dependencies as well. Reuse the `Customer`, `importSchema`, and `primitivePropertyMapper` declarations above:
+Reference `RecordSift.Infrastructure.Xlsx` and its runtime dependencies as well. Reuse the **identical** `Customer`, `importSchema`, and `primitivePropertyMapper` declarations above (including optional values).
 
 ```csharp
 using System.IO;
@@ -120,7 +132,7 @@ var jsonImportResultSerializerAdapter =
 var jsonReport = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
 ```
 
-This report contains the source ID, status, counts and diagnostic codes/messages, **not the accepted record values**. RecordSift deliberately does not automatically export imported customer data in diagnostic JSON. To export accepted rows to JSON, serialize `typedImportResult.AcceptedRecords` in your own application using your preferred JSON library and appropriate privacy controls. See the [getting-started guide's expected console output and formatted JSON example](docs/usage/getting-started.md#2-run-a-complete-csv-import) and the [JSON contract](docs/specifications/import-result.md).
+This report contains the source ID, status, counts and diagnostic codes/messages, **not the accepted record values**. RecordSift deliberately does not automatically export imported customer data in diagnostic JSON. To export accepted rows to JSON, serialize `typedImportResult.AcceptedRecords` in your own application using your preferred JSON library and appropriate privacy controls. See the [getting-started guide's expected console output and formatted JSON example](docs/usage/getting-started.md#3-run-a-complete-csv-import) and the [JSON contract](docs/specifications/import-result.md).
 
 ## XLSX input security boundary
 
