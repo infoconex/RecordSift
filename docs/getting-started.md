@@ -4,10 +4,10 @@ RecordSift 0.1 targets Windows, .NET Framework 4.8, and C# 7.3. The same custome
 
 ## 1. Download the sample files
 
-- [customers.csv](../samples/customers.csv) — 20 valid rows, used in the CSV walkthrough.
-- [customers.xlsx](../samples/customers.xlsx) — the same 20 rows in Excel format (first worksheet: `Customers`).
-- [customers-invalid.csv](../samples/customers-invalid.csv) — 10 deliberately problematic rows for diagnostics practice.
-- [customers-invalid.xlsx](../samples/customers-invalid.xlsx) — the same deliberately problematic rows in Excel format.
+- [customers.csv](samples/customers.csv) — 20 valid rows, used in the CSV walkthrough.
+- [customers.xlsx](samples/customers.xlsx) — the same 20 rows in Excel format (first worksheet: `Customers`).
+- [customers-invalid.csv](samples/customers-invalid.csv) — 10 deliberately problematic rows for diagnostics practice.
+- [customers-invalid.xlsx](samples/customers-invalid.xlsx) — the same deliberately problematic rows in Excel format.
 
 The examples contain fictional customers only. Add `customers.csv` to the console project's output directory (or update the local path). For Excel, copy `customers.xlsx` alongside it. Install/reference the RecordSift package or assemblies and their dependencies as described in the [consumer guide](release/0.1-consumer-guide.md).
 
