@@ -36,9 +36,40 @@ RecordSift provides five DLLs in one package: `RecordSift.Domain`, `RecordSift.A
 
 > **Important:** `nuget install RecordSift` from a terminal downloads packages to a folder but does **not** add a package reference to your Visual Studio project. Install the package into your **project**, as above.
 
-## 2. Run a complete CSV import
+## 2. A shared customer schema for CSV and Excel
 
-Replace the content of `Program.cs` in your new .NET Framework 4.8 Console App with this **complete C# 7.3 program** (no top-level statements):
+Both formats use the **same six logical columns**, the same C# `Customer` type, and the same `ImportSchema` / `PropertyMappingSchema`. CSV headings and XLSX worksheet headings use the same names (case-sensitive).
+
+| Source column | C# destination property | Type | Column required? | Value required if present? | If the whole column is omitted |
+| --- | --- | --- | --- | --- | --- |
+| `Id` | `Id` | `int` | Yes | Yes | Source/schema error |
+| `Name` | `Name` | `string` | Yes | Yes | Source/schema error |
+| `LoyaltyPoints` | `LoyaltyPoints` | `int` | No | No | `0` |
+| `CreditLimit` | `CreditLimit` | `decimal` | No | No | `0.00` |
+| `IsActive` | `IsActive` | `bool` | No | No | `true` |
+| `Email` | `Email` | `string` | No | No | `null` (no explicit default) |
+
+`ExpectedColumn.IsRequired` controls **whether the column exists**; `IsValueRequired` controls **whether a present row's value may be blank**. For optional value-type properties, use an explicit raw-string default (e.g. `"0"`, `"0.00"`, `"true"`) so your business default is documented and applied by the mapping pipeline. `Email` has no configured default, so a newly constructed `Customer.Email` remains `null` when that column is omitted. Without an explicit default, absent optional nonnullable value-type properties keep their CLR initialization (`0`, `false`, etc.); a property initializer could also affect the initial value.
+
+**Defaults apply only when the entire optional source column is absent from the header**, not when an existing column has an empty cell. A blank value for a nonnullable `int`, `decimal`, or `bool` will fail primitive conversion instead of being replaced with the absence default; use a nullable value type (e.g., `int?`) when a blank is intended to represent `null`. An explicit default is parsed according to the mapper's supplied culture (`InvariantCulture` in this tutorial).
+
+These files both satisfy the shared schema and use the same import/mapping/validation rules:
+
+**CSV (`customers.csv`):**
+
+```csv
+Id,Name
+1,Alice
+not-an-integer,Bob
+```
+
+**Excel (`customers.xlsx`, worksheet `Customers`):** put `Id` and `Name` in cells A1 and B1, with `1` / `Alice` in A2:B2 and `not-an-integer` / `Bob` in A3:B3. The other four optional columns are **absent** in both inputs. You can add those four columns later, using the exact names in the table, without changing the C# schema or model. For example, the full heading row in either CSV or the XLSX worksheet is `Id,Name,LoyaltyPoints,CreditLimit,IsActive,Email`.
+
+For Alice, RecordSift maps missing optional fields to `LoyaltyPoints = 0`, `CreditLimit = 0.00m`, `IsActive = true`, and `Email = null`. Bob is rejected because his required `Id` is invalid; the imported result can still have `Status = Completed`.
+
+## 3. Run a complete CSV import
+
+Replace the content of `Program.cs` in your new .NET Framework 4.8 Console App with this **complete C# 7.3 program** (no top-level statements). The sample imports the required columns only, so the optional defaults are exercised:
 
 ```csharp
 using System;
@@ -56,6 +87,10 @@ internal sealed class Customer
 {
     public int Id { get; set; }
     public string Name { get; set; }
+    public int LoyaltyPoints { get; set; }
+    public decimal CreditLimit { get; set; }
+    public bool IsActive { get; set; }
+    public string Email { get; set; }
 }
 
 internal static class Program
@@ -66,14 +101,22 @@ internal static class Program
         var importSchema = new ImportSchema(new[]
         {
             new ExpectedColumn("Id", true, true),
-            new ExpectedColumn("Name", true, true)
+            new ExpectedColumn("Name", true, true),
+            new ExpectedColumn("LoyaltyPoints", false, false, "0"),
+            new ExpectedColumn("CreditLimit", false, false, "0.00"),
+            new ExpectedColumn("IsActive", false, false, "true"),
+            new ExpectedColumn("Email", false, false)
         });
 
         // 2. Map incoming column names to writable Customer properties.
         var propertyMappingSchema = new PropertyMappingSchema(importSchema, new[]
         {
             new SourcePropertyMapping("Id", "Id"),
-            new SourcePropertyMapping("Name", "Name")
+            new SourcePropertyMapping("Name", "Name"),
+            new SourcePropertyMapping("LoyaltyPoints", "LoyaltyPoints"),
+            new SourcePropertyMapping("CreditLimit", "CreditLimit"),
+            new SourcePropertyMapping("IsActive", "IsActive"),
+            new SourcePropertyMapping("Email", "Email")
         });
         var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(
             propertyMappingSchema, CultureInfo.InvariantCulture);
@@ -96,7 +139,12 @@ internal static class Program
                 ", rejected: " + typedImportResult.Summary.RejectedCount);
 
             foreach (var customer in typedImportResult.AcceptedRecords)
-                Console.WriteLine(customer.Id + ": " + customer.Name);
+                Console.WriteLine(
+                    customer.Id + ": " + customer.Name +
+                    " (points=" + customer.LoyaltyPoints +
+                    ", creditLimit=" + customer.CreditLimit.ToString("0.00", CultureInfo.InvariantCulture) +
+                    ", isActive=" + customer.IsActive +
+                    ", email=" + (customer.Email ?? "<none>") + ")");
 
             foreach (var importDiagnostic in typedImportResult.Diagnostics)
                 Console.WriteLine(
@@ -123,9 +171,11 @@ Build and run the project. The **first four console lines** for this specific in
 ```text
 Status: Completed
 Processed: 2, accepted: 1, rejected: 1
-1: Alice
+1: Alice (points=0, creditLimit=0.00, isActive=True, email=<none>)
 Error CONVERSION_FAILED at data row 2, field Id
 ```
+
+This explicitly demonstrates that the four absent optional source columns were handled consistently. The outcome counts and JSON diagnostic report remain the same regardless of whether the input is CSV or XLSX, given equivalent source rows.
 
 Next, the program prints `JSON report:` and a JSON string. The JSON below illustrates the **actual public 1.0 report contract** for this input, **pretty-printed for readability** (the adapter's string itself is compact):
 
@@ -167,7 +217,7 @@ Use structured `Status`, `Summary` and `Diagnostics` members for application log
 
 `ImportStatus.Failed` represents a source- or schema-level failure, not merely a bad data row. `Stopped` indicates a deliberate fail-fast stop; `Canceled` indicates cooperative cancellation. Do not treat these statuses as equivalent or assume they all contain the same accepted-record information.
 
-## 3. Use a real CSV file, a different delimiter, or no headers
+## 4. Use a real CSV file, a different delimiter, or no headers
 
 For a regular UTF-8 CSV file with a header row:
 
@@ -181,7 +231,7 @@ using (var streamReader = File.OpenText(@"C:\data\customers.csv"))
 }
 ```
 
-Here `importSchema` and `csvImporter` are the objects initialized in section 2; this is an **alternative** input block, not a second complete program. `1000000` is an example **decoded-character budget** for this `TextReader` API, not a recommended universal maximum.
+Here `importSchema` and `csvImporter` are the objects initialized in section 3; this is an **alternative** input block, not a second complete program. `1000000` is an example **decoded-character budget** for this `TextReader` API, not a recommended universal maximum.
 
 For a semicolon-delimited file, pass `options: new CsvReadOptions(";")`. For a headerless file, select `CsvHeaderPolicy.WithoutHeader` and provide explicit zero-based positions, for example:
 
@@ -195,9 +245,9 @@ positions: new[]
 
 Add the `positions:` named argument to the `Import(...)` call and supply a headerless source; **do not** combine positions with `CsvHeaderPolicy.WithHeader`. For non-UTF-8 files or strict decoding, use the byte-stream importer with an explicitly chosen encoding instead of relying on `File.OpenText` defaults.
 
-## 4. Import an Excel workbook (XLSX)
+## 5. Import an Excel workbook (XLSX)
 
-The same `Customer`, `importSchema`, and `primitivePropertyMapper` from section 2 can be reused for an XLSX workbook with `Id` and `Name` column headers. Add these namespaces:
+The **same** `Customer`, `importSchema`, and `primitivePropertyMapper` from the shared column table and CSV example can be reused for an XLSX workbook with `Id` and `Name` column headers. Omitted optional headings use the same defaults. Add these namespaces:
 
 ```csharp
 using RecordSift.Application.Importing.Xlsx;
@@ -227,7 +277,7 @@ using (var fileStream = File.OpenRead(@"C:\data\customers.xlsx"))
 
 `worksheetName: "Customers"` selects that worksheet by its **exact name**; omit it to read the first worksheet. Missing worksheets return a source-level diagnostic rather than silently selecting another sheet. The `4 * 1024 * 1024` value is the **compressed workbook byte limit**, and `XlsxReadLimits` separately controls row/column/cell-character budgets. The caller owns the stream. The library never starts Microsoft Excel or evaluates formulas/macros.
 
-## 5. Add record validation and create reports
+## 6. Add record validation and create reports
 
 For a custom record rule, construct a `CsvImporter<Customer>` using the existing schema/mapper with a Domain record rule (the record named `Blocked` will be rejected):
 
@@ -243,7 +293,7 @@ var csvImporter = new CsvImporter<Customer>(
     new CsvRecordReaderAdapter(), primitivePropertyMapper.Map, null, null, recordValidationRules);
 ```
 
-The same typed import-result object can be formatted as JSON or readable text (section 2), or as machine-interchange diagnostic CSV:
+The same typed import-result object can be formatted as JSON or readable text (section 3), or as machine-interchange diagnostic CSV:
 
 ```csharp
 var csvImportResultSerializerAdapter = new CsvImportResultSerializerAdapter();
@@ -254,7 +304,7 @@ Here `typedImportResult` refers to the completed import result in scope. It is *
 
 For predefined rules (required values, length, numeric/date range, duplicates and regex), see the [functional behavior specification](../specifications/record-import.md) and [acceptance tests](../../tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs). For machine-readable JSON guarantees, see the [versioned result contract](../specifications/import-result.md).
 
-## 6. Common questions and pitfalls
+## 7. Common questions and pitfalls
 
 | Symptom | What to check |
 | --- | --- |
