@@ -91,8 +91,8 @@ Replace the content of `Program.cs` in your Console App with this **complete C# 
 
 ```csharp
 using System;
-using System.Globalization;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Mapping;
