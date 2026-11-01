@@ -182,8 +182,8 @@ using (var workbook = File.OpenRead(@"C:\data\customers.xlsx"))
 For a custom record rule, construct a `CsvImporter<Customer>` using the existing schema/mapper with a Domain record rule (the record named `Blocked` will be rejected):
 
 ```csharp
-using RecordSift.Domain.Validation;
-
+// RecordValidationRule<T> is in RecordSift.Domain.Schema,
+// which is already imported by the complete example above.
 // In Main, instead of the earlier CsvImporter constructor:
 var rules = new[]
 {
