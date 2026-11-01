@@ -34,7 +34,7 @@ New-Item -ItemType Directory -Force -Path $packages, $output | Out-Null
 try {
     $nuget = (Get-Command nuget -ErrorAction Stop).Source
     # Include nuget.org only to resolve the candidate's pinned third-party package dependencies.
-    & $nuget install RecordSift -Version $PackageVersion -Framework net48 -OutputDirectory $packages -Source $sources -NonInteractive -NoCache
+    & $nuget install RecordSift -Version $PackageVersion -Framework net48 -OutputDirectory $packages -Source $sources -NonInteractive -NoHttpCache
     if ($LASTEXITCODE -ne 0) { throw 'Clean NuGet install failed.' }
     $expectedPackages = @{
         CsvHelper = '33.1.0'
@@ -56,18 +56,38 @@ try {
         }
     }
     $installedRoot = Join-Path $packages "RecordSift.$PackageVersion"
+    # Read the manifest in the downloaded .nupkg, not an optional separately
+    # extracted .nuspec file. Local-feed CI exercises this same code path.
+    $installedPackage = Join-Path $installedRoot "RecordSift.$PackageVersion.nupkg"
+    if (-not (Test-Path -LiteralPath $installedPackage)) { throw 'Installed package archive missing.' }
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($installedPackage)
+    try {
+        $manifests = @($archive.Entries | Where-Object { $_.FullName -match '^[^/\\]+\.nuspec$' })
+        if ($manifests.Count -ne 1) { throw 'Installed package must have exactly one root nuspec manifest.' }
+        $reader = [System.IO.StreamReader]::new($manifests[0].Open())
+        try {
+            [xml]$publishedManifest = $reader.ReadToEnd()
+        } finally {
+            $reader.Dispose()
+        }
+    } finally {
+        $archive.Dispose()
+    }
+    $publishedMeta = $publishedManifest.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]')
+    if ($null -eq $publishedMeta) { throw 'Installed package metadata missing.' }
+    $idNode = $publishedMeta.SelectSingleNode('*[local-name()="id"]')
+    $versionNode = $publishedMeta.SelectSingleNode('*[local-name()="version"]')
+    if ($null -eq $idNode -or $idNode.InnerText -cne 'RecordSift' -or
+        $null -eq $versionNode -or $versionNode.InnerText -cne $PackageVersion) {
+        throw 'Installed package ID or version is wrong.'
+    }
     if ($FromNuGetOrg) {
-        $installedNuspec = Join-Path $installedRoot 'RecordSift.nuspec'
-        if (-not (Test-Path -LiteralPath $installedNuspec)) { throw 'Installed public package nuspec missing.' }
-        [xml]$publishedManifest = Get-Content -LiteralPath $installedNuspec -Raw
-        $publishedMeta = $publishedManifest.SelectSingleNode('/*[local-name()="package"]/*[local-name()="metadata"]')
         $publishedRepo = $publishedMeta.SelectSingleNode('*[local-name()="repository"]')
-        if ($publishedMeta.SelectSingleNode('*[local-name()="version"]').InnerText -cne $PackageVersion -or
-            $null -eq $publishedRepo -or
+        if ($null -eq $publishedRepo -or
             $publishedRepo.GetAttribute('branch') -cne 'main' -or
             $publishedRepo.GetAttribute('url') -cne 'https://github.com/infoconex/RecordSift.git' -or
             $publishedRepo.GetAttribute('commit') -cne $ExpectedSourceCommit) {
-            throw 'Published NuGet package identity or exact source repository commit is wrong.'
+            throw 'Published package exact source repository commit is wrong.'
         }
         Write-Host "PASS: nuget.org published package source commit $ExpectedSourceCommit"
     }

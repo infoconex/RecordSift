@@ -1,0 +1,91 @@
+name: Recover already-published RecordSift 0.1.0 GitHub Release
+
+# One-time post-upload reconciliation. Never rebuild or push a NuGet package here.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recordsift-release-0.1.0
+  cancel-in-progress: false
+
+jobs:
+  verify_public:
+    name: Validate original published 0.1.0 from nuget.org
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-2022
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    env:
+      PUBLISHED_SOURCE_SHA: 2db5c86bc26010afcb83c2e455d2471d8c9340d6
+    steps:
+      - name: Checkout the reviewed verification fix on main
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Validate installed package and run isolated net48 consumer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $checkedOut = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $checkedOut -cne $env:GITHUB_SHA) {
+            throw 'Recovery verification checkout mismatch.'
+          }
+          & .\scripts\verify_clean_consumer.ps1 -FromNuGetOrg -PackageVersion '0.1.0' -ExpectedSourceCommit $env:PUBLISHED_SOURCE_SHA
+          if ($LASTEXITCODE -ne 0) { throw 'Public installed-consumer verification failed.' }
+          Write-Host 'PASS: published 0.1.0 package verified from public NuGet feed without local repository binaries.'
+
+  github_release:
+    name: Reconcile v0.1.0 GitHub tag and release without republishing
+    needs: verify_public
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    env:
+      PUBLISHED_SOURCE_SHA: 2db5c86bc26010afcb83c2e455d2471d8c9340d6
+      ORIGINAL_RUN_ID: '41352759355'
+      ORIGINAL_NUPKG_SHA256: c6e96f76693358125346d31829bc8a016c75af13aab3261566a6e6033f7c052a
+    steps:
+      - name: Checkout the exact published source for approved release notes
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: 2db5c86bc26010afcb83c2e455d2471d8c9340d6
+          persist-credentials: false
+      - name: Download ORIGINAL approved upload artifact (not a rebuilt package)
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: recordsift-publish-candidate-41352759355
+          run-id: 41352759355
+          repository: infoconex/RecordSift
+          github-token: ${{ github.token }}
+          path: dist
+      - name: Reconcile exact original artifact and create GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "infoconex/RecordSift"
+          test "$(git rev-parse HEAD)" = "$PUBLISHED_SOURCE_SHA"
+          test -f dist/RecordSift.0.1.0.nupkg
+          (cd dist && sha256sum --check SHA256SUMS.txt)
+          printf '%s  %s\n' "$ORIGINAL_NUPKG_SHA256" 'dist/RecordSift.0.1.0.nupkg' | sha256sum --check
+          tr -d '\r' < dist/SOURCE_COMMIT.txt | grep -Fxq "source_commit=$PUBLISHED_SOURCE_SHA"
+          test -f docs/release/0.1-release-notes.md
+          if gh release view v0.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'Existing v0.1.0 release; refusing to overwrite.' >&2
+            exit 1
+          fi
+          if git ls-remote --tags https://github.com/infoconex/RecordSift.git refs/tags/v0.1.0 | grep -q .; then
+            echo 'Existing v0.1.0 tag; refusing to retarget.' >&2
+            exit 1
+          fi
+          gh release create v0.1.0 dist/RecordSift.0.1.0.nupkg dist/SHA256SUMS.txt dist/SOURCE_COMMIT.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$PUBLISHED_SOURCE_SHA" \
+            --title 'RecordSift 0.1.0' --notes-file docs/release/0.1-release-notes.md
+          gh release view v0.1.0 --repo "$GITHUB_REPOSITORY" --json url,tagName,targetCommitish
