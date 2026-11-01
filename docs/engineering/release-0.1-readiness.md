@@ -1,6 +1,6 @@
 # RecordSift release 0.1 — release-candidate readiness assessment
 
-**Initial review:** 2026-10-31; **documentation acceptance revision:** 2026-10-31. **Supported scope:** Windows only; .NET Framework 4.8; C# 7.3; NUnit 3; GitHub Actions Windows 2022 runners. **Integration branch:** release/0.1. The initial pre-documentation candidate SHA was `b56642252c8824f6d4bdcd09e0704842a3352a23`; subsequent milestones below supersede that historical checkpoint. **Owner authorization:** source promotion to `main` is approved **only by SQUASH merge**, conditional on complete documentation review and green PR/postmerge CI; public tagging/package publication is **not** approved.
+**Initial review:** 2026-10-31; **documentation acceptance revision:** 2026-10-31. **Supported scope:** Windows only; .NET Framework 4.8; C# 7.3; NUnit 3; GitHub Actions Windows 2022 runners. **Integration branch:** release/0.1. The initial pre-documentation candidate SHA was `b56642252c8824f6d4bdcd09e0704842a3352a23`; subsequent milestones below supersede that historical checkpoint. **Historical promotion rule:** an earlier candidate was eligible only for an explicitly owner-authorized squash promotion; **the current security-modified candidate has no owner GO for promotion to `main`**. Four green CI checks alone are insufficient. Public tagging/package publication is not approved.
 
 ## Security reassessment superseding earlier promotion recommendation (2026-10-31)
 
