@@ -852,5 +852,87 @@ namespace RecordSift.Infrastructure.Csv.Tests
                 Assert.That(result.Diagnostics, Is.Empty);
             }
         }
+        // SEC-CSV-001: a modest fixture with many short logical records keeps
+        // this CI test bounded while exercising allocation-heavy CSV shapes.
+        [Test]
+        [Property("Requirement", "NFR-007")]
+        public void SEC_CSV_001_ManyTinyRowsRespectExactBudgetAndFailAtomically()
+        {
+            var input = new System.Text.StringBuilder("Id,Name\r\n");
+            for (var index = 0; index < 2048; index++)
+                input.Append("1,X\r\n");
+
+            var payload = input.ToString();
+            var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(),
+                fields => new Customer {
+                    Id = int.Parse(fields["Id"], CultureInfo.InvariantCulture),
+                    Name = fields["Name"]
+                });
+
+            using (var exactSource = new StringReader(payload))
+            {
+                var exact = importer.Import(exactSource, payload.Length, Schema(),
+                    CsvHeaderPolicy.WithHeader, "small-records");
+                Assert.That(exact.Status, Is.EqualTo(ImportStatus.Completed));
+                Assert.That(exact.Summary.ProcessedCount, Is.EqualTo(2048));
+                Assert.That(exact.Summary.AcceptedCount, Is.EqualTo(2048));
+                Assert.That(exact.Diagnostics, Is.Empty);
+                Assert.That(exactSource.Peek(), Is.EqualTo(-1));
+            }
+
+            using (var limitedSource = new StringReader(payload))
+            {
+                var limited = importer.Import(limitedSource, payload.Length - 1, Schema(),
+                    CsvHeaderPolicy.WithHeader, "small-records");
+                Assert.That(limited.Status, Is.EqualTo(ImportStatus.Failed));
+                Assert.That(limited.Summary.ProcessedCount, Is.Zero);
+                Assert.That(limited.AcceptedRecords, Is.Empty);
+                Assert.That(limited.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(limited.Diagnostics[0].Scope, Is.EqualTo(DiagnosticScope.Source));
+                Assert.That(limited.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(limited.Diagnostics[0].Message,
+                    Does.Not.Contain("small-records"));
+                Assert.DoesNotThrow(() => limitedSource.Peek());
+            }
+        }
+
+        [Test]
+        [Property("Requirement", "NFR-007")]
+        public void SEC_CSV_001_ManyTinyFieldsRespectExactBudgetAndFailAtomically()
+        {
+            var input = new System.Text.StringBuilder();
+            for (var index = 0; index < 4096; index++)
+            {
+                if (index != 0)
+                    input.Append(',');
+                input.Append('x');
+            }
+
+            var payload = input.ToString();
+            var reader = new CsvRecordReaderAdapter();
+            using (var exactSource = new StringReader(payload))
+            {
+                var exact = reader.Read(exactSource, payload.Length);
+                Assert.That(exact.IsSuccessful, Is.True);
+                Assert.That(exact.Records, Has.Count.EqualTo(1));
+                Assert.That(exact.Records[0].Fields, Has.Count.EqualTo(4096));
+                Assert.That(exact.Diagnostics, Is.Empty);
+            }
+
+            using (var limitedSource = new StringReader(payload))
+            {
+                var limited = reader.Read(limitedSource, payload.Length - 1);
+                Assert.That(limited.IsSuccessful, Is.False);
+                Assert.That(limited.Records, Is.Empty);
+                Assert.That(limited.Diagnostics, Has.Count.EqualTo(1));
+                Assert.That(limited.Diagnostics[0].Code,
+                    Is.EqualTo(DiagnosticCodes.SourceLimitExceeded));
+                Assert.That(limited.Diagnostics[0].Message,
+                    Does.Not.Contain(payload));
+                Assert.DoesNotThrow(() => limitedSource.Peek());
+            }
+        }
+
     }
 }
