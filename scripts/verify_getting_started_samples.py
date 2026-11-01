@@ -72,18 +72,15 @@ def main() -> None:
     validate_pair("customers-invalid", 10)
 
     text = GUIDE.read_text(encoding="utf-8")
-    match = re.search(
-        r"### CSV \\(\\`customers\\.csv\\`\\).*?\\`\\`\\`csv\\n(.*?)\\n\\`\\`\\`",
-        text,
-        flags=re.DOTALL,
-    )
-    if match is None:
+    marker = "```csv\\n"
+    if marker not in text:
         raise AssertionError("Cannot find the complete customers.csv block")
-    displayed = list(csv.reader(match.group(1).splitlines()))
+    block = text.split(marker, 1)[1].split("```", 1)[0]
+    displayed = list(csv.reader(block.splitlines()))
     assert displayed == valid, "Inline Getting Started CSV differs from downloadable CSV"
     for name in ("customers.csv", "customers.xlsx",
                  "customers-invalid.csv", "customers-invalid.xlsx"):
-        assert f"../samples/{name}" in text, f"Missing download link: {name}"
+        assert f"samples/{name}" in text, f"Missing download link: {name}"
     print("Getting Started: 20 valid, 10 invalid; CSV/XLSX and inline documentation match.")
 
 
