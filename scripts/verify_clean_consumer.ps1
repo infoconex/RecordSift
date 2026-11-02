@@ -143,6 +143,17 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Standalone consumer C# compilation failed.' }
     & $exe
     if ($LASTEXITCODE -ne 0) { throw 'Standalone consumer execution failed.' }
+    # Compile the documentation samples against the same clean NuGet installation.
+    # This validates the actual four downloadable files rather than just their ZIP/CSV parity.
+    $sampleSource = Join-Path $root 'tests\\ReleaseConsumer\\GettingStartedSamples.cs'
+    $sampleExe = Join-Path $output 'RecordSift.GettingStartedSamples.exe'
+    $sampleFolder = Join-Path $root 'docs\\samples'
+    if (-not (Test-Path -LiteralPath $sampleSource)) { throw 'Getting Started sample consumer source missing.' }
+    & $csc /nologo /target:exe /langversion:7.3 "/out:$sampleExe" @references $sampleSource
+    if ($LASTEXITCODE -ne 0) { throw 'Getting Started C# consumer compilation failed.' }
+    & $sampleExe $sampleFolder
+    if ($LASTEXITCODE -ne 0) { throw 'Getting Started CSV/XLSX sample import verification failed.' }
+    Write-Host 'PASS: all four Getting Started samples imported using the clean package and matching CSV/XLSX diagnostics.'
     $origin = if ($FromNuGetOrg) { 'public nuget.org only' } else { 'unpublished local feed' }
     Write-Host "PASS: separate installed RecordSift $PackageVersion NuGet consumer from $origin verified without repository binaries."
 } finally {

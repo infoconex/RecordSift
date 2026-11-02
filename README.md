@@ -2,90 +2,44 @@
 
 **Import, validate, and report on structured data.**
 
-RecordSift is an MIT-licensed .NET Framework 4.8 library under development for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports.
+RecordSift is an MIT-licensed Windows/.NET Framework 4.8 library for importing CSV and XLSX records, applying domain-owned validation, and returning structured diagnostics and reports. **Stable version 0.1.0 is publicly available on [NuGet.org](https://www.nuget.org/packages/RecordSift/0.1.0).**
 
-## Project status
+## Why use RecordSift?
 
-**Release 0.1 source promotion is complete.** [PR #244](https://github.com/infoconex/RecordSift/pull/244) was squash-merged into `main` at `9ba0c3be740fea3b8f350648d43ec5341a34b2aa`; all four mandatory exact-commit postmerge jobs passed. The Windows/.NET Framework 4.8 library has CSV and XLSX import, named worksheet selection, typed mapping and validation, structured results, JSON serialization, readable summaries and diagnostic CSV reporting. All targeted release 0.1 functional and Windows-specific NFR acceptance is complete, including security regression testing. MIT licensing, Copyright (c) 2026 Infoconex, is approved.
+**Reading a CSV file or Excel worksheet is only the first step of a business-data import.** Applications also need to match incoming columns to their data model, convert values, validate each record, decide which rows to accept, and explain rejected data. RecordSift supplies a **consistent CSV/XLSX import-and-validation workflow** so applications do not need to reinvent those surrounding steps for every file format.
 
-The prerelease and stable **0.1.0 package identities have both passed local unpublished installed-consumer preflight**. **Public NuGet and GitHub Release publication is a separate operation; do not infer that an upload has occurred merely from this repository status.** For the controlled `v0.1.0` tag, stable artifact checksum, owner sign-off, release packaging and public-feed installation procedure see the [0.1 publication procedure](docs/release/0.1-publication-procedure.md).
+Choose RecordSift for Windows/.NET Framework 4.8 applications that need:
+- **Typed import and explicit mapping:** declare expected columns and map them to your own writable C# properties with culture-aware conversion.
+- **Reusable validation:** apply required-value, length, range, duplicate, pattern and custom-record checks.
+- **Useful outcomes:** accept valid records, reject problematic rows, and retain deterministic diagnostic codes with field and row locations.
+- **Optional reports:** inspect the typed result in memory or produce JSON, readable text or machine-interchange diagnostic CSV.
+- **Local processing with configurable resource budgets:** no Excel installation or runtime service; callers remain responsible for choosing sensible limits.
+
+**When not to use it:** for a simple parse-only task, direct CsvHelper or ExcelDataReader usage may be enough—RecordSift builds on those libraries and adds a higher-level pipeline, not a new parser. Release 0.1.0 is Windows/net48-only, synchronous and potentially eager; it is **not** intended for modern .NET-only/cross-platform applications, true streaming, or strict process memory/CPU ceilings. It does not automatically save accepted records or serialize them as data JSON. See the [working import example and decision guide](docs/usage/getting-started.md#why-use-recordsift).
+
+## Start using RecordSift
+
+**[Getting started: install RecordSift 0.1.0, run a complete CSV example, import XLSX, and inspect errors](docs/usage/getting-started.md)**
+
+In **Visual Studio on Windows**, create a **Console App (.NET Framework)** targeting **.NET Framework 4.8**. Install the package using **Manage NuGet Packages**, or in Package Manager Console:
+
+```powershell
+Install-Package RecordSift -Version 0.1.0
+```
+
+RecordSift is a library called from your own C# application. It does not provide a desktop UI or a standalone file-conversion command. The [full C# 7.3 walkthrough](docs/usage/getting-started.md) contains a complete, runnable `Program.cs`, then explains CSV headers, XLSX worksheet selection, mapping/validation, accepted versus rejected rows, JSON/text/CSV reports, and troubleshooting. The snippets below illustrate specific API calls and **reuse variables** declared earlier; paste the complete program from the walkthrough when starting from an empty project.
+
+**Published release:** [RecordSift 0.1.0 on NuGet.org](https://www.nuget.org/packages/RecordSift/0.1.0) · [GitHub v0.1.0 release](https://github.com/infoconex/RecordSift/releases/tag/v0.1.0) · [consumer guide](docs/release/0.1-consumer-guide.md). The GitHub tag points to the original published source commit `2db5c86bc26010afcb83c2e455d2471d8c9340d6`. [Release governance #199](https://github.com/infoconex/RecordSift/issues/199) records package checksum and successful public-feed consumer verification. Later documentation changes do not alter the immutable 0.1.0 binaries.
 
 ## Public API quick start (.NET Framework 4.8)
 
-For source development, reference the built `RecordSift.Domain`, `RecordSift.Application`, and `RecordSift.Infrastructure.Csv` assemblies (including the infrastructure adapter's runtime dependencies). The five-assembly stable 0.1.0 package can be prepared and tested from the verified source with the release workflow; obtain published binaries only from a confirmed release feed or its authenticated GitHub Release. Define a record type with public writable properties:
+For a complete C# 7.3 `Program.cs`, see the **[Getting Started guide](docs/usage/getting-started.md)**. It uses the shared **10-column customer schema** with clear named `ExpectedColumn` and `SourcePropertyMapping` arguments, commented local budgets, 20 complete valid customer records, and an equivalent Excel import. Download [customers.csv](docs/samples/customers.csv), [customers.xlsx](docs/samples/customers.xlsx), [invalid CSV](docs/samples/customers-invalid.csv), or [invalid Excel](docs/samples/customers-invalid.xlsx).
 
-```csharp
-public sealed class Customer
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-}
-```
+RecordSift's public API requires caller-chosen positive CSV decoded-character and XLSX compressed-byte budgets. For readability, the tutorial defines these as local variables, **not `App.config` settings**. The current mapping API requires explicit source-to-property mapping declarations even when the names are identical. A potential convenience API is tracked in [issue #254](https://github.com/infoconex/RecordSift/issues/254) and is **not implemented**.
 
-### CSV import
+## Results and JSON reports
 
-The following example uses the public schema, property mapping, and CSV adapter. The caller chooses the character limit, header policy, source identifier, and conversion culture; no internal initializer is required.
-
-```csharp
-using System;
-using System.Globalization;
-using System.IO;
-using RecordSift.Application.Importing.Csv;
-using RecordSift.Application.Mapping;
-using RecordSift.Application.Ports.Csv;
-using RecordSift.Domain.Schema;
-using RecordSift.Infrastructure.Csv;
-
-var schema = new ImportSchema(new[] {
-    new ExpectedColumn("Id", true, true),
-    new ExpectedColumn("Name", true, true)
-});
-var properties = new PropertyMappingSchema(schema, new[] {
-    new SourcePropertyMapping("Id", "Id"),
-    new SourcePropertyMapping("Name", "Name")
-});
-var mapper = new PrimitivePropertyMapper<Customer>(properties, CultureInfo.InvariantCulture);
-var importer = new CsvImporter<Customer>(new CsvRecordReaderAdapter(), mapper.Map);
-
-using (var csv = new StringReader("Id,Name\n1,Alice\ninvalid,Bob"))
-{
-    var result = importer.Import(csv, 4096, schema,
-        CsvHeaderPolicy.WithHeader, "customers", options: CsvReadOptions.Default);
-
-    // Access result.Status, result.Summary, result.AcceptedRecords,
-    // result.Diagnostics (including Code, Scope, Row, Field and PhysicalLine).
-    Console.WriteLine(result.Status);
-    Console.WriteLine(result.Summary.AcceptedCount);
-    foreach (var error in result.Diagnostics)
-        Console.WriteLine(error.Code);
-}
-```
-
-`CsvReadOptions.Default` uses a comma delimiter; supply `new CsvReadOptions(";")` for another supported delimiter. For encoded byte streams, use the public `CsvStreamImporterAdapter<T>` with an explicit `Encoding`. A headerless, nonempty CSV requires explicit `SourceColumnPosition` bindings. Passing positions with `WithHeader` is rejected, and invalid delimiters return an explicit source diagnostic.
-
-### XLSX import
-
-Reference `RecordSift.Infrastructure.Xlsx` and its runtime dependencies as well. Reuse the `Customer`, `schema`, and `mapper` declarations above:
-
-```csharp
-using System.IO;
-using RecordSift.Application.Importing.Xlsx;
-using RecordSift.Application.Ports.Xlsx;
-using RecordSift.Infrastructure.Xlsx;
-
-var xlsx = new XlsxImporter<Customer>(new XlsxWorksheetReaderAdapter(), mapper.Map);
-using (var stream = File.OpenRead("customers.xlsx"))
-{
-    var result = xlsx.Import(stream, 4 * 1024 * 1024, schema,
-        "customers", limits: XlsxReadLimits.Default);
-    // The first worksheet is used by default; specify worksheetName to select one.
-    // The result exposes the same typed records, summary and diagnostic contract.
-}
-```
-
-Both importers use a caller-supplied resource budget. XLSX additionally supports explicit worksheet row, column, and cell-character limits. Stream ownership remains with the caller. A failed source import has no partially accepted records; completed imports may contain record-level rejections.
-
-The [public API acceptance tests](tests/RecordSift.Infrastructure.Csv.Tests/PublicCsvApiAcceptanceTests.cs) and [XLSX acceptance tests](tests/RecordSift.Infrastructure.Xlsx.Tests/XlsxImporterAcceptanceTests.cs) compile and execute the same public workflow on the .NET Framework 4.8 Windows CI build. These examples describe the current API, not a published binary/package compatibility promise.
+CSV and XLSX imports return a typed `TypedImportResult<T>`, not a JSON string. Use `AcceptedRecords` for typed customers, and `Status`, `Summary`, and `Diagnostics` to interpret outcomes and errors. `JsonImportResultSerializerAdapter` provides an **optional JSON outcome/diagnostic report**, which intentionally omits customer record data. See the [reporting example](docs/usage/getting-started.md#optional-json-and-readable-reports) and [JSON contract](docs/specifications/import-result.md).
 
 ## XLSX input security boundary
 
@@ -98,9 +52,9 @@ The XLSX reader independently checks ZIP entry count (512 maximum), both declare
 ## Development baseline
 
 - [Release-candidate readiness assessment](docs/engineering/release-0.1-readiness.md)
-- [Candidate consumer guide](docs/release/0.1-consumer-guide.md)
-- [Candidate release notes and known limitations](docs/release/0.1-release-notes.md)
-- [Release verification and promotion checklist](docs/release/0.1-release-checklist.md)
+- [Published 0.1.0 consumer guide](docs/release/0.1-consumer-guide.md)
+- [0.1.0 release notes and known limitations](docs/release/0.1-release-notes.md)
+- [Historical release verification and promotion checklist](docs/release/0.1-release-checklist.md)
 - [Stable 0.1.0 publication and public-feed verification procedure](docs/release/0.1-publication-procedure.md)
 - [Dependency and licensing inventory](docs/release/0.1-dependencies.md)
 - [MIT project license](LICENSE) and [third-party notices](THIRD-PARTY-NOTICES.md)
