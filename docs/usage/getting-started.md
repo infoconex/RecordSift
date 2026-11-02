@@ -31,6 +31,7 @@ For example, a Windows line-of-business application could import a supplier's CS
    ```
 
 4. NuGet also restores the declared dependencies, including CsvHelper 33.1.0 and ExcelDataReader 3.9.0. You should not manually copy only the RecordSift DLLs.
+5. To run the optional accepted-customer JSON export in the complete example, install Newtonsoft.Json **in your sample console application** using `Install-Package Newtonsoft.Json`. This is an application-level dependency, not a new RecordSift dependency.
 
 RecordSift provides five DLLs in one package: `RecordSift.Domain`, `RecordSift.Application`, `RecordSift.Infrastructure.Csv`, `RecordSift.Infrastructure.Xlsx` and `RecordSift.Infrastructure.Reporting`.
 
@@ -97,6 +98,11 @@ Create a **Windows .NET Framework 4.8 Console App** with C# 7.3; reference `Reco
 using System;
 using System.Globalization;
 using System.IO;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using RecordSift.Domain.Diagnostics;
+using RecordSift.Domain.Results;
+using RecordSift.Infrastructure.Reporting;
 using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Mapping;
 using RecordSift.Application.Ports.Csv;
@@ -198,21 +204,88 @@ namespace RecordSift.GettingStarted
                 // Prints the number of successfully mapped customer records.
                 Console.WriteLine("Accepted: " + typedImportResult.Summary.AcceptedCount);
 
-                // Process accepted customers in your application.
-                // ProcessCustomers(typedImportResult.AcceptedRecords);
+                // Inspect accepted customers without saving them to a database.
+                ProcessCustomers(typedImportResult.AcceptedRecords);
 
-                // Log full diagnostic details or emit a JSON report as needed.
-                // ReportDiagnostics(typedImportResult.Diagnostics);
+                // Display the structured diagnostic findings.
+                ReportDiagnostics(typedImportResult.Diagnostics);
 
-                // Record additional summary metrics if your application needs them.
-                // LogImportSummary(typedImportResult.Summary);
+                // Display processed, accepted, and rejected counts.
+                LogImportSummary(typedImportResult.Summary);
+
+                // Export accepted customer data and the separate diagnostic report.
+                ExportCustomersToJson(typedImportResult);
+                ExportDiagnosticsToJson(typedImportResult);
             }
+        }
+
+        /// <summary>Displays the accepted customers; replace console output with application processing.</summary>
+        private static void ProcessCustomers(IReadOnlyList<Customer> customers)
+        {
+            Console.WriteLine("=== Accepted Customers ===");
+            foreach (var customer in customers)
+            {
+                Console.WriteLine(
+                    $"Id: {customer.Id}, Name: {customer.Name}, " +
+                    $"Email: {customer.Email}, Tier: {customer.CustomerTier}, " +
+                    $"Active: {customer.IsActive}");
+            }
+        }
+
+        /// <summary>Displays safe, structured import errors without printing source field values.</summary>
+        private static void ReportDiagnostics(IReadOnlyList<ImportDiagnostic> diagnostics)
+        {
+            Console.WriteLine("=== Import Diagnostics ===");
+            if (diagnostics.Count == 0)
+            {
+                Console.WriteLine("No diagnostic errors were reported.");
+                return;
+            }
+
+            foreach (var diagnostic in diagnostics)
+            {
+                Console.WriteLine(
+                    $"Scope: {diagnostic.Scope}, " +
+                    $"Row: {diagnostic.Row?.ToString() ?? "N/A"}, " +
+                    $"Field: {diagnostic.Field ?? "N/A"}, " +
+                    $"Code: {diagnostic.Code}, Message: {diagnostic.Message}");
+            }
+        }
+
+        /// <summary>Displays the import counts; rejected counts are distinct records, not errors.</summary>
+        private static void LogImportSummary(ImportSummary summary)
+        {
+            Console.WriteLine("=== Import Summary ===");
+            Console.WriteLine($"Processed: {summary.ProcessedCount}");
+            Console.WriteLine($"Accepted: {summary.AcceptedCount}");
+            Console.WriteLine($"Rejected: {summary.RejectedCount}");
+        }
+
+        /// <summary>Writes accepted customer values as JSON using an application serializer.</summary>
+        private static void ExportCustomersToJson(TypedImportResult<Customer> typedImportResult)
+        {
+            // Output contains customer PII; choose a protected location for real customer records.
+            var customerOutputPath = "customers-output.json";
+            var json = JsonConvert.SerializeObject(
+                typedImportResult.AcceptedRecords, Formatting.Indented);
+            File.WriteAllText(customerOutputPath, json);
+            Console.WriteLine($"Exported accepted customers to {customerOutputPath}");
+        }
+
+        /// <summary>Writes RecordSift's versioned import status, summary and diagnostic JSON.</summary>
+        private static void ExportDiagnosticsToJson(TypedImportResult<Customer> typedImportResult)
+        {
+            var diagnosticsOutputPath = "customers-diagnostics.json";
+            var jsonImportResultSerializerAdapter = new JsonImportResultSerializerAdapter();
+            var json = jsonImportResultSerializerAdapter.Serialize(typedImportResult);
+            File.WriteAllText(diagnosticsOutputPath, json);
+            Console.WriteLine($"Exported diagnostics to {diagnosticsOutputPath}");
         }
     }
 }
 ```
 
-The 20-row valid file should result in 20 accepted customers and no record-conversion failures under the normal invariant-culture pipeline. The example intentionally leaves business-level validation and lengthy logging helpers as comments; it still performs the real import. The source file must be in the process working directory or the path must be adjusted.
+The 20-row valid file should result in 20 accepted customers and no record-conversion failures under the normal invariant-culture pipeline. The example intentionally leaves business-level validation to the consuming application. It displays accepted customers, reports safe diagnostics and counts, and writes two separate JSON files to the current working directory: `customers-output.json` (customer data) and `customers-diagnostics.json` (import status, summary and diagnostic metadata). Review access permissions and retention before exporting real customer data. The source file must be in the process working directory or the path must be adjusted.
 
 ### Why explicit mapping appears repetitive
 
@@ -237,10 +310,11 @@ var readableImportResultFormatterAdapter = new ReadableImportResultFormatterAdap
 var readableReport = readableImportResultFormatterAdapter.Format(typedImportResult);
 
 // Your application decides whether to log, display or store these reports.
-// LogReports(jsonReport, readableReport);
+Console.WriteLine(readableReport);
+// The complete sample above saves jsonReport to customers-diagnostics.json.
 ```
 
-Add `using RecordSift.Infrastructure.Reporting;` to the complete program to use these optional snippets. To export accepted customer data as JSON, serialize `typedImportResult.AcceptedRecords` with your application's chosen serializer and privacy controls; these reporting adapters intentionally omit record values. See the [versioned diagnostic JSON contract](../specifications/import-result.md) for schema guarantees.
+The complete program already imports `RecordSift.Infrastructure.Reporting` and uses its JSON serializer. This optional snippet shows how to produce a human-readable report as well. To export accepted customer data as JSON, serialize `typedImportResult.AcceptedRecords` with your application's chosen serializer and privacy controls; these reporting adapters intentionally omit record values. See the [versioned diagnostic JSON contract](../specifications/import-result.md) for schema guarantees.
 
 ### What happens to bad rows?
 
@@ -304,12 +378,16 @@ using (var fileStream = File.OpenRead(xlsxFilePath))
     Console.WriteLine(typedImportResult.Status);
     Console.WriteLine(typedImportResult.Summary.AcceptedCount);
 
-    // ProcessCustomers(typedImportResult.AcceptedRecords);
-    // ReportDiagnostics(typedImportResult.Diagnostics);
+    // Reuse the same sample helpers and JSON exports for Excel results.
+    ProcessCustomers(typedImportResult.AcceptedRecords);
+    ReportDiagnostics(typedImportResult.Diagnostics);
+    LogImportSummary(typedImportResult.Summary);
+    ExportCustomersToJson(typedImportResult);
+    ExportDiagnosticsToJson(typedImportResult);
 }
 ```
 
-The Excel snippet is an **alternative** import path within the same program, not a second standalone `Main`; include the namespaces `RecordSift.Application.Importing.Xlsx`, `RecordSift.Application.Ports.Xlsx`, and `RecordSift.Infrastructure.Xlsx` when using it. For Excel, byte and worksheet read limits are distinct from the CSV decoded-character limit.
+The Excel snippet is an **alternative** import path within the same program, not a second standalone `Main`; include the namespaces `RecordSift.Application.Importing.Xlsx`, `RecordSift.Application.Ports.Xlsx`, and `RecordSift.Infrastructure.Xlsx` when using it. For Excel, byte and worksheet read limits are distinct from the CSV decoded-character limit. Both import paths write the same two JSON filenames, so running them sequentially overwrites the prior output; change the paths if you want to keep both.
 
 ## 6. Add record validation and create reports
 
