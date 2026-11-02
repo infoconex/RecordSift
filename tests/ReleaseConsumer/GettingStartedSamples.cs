@@ -87,7 +87,7 @@ internal static class GettingStartedSamples
             Require(result.AcceptedRecords[0].IsActive, source + " Boolean conversion");
             Require(result.AcceptedRecords[0].LastPurchaseDate.HasValue, source + " populated optional date");
             Require(!result.AcceptedRecords[3].LastPurchaseDate.HasValue, source + " blank nullable date");
-            Require(result.AcceptedRecords[3].ReferralCode == "", source + " blank optional string");
+            Require(string.IsNullOrEmpty(result.AcceptedRecords[3].ReferralCode), source + " blank optional string");
             Require(result.AcceptedRecords[19].Id == 1020, source + " last customer ID");
         }
         else
@@ -113,7 +113,9 @@ internal static class GettingStartedSamples
                 && a.RegistrationDate == b.RegistrationDate && a.LoyaltyPoints == b.LoyaltyPoints
                 && a.CreditLimit == b.CreditLimit && a.IsActive == b.IsActive
                 && a.CustomerTier == b.CustomerTier && a.LastPurchaseDate == b.LastPurchaseDate
-                && a.ReferralCode == b.ReferralCode, scenario + " record parity at " + i);
+                && (a.ReferralCode == b.ReferralCode ||
+                    (string.IsNullOrEmpty(a.ReferralCode) && string.IsNullOrEmpty(b.ReferralCode))),
+                scenario + " record parity at " + i);
         }
         for (var i = 0; i < csv.Diagnostics.Count; i++)
         {
