@@ -5,6 +5,7 @@ using RecordSift.Application.Importing.Csv;
 using RecordSift.Application.Importing.Xlsx;
 using RecordSift.Application.Mapping;
 using RecordSift.Application.Ports.Csv;
+using RecordSift.Application.Ports.Xlsx;
 using RecordSift.Domain.Results;
 using RecordSift.Domain.Schema;
 using RecordSift.Infrastructure.Csv;
