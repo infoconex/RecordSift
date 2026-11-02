@@ -126,8 +126,8 @@ namespace RecordSift.GettingStarted
             // Location of the downloaded sample file (relative to the executable's working directory).
             var csvFilePath = "customers.csv";
 
-            // Upper bound on decoded characters in one CSV field; choose a limit for your data.
-            var maximumFieldLength = 4096;
+            // Maximum total decoded UTF-16 characters read from the CSV input; choose a budget for the entire source, not per field.
+            var maximumCsvCharacters = 4096;
 
             // Non-sensitive logical identifier included in source-level diagnostics.
             var sourceName = "customers";
@@ -186,7 +186,7 @@ namespace RecordSift.GettingStarted
                 // Imports data and returns accepted records and structured diagnostics.
                 var typedImportResult = csvImporter.Import(
                     streamReader,
-                    maximumFieldLength,
+                    maximumCsvCharacters,
                     importSchema,
                     csvHeaderPolicy,
                     sourceName,
@@ -248,7 +248,7 @@ A `Completed` status means processing completed, not necessarily that every reco
 
 ## 4. Use a real CSV file, another delimiter, or no headers
 
-The complete program in section 3 already opens the downloaded `customers.csv` using `File.OpenText(csvFilePath)`. Its `csvFilePath`, `maximumFieldLength`, `importSchema`, `csvImporter`, `csvHeaderPolicy`, `sourceName`, and `csvReadOptions` are locally defined above the import call. Change the path if the sample is not in the process working directory.
+The complete program in section 3 already opens the downloaded `customers.csv` using `File.OpenText(csvFilePath)`. Its `csvFilePath`, `maximumCsvCharacters`, `importSchema`, `csvImporter`, `csvHeaderPolicy`, `sourceName`, and `csvReadOptions` are locally defined above the import call. Change the path if the sample is not in the process working directory.
 
 For a semicolon-delimited file, set `csvReadOptions = new CsvReadOptions(";")` before import. A headerless file needs `CsvHeaderPolicy.WithoutHeader` and explicit zero-based `SourceColumnPosition` bindings (one for each supplied source column). For example:
 
