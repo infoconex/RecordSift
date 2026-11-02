@@ -1,0 +1,66 @@
+name: Disposable Windows container feasibility
+on:
+  push:
+    branches:
+      - discovery/pre-sdk-container-20261102
+permissions:
+  contents: read
+jobs:
+  container-probe:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source baseline
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Inspect Windows host and cached images
+        shell: pwsh
+        run: |
+          Write-Host "PROBE host SHA=$(git rev-parse HEAD)"
+          docker version
+          docker info --format 'PROBE docker OS={{.OSType}} docker server={{.OperatingSystem}}'
+          docker image ls --digests
+          Write-Host 'PROBE supported 4.8.1 Windows Server Core 2022 SDK tag manifest'
+          $ErrorActionPreference = 'Continue'
+          docker manifest inspect mcr.microsoft.com/dotnet/framework/sdk:4.8.1-windowsservercore-ltsc2022 *> "$env:RUNNER_TEMP\presdk-sdk-manifest.txt"
+          Write-Host "PROBE supported tag manifest inspect exit=$LASTEXITCODE"
+          Write-Host "PROBE supported manifest excerpt:"
+          Get-Content "$env:RUNNER_TEMP\presdk-sdk-manifest.txt" -TotalCount 12
+      - name: Run cached Microsoft .NET Framework SDK image (legacy cached tag; feasibility only)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $legacy = 'mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022'
+          docker image inspect $legacy --format 'PROBE cached-image ID={{.Id}} OS={{.Os}} RepoDigests={{json .RepoDigests}}'
+          if ($LASTEXITCODE -ne 0) { Write-Host 'PROBE container execution NOT EXECUTED: cached image unavailable'; exit 0 }
+          $probe = @'
+          $ErrorActionPreference = 'Stop'
+          Write-Host "PROBE container Windows version=$([Environment]::OSVersion.Version)"
+          Write-Host "PROBE container net48 reference assemblies=$(Test-Path 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\mscorlib.dll')"
+          $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+          Write-Host "PROBE container vswhere=$(Test-Path $vswhere)"
+          if (Test-Path $vswhere) {
+            & $vswhere -products '*' -all -property installationPath
+            $msbuild = & $vswhere -products '*' -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+            Write-Host "PROBE container MSBuild path=$msbuild"
+            if ($msbuild) { & $msbuild -version -nologo }
+          }
+          Write-Host "PROBE container NuGet=$((Get-Command nuget -ErrorAction SilentlyContinue).Source)"
+          nuget help | Select-Object -First 3
+          Write-Host "PROBE container dotnet SDKs"
+          dotnet --list-sdks
+          Write-Host 'PROBE container end'
+          '@
+          Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'presdk-container-check.ps1') -Value $probe -Encoding utf8
+          docker run --rm --pull=never --isolation=process -v "${env:RUNNER_TEMP}:C:\probe" $legacy powershell.exe -NoProfile -NonInteractive -File C:\probe\presdk-container-check.ps1
+          $exitCode=$LASTEXITCODE
+          Write-Host "PROBE container exit=$exitCode"
+          if ($exitCode -ne 0) { throw 'Container failed to start or run inventory' }
+      - name: Upload container evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pre-sdk-container-probe-${{ github.run_id }}
+          path: ${{ runner.temp }}/presdk-sdk-manifest.txt
+          if-no-files-found: warn
