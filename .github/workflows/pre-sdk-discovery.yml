@@ -110,17 +110,15 @@ jobs:
           Write-Host 'DISCOVERY explicit late target:'
           & $msbuild $domain /t:PreSdkTarget /verbosity:normal
           if ($LASTEXITCODE -ne 0) { throw 'Late Directory.Build.targets import failed' }
-      - name: Experiment centralizing LangVersion and adding early import in temporary checkout
+      - name: Experiment centralizing LangVersion without changing legacy import order
         shell: pwsh
         run: |
           $csprojs = @(Get-ChildItem src,tests -Recurse -Filter '*.csproj')
           if ($csprojs.Count -ne 10) { throw "Expected ten project files; found $($csprojs.Count)" }
-          $early = '  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists(''$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props'')" />'
           foreach ($proj in $csprojs) {
             $source = Get-Content $proj.FullName -Raw
             if ($source -notmatch '<LangVersion>7.3</LangVersion>') { throw "Missing expected LangVersion in $($proj.Name)" }
             $source = $source.Replace('<LangVersion>7.3</LangVersion>', '')
-            $source = [regex]::Replace($source, '(<Project\b[^>]*>)', ('$1' + [Environment]::NewLine + $early), 1)
             Set-Content $proj.FullName -Value $source -Encoding utf8
           }
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
