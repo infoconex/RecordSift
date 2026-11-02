@@ -57,6 +57,32 @@ jobs:
           $exitCode=$LASTEXITCODE
           Write-Host "PROBE container exit=$exitCode"
           if ($exitCode -ne 0) { throw 'Container failed to start or run inventory' }
+      - name: Build and test RecordSift inside cached .NET Framework SDK container
+        shell: pwsh
+        run: |
+          $legacy = 'mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022'
+          $containerScript = @'
+          $ErrorActionPreference = 'Stop'
+          Set-Location C:\repo
+          Write-Host "CONTAINER BUILD: repository path=$(Get-Location)"
+          $nuget = 'C:\Program Files\NuGet\nuget.exe'
+          & $nuget restore RecordSift.sln -NonInteractive -PackagesDirectory C:\repo\packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw "Container restore failed: $LASTEXITCODE" }
+          $msbuild = 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "Container build failed: $LASTEXITCODE" }
+          $runner = 'C:\repo\packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          $assemblies = @('Domain','Application','Infrastructure.Csv','Infrastructure.Reporting','Infrastructure.Xlsx') | ForEach-Object { "C:\repo\tests\RecordSift.$_.Tests\bin\Release\RecordSift.$_.Tests.dll" }
+          & $runner @assemblies '--result=C:\repo\TestResults\container-nunit.xml;format=nunit3' --noheader
+          if ($LASTEXITCODE -ne 0) { throw "Container NUnit failed: $LASTEXITCODE" }
+          [xml]$xml = Get-Content C:\repo\TestResults\container-nunit.xml
+          Write-Host "CONTAINER BUILD: NUnit total=$($xml.'test-run'.total) passed=$($xml.'test-run'.passed) failed=$($xml.'test-run'.failed) skipped=$($xml.'test-run'.skipped)"
+          if ([int]$xml.'test-run'.total -ne 419 -or [int]$xml.'test-run'.failed -ne 0) { throw 'Container test baseline regression' }
+          '@
+          New-Item -ItemType Directory -Force -Path TestResults | Out-Null
+          Set-Content -Path (Join-Path $env:RUNNER_TEMP 'presdk-container-build.ps1') -Value $containerScript -Encoding utf8
+          docker run --rm --pull=never --isolation=process -v "${env:GITHUB_WORKSPACE}:C:\repo" -v "${env:RUNNER_TEMP}:C:\probe" $legacy powershell.exe -NoProfile -NonInteractive -File C:\probe\presdk-container-build.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'RecordSift build/test in cached .NET Framework SDK container failed' }
       - name: Upload container evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
