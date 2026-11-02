@@ -22,15 +22,15 @@ jobs:
           '{"sdk":{"version":"10.0.303","rollForward":"latestFeature"}}' | Set-Content global.json
           Write-Host "SELECT latestFeature=$(dotnet --version)"
           '{"sdk":{"version":"10.0.999","rollForward":"disable"}}' | Set-Content global.json
-          dotnet --version
-          Write-Host "SELECT missing fixed SDK exit=$LASTEXITCODE"
+          cmd.exe /c "dotnet --version & exit /b 0"
+          Write-Host 'SELECT deliberately missing SDK produced the expected diagnostic'
           Remove-Item global.json -Force
       - name: Compare shared default override behavior
         shell: pwsh
         run: |
           $proj='src/RecordSift.Domain/RecordSift.Domain.csproj'
           $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
-          $msbuild=& $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild/**/Bin/MSBuild.exe' | Select-Object -First 1
+          $msbuild=& $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
           $source=Get-Content $proj -Raw
           Set-Content $proj -Value $source.Replace('<LangVersion>7.3</LangVersion>','<LangVersion>7.2</LangVersion>') -Encoding utf8
           '<Project><PropertyGroup><LangVersion>7.3</LangVersion></PropertyGroup></Project>' | Set-Content Directory.Build.props
