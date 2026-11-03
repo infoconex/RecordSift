@@ -5,8 +5,8 @@ These repository-wide instructions apply to human and AI-assisted contributions.
 ## Scope and branch discipline
 
 - Read `docs/README.md` and the issue before editing.
-- One distinct FR/NFR or engineering issue per working branch. Branch from the latest `release/0.1` using `issue/<number>-<slug>`.
-- Target every issue PR to `release/0.1`; squash merge after evidence and review. Promote to `main` only through a separately owner-authorized **squash-merge release PR**, after verifying all three main-targeted workflows. This creates one consolidated release commit; do not create tags, GitHub releases or public package uploads without separate explicit authorization.
+- One distinct FR/NFR or engineering issue per working branch. For the next post-0.1 development cycle, branch from `release/0.2` (freshly cut from `main` at `8358780829458854a4b0356df5ac5e685f0a34c8`) using `issue/<number>-<slug>`. Do not reuse the diverged historical `release/0.1` branch for new work.
+- Target every issue PR to `release/0.2`; squash merge after evidence and review. Promote to `main` only through a separately owner-authorized **squash-merge release PR**, after verifying all three main-targeted workflows. This creates one consolidated release commit; do not create tags, GitHub releases or public package uploads without separate explicit authorization.
 - Do not build unrelated features into an issue. Cross-reference dependencies; do not mark another requirement complete without its own evidence.
 - Preserve stable `FR-###`, `NFR-###`, and `*-SC##` identifiers. Read and maintain `docs/scenarios/functional/FR-###.md` or `docs/scenarios/non-functional/NFR-###.md` as the authoritative behavior definition; update `docs/testing/traceability.md` on implementation PRs.
 
