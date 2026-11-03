@@ -108,7 +108,11 @@ jobs:
               # Diagnostic control: preload .NET Framework compression assembly
               # in the child PS 5.1 process without changing production scripts.
               $quotedScript="'"+$script.Replace("'","''")+"'"
-              $quotedArgs=@($extraArgs | ForEach-Object { "'"+$_.Replace("'","''")+"'" })
+              # Keep parameter tokens unquoted; quote only their values.
+              $quotedArgs=@($extraArgs | ForEach-Object {
+                  if ($_ -match '^-[A-Za-z]') { $_ }
+                  else { "'"+$_.Replace("'","''")+"'" }
+              })
               $command='$ErrorActionPreference = ''Stop''; Add-Type -AssemblyName System.IO.Compression.FileSystem; & '+$quotedScript+' '+($quotedArgs -join ' ')+'; if (-not $?) { exit 1 }'
               $encoded=[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
               & powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded *> $log
