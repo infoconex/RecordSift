@@ -151,6 +151,42 @@ jobs:
             }
             Write-Host "Verified Domain NUnit=$($counts.domain), Application NUnit=$($counts.application), adapter NUnit=$($counts.adapter), reporting NUnit=$($counts.reporting), XLSX NUnit=$($counts.xlsx), total=$total failed=$failures."
           }
+      - name: Verify local NUnit runner covers all five assemblies and preserves filters
+        shell: pwsh
+        run: |
+          # Exercise the contributor-facing script after the Release build, rather than
+          # assuming that the separately maintained CI NUnit assembly list is sufficient.
+          & .\scripts\run_tests.ps1
+          [xml]$full = Get-Content 'TestResults/nunit-selected.xml' -Raw
+          $total = [int]$full.'test-run'.total
+          $failed = [int]$full.'test-run'.failed
+          $skipped = [int]$full.'test-run'.skipped
+          $assemblyCount = @($full.SelectNodes('//test-suite[@type="Assembly"]')).Count
+          if ($total -lt 419 -or $failed -ne 0 -or $skipped -ne 1 -or $assemblyCount -ne 5) {
+            throw "Local full NUnit selection regression: total=$total failed=$failed skipped=$skipped assemblies=$assemblyCount; expected >=419/0/1 across five."
+          }
+          Copy-Item 'TestResults/nunit-selected.xml' 'TestResults/nunit-local-all.xml'
+          Write-Host "Local runner verified: total=$total failed=$failed skipped=$skipped assemblies=$assemblyCount."
+
+          & .\scripts\run_tests.ps1 -Level Integration -Verification Acceptance -Requirement FR-017 -Scenario FR-017-SC01
+          [xml]$targeted = Get-Content 'TestResults/nunit-selected.xml' -Raw
+          $selected = [int]$targeted.'test-run'.total
+          $targetedFailed = [int]$targeted.'test-run'.failed
+          if ($selected -lt 1 -or $targetedFailed -ne 0) {
+            throw "Local filtered NUnit regression: selected=$selected failed=$targetedFailed."
+          }
+          Copy-Item 'TestResults/nunit-selected.xml' 'TestResults/nunit-local-filtered.xml'
+          Write-Host "Local runner filtered selection verified: selected=$selected failed=$targetedFailed."
+
+          $rejected = $false
+          try {
+            & .\scripts\run_tests.ps1 -Requirement FR-999
+          } catch {
+            $rejected = $true
+            Write-Host "Expected zero-selection failure: $($_.Exception.Message)"
+          }
+          if (-not $rejected) { throw 'Local runner accepted a no-match test filter.' }
+          Remove-Item 'TestResults/nunit-selected.xml' -ErrorAction SilentlyContinue
       - name: Verify NFR-003 on an Office-free Windows runner
         shell: pwsh
         run: |
