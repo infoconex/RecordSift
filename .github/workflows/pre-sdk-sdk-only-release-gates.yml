@@ -105,7 +105,13 @@ jobs:
           function Invoke-SdkGate([string]$name,[string]$script,[string[]]$extraArgs) {
               $log=Join-Path 'TestResults' ('sdk-only-gate-'+$name+'.log')
               Write-Host "SDK_ONLY GATE $name executing via Windows PowerShell 5.1"
-              & powershell.exe -NoProfile -NonInteractive -File $script @extraArgs *> $log
+              # Diagnostic control: preload .NET Framework compression assembly
+              # in the child PS 5.1 process without changing production scripts.
+              $quotedScript="'"+$script.Replace("'","''")+"'"
+              $quotedArgs=@($extraArgs | ForEach-Object { "'"+$_.Replace("'","''")+"'" })
+              $command='$ErrorActionPreference = ''Stop''; Add-Type -AssemblyName System.IO.Compression.FileSystem; & '+$quotedScript+' '+($quotedArgs -join ' ')+'; if (-not $?) { exit 1 }'
+              $encoded=[Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($command))
+              & powershell.exe -NoProfile -NonInteractive -EncodedCommand $encoded *> $log
               $result=$LASTEXITCODE
               $results[$name]=if($result -eq 0){'PASS'}else{"FAIL exit=$result"}
               Write-Host "SDK_ONLY GATE $name $($results[$name])"
