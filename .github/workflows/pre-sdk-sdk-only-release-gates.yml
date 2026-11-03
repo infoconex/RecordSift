@@ -1,0 +1,140 @@
+name: Isolated SDK-only release gate compatibility probe
+on:
+  push:
+    branches: [discovery/sdk-only-release-gates-20261102]
+permissions:
+  contents: read
+jobs:
+  sdk-only:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - name: Checkout unchanged baseline
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Pull supported .NET 10 Windows SDK without Visual Studio Build Tools
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $image = 'mcr.microsoft.com/dotnet/sdk:10.0.403-windowsservercore-ltsc2022'
+          Write-Host "SDK_ONLY source sha=$(git rev-parse HEAD)"
+          docker info --format 'SDK_ONLY Windows daemon OS={{.OSType}} host={{.OperatingSystem}}'
+          docker manifest inspect $image | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Official SDK image tag does not resolve' }
+          docker pull $image
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot pull SDK-only image' }
+          docker image inspect $image --format 'SDK_ONLY immutable image digests={{json .RepoDigests}} imageID={{.Id}} OS={{.Os}}'
+      - name: Compare SDK-only traditional projects with and without .NET Framework targeting pack
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force TestResults | Out-Null
+          $script = @'
+          $ErrorActionPreference='Continue'
+          $ProgressPreference='SilentlyContinue'
+          Set-Location C:\repo
+          Write-Host "SDK_ONLY VS BuildTools present=$(Test-Path 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools')"
+          Write-Host "SDK_ONLY VS IDE present=$(Test-Path 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise')"
+          Write-Host "SDK_ONLY net48 ref pack present=$(Test-Path 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\mscorlib.dll')"
+          Write-Host "SDK_ONLY netfx runtime present=$(Test-Path 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\clr.dll')"
+          Get-CimInstance Win32_OperatingSystem | Select-Object Caption,Version,BuildNumber | Format-List
+          Write-Host 'SDK_ONLY dotnet SDKs:'; dotnet --list-sdks
+          Write-Host 'SDK_ONLY dotnet runtimes:'; dotnet --list-runtimes
+          Write-Host 'SDK_ONLY dotnet msbuild:'; dotnet msbuild -version -nologo
+          Write-Host 'SDK_ONLY MSBuild.exe discovery:'; Get-Command MSBuild.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+          Write-Host 'SDK_ONLY csc from SDK:'; Get-ChildItem 'C:\Program Files\dotnet\sdk' -Filter 'csc.dll' -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          Write-Host 'SDK_ONLY env:'; Get-ChildItem Env: | Where-Object { $_.Name -match '^(DOTNET|MSBUILD|VSINSTALLDIR|VisualStudioVersion|NUGET)' } | Sort-Object Name | Format-Table -AutoSize
+          $domain='src\RecordSift.Domain\RecordSift.Domain.csproj'
+          Write-Host 'SDK_ONLY Experiment 1: unchanged traditional Domain build with SDK only'
+          dotnet msbuild $domain /t:Rebuild /p:Configuration=Release /p:OutputPath=bin\SdkOnlyNoRefs\ /v:minimal *> TestResults\sdk-only-1-domain.log
+          Write-Host "SDK_ONLY no reference assemblies exit=$LASTEXITCODE"
+          Get-Content TestResults\sdk-only-1-domain.log | Select-Object -Last 24
+          Write-Host 'SDK_ONLY Experiment 2: install NuGet CLI separately'
+          New-Item -ItemType Directory -Force C:\sdktools | Out-Null
+          try { Invoke-WebRequest -UseBasicParsing 'https://dist.nuget.org/win-x86-commandline/v6.14.0/nuget.exe' -OutFile C:\sdktools\nuget.exe -TimeoutSec 120 }
+          catch { throw "SDK_ONLY NuGet download blocker: $_" }
+          & C:\sdktools\nuget.exe help | Select-Object -First 4
+          Write-Host "SDK_ONLY NuGet CLI exit=$LASTEXITCODE"
+          Write-Host 'SDK_ONLY Experiment 3: install Microsoft .NET Framework 4.8 reference assemblies outside repository'
+          & C:\sdktools\nuget.exe install Microsoft.NETFramework.ReferenceAssemblies.net48 -Version 1.0.3 -OutputDirectory C:\sdktools\packages -NonInteractive -Source https://api.nuget.org/v3/index.json *> TestResults\sdk-only-2-installrefs.log
+          Write-Host "SDK_ONLY reference pack install exit=$LASTEXITCODE"
+          Get-Content TestResults\sdk-only-2-installrefs.log | Select-Object -Last 20
+          $refs=Get-ChildItem C:\sdktools\packages -Filter 'mscorlib.dll' -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'v4.8' } | Select-Object -First 1
+          if (-not $refs) { throw 'SDK_ONLY reference-pack files unavailable' }
+          Write-Host "SDK_ONLY mscorlib=$($refs.FullName)"
+          $frameworkRoot = Split-Path -Parent (Split-Path -Parent $refs.DirectoryName)
+          Write-Host "SDK_ONLY TargetFrameworkRootPath=$frameworkRoot"
+          Write-Host 'SDK_ONLY Experiment 4: build Domain with explicit framework references'
+          dotnet msbuild $domain /t:Rebuild /p:Configuration=Release /p:OutputPath=bin\SdkOnlyWithRefs\ "/p:TargetFrameworkRootPath=$frameworkRoot" "/p:FrameworkPathOverride=$($refs.DirectoryName)" /v:minimal *> TestResults\sdk-only-3-domain-refs.log
+          Write-Host "SDK_ONLY Domain with references exit=$LASTEXITCODE"
+          Get-Content TestResults\sdk-only-3-domain-refs.log | Select-Object -Last 26
+          Write-Host 'SDK_ONLY Experiment 5: NuGet packages.config restore without Visual Studio'
+          & C:\sdktools\nuget.exe restore RecordSift.sln -NonInteractive -PackagesDirectory C:\repo\packages -ConfigFile NuGet.Config *> TestResults\sdk-only-4-restore.log
+          Write-Host "SDK_ONLY restore exit=$LASTEXITCODE"
+          Get-Content TestResults\sdk-only-4-restore.log | Select-Object -Last 12
+          Write-Host 'SDK_ONLY Experiment 6: rebuild entire traditional solution using only dotnet msbuild'
+          dotnet msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' "/p:TargetFrameworkRootPath=$frameworkRoot" "/p:FrameworkPathOverride=$($refs.DirectoryName)" /v:minimal *> TestResults\sdk-only-5-solution.log
+          $build=$LASTEXITCODE
+          Write-Host "SDK_ONLY full solution exit=$build"
+          Get-Content TestResults\sdk-only-5-solution.log | Select-Object -Last 45
+          if ($build -ne 0) { throw 'SDK_ONLY solution compilation failed; no compatibility gates executed' }
+          Write-Host 'SDK_ONLY Experiment 7: run five NUnit suites without VS tooling'
+          $runner='C:\repo\packages\NUnit.ConsoleRunner.3.17.0\tools\nunit3-console.exe'
+          $assemblies=@('Domain','Application','Infrastructure.Csv','Infrastructure.Reporting','Infrastructure.Xlsx') | ForEach-Object { "C:\repo\tests\RecordSift.$_.Tests\bin\Release\RecordSift.$_.Tests.dll" }
+          & $runner @assemblies '--result=C:\repo\TestResults\sdk-only-nunit.xml;format=nunit3' --noheader *> TestResults\sdk-only-6-nunit.log
+          Write-Host "SDK_ONLY NUnit exit=$LASTEXITCODE"
+          Get-Content TestResults\sdk-only-6-nunit.log | Select-Object -Last 20
+          if (Test-Path TestResults\sdk-only-nunit.xml) {
+            [xml]$xml=Get-Content TestResults\sdk-only-nunit.xml
+            Write-Host "SDK_ONLY tests total=$($xml.'test-run'.total) passed=$($xml.'test-run'.passed) failed=$($xml.'test-run'.failed) skipped=$($xml.'test-run'.skipped)"
+          }
+
+          # Only after baseline build + tests: independently execute the unchanged gates.
+          # A failed gate must never masquerade as a successful verification.
+          if (-not (Test-Path TestResults\\sdk-only-nunit.xml)) { throw 'No NUnit XML produced' }
+          [xml]$nunit=Get-Content TestResults\\sdk-only-nunit.xml
+          if ([int]$nunit.'test-run'.total -ne 419 -or [int]$nunit.'test-run'.failed -ne 0 -or
+              [int]$nunit.'test-run'.skipped -ne 1) { throw 'Unexpected NUnit baseline result' }
+          $env:PATH='C:\\sdktools;'+$env:PATH
+          Write-Host "SDK_ONLY Git CLI found=$([bool](Get-Command git -ErrorAction SilentlyContinue))"
+          Write-Host "SDK_ONLY NuGet CLI found=$([bool](Get-Command nuget -ErrorAction SilentlyContinue))"
+          Write-Host "SDK_ONLY VS MSBuild found=$([bool](Get-Command MSBuild.exe -ErrorAction SilentlyContinue))"
+          Write-Host "SDK_ONLY installed VS directory=$([bool](Test-Path 'C:\\Program Files (x86)\\Microsoft Visual Studio'))"
+          $results=[ordered]@{}
+          function Invoke-SdkGate([string]$name,[string]$script,[string[]]$extraArgs) {
+              $log=Join-Path 'TestResults' ('sdk-only-gate-'+$name+'.log')
+              Write-Host "SDK_ONLY GATE $name executing via Windows PowerShell 5.1"
+              & powershell.exe -NoProfile -NonInteractive -File $script @extraArgs *> $log
+              $result=$LASTEXITCODE
+              $results[$name]=if($result -eq 0){'PASS'}else{"FAIL exit=$result"}
+              Write-Host "SDK_ONLY GATE $name $($results[$name])"
+              Get-Content $log -ErrorAction SilentlyContinue | Select-Object -Last 14 | ForEach-Object { Write-Host "SDK_ONLY GATE LOG $name $_" }
+          }
+          Invoke-SdkGate 'xml-positive' '.\\scripts\\verify_xml_documentation.ps1' @()
+          Invoke-SdkGate 'api-425' '.\\scripts\\verify_public_api.ps1' @()
+          $packageDir='C:\\repo\\TestResults\\sdk-only-local-package'
+          Invoke-SdkGate 'local-package' '.\\scripts\\build_release_candidate.ps1' @('-OutputDirectory',$packageDir)
+          $candidate=Join-Path $packageDir 'RecordSift.0.1.0-rc.1.nupkg'
+          if(Test-Path $candidate) {
+             Invoke-SdkGate 'clean-consumer' '.\\scripts\\verify_clean_consumer.ps1' @('-CandidateDirectory',$packageDir)
+          } else {
+             $results['clean-consumer']='NOT_EXECUTED: unpublished package prerequisite missing'
+             Write-Host "SDK_ONLY GATE clean-consumer NOT EXECUTED (package prerequisite)"
+          }
+          $results | ConvertTo-Json -Depth 5 | Set-Content TestResults\\sdk-only-release-gates.json -Encoding utf8
+          Write-Host ('SDK_ONLY GATE SUMMARY '+($results | ConvertTo-Json -Compress))
+          if(@($results.Values | Where-Object {$_ -ne 'PASS'}).Count -ne 0) { throw 'One or more SDK-only release gates failed or were not executed' }
+          '@
+          Set-Content -Path (Join-Path $env:RUNNER_TEMP 'sdk-only-build.ps1') -Value $script -Encoding utf8
+          $image='mcr.microsoft.com/dotnet/sdk:10.0.403-windowsservercore-ltsc2022'
+          docker run --rm --pull=never --isolation=process -v "${env:GITHUB_WORKSPACE}:C:\repo" -v "${env:RUNNER_TEMP}:C:\probe" $image powershell.exe -NoProfile -NonInteractive -File C:\probe\sdk-only-build.ps1
+          Write-Host "SDK_ONLY container exit=$LASTEXITCODE"
+          if ($LASTEXITCODE -ne 0) { throw 'SDK-only container execution failed' }
+      - name: Upload experiment diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sdk-only-release-gates-${{ github.run_id }}
+          path: TestResults/sdk-only-*
+          if-no-files-found: warn
