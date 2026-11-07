@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion Condition="'$(LangVersion)' == ''">7.3</LangVersion>
+  </PropertyGroup>
+</Project>
