@@ -273,43 +273,6 @@ jobs:
         shell: pwsh
         run: |
           & .\scripts\verify_xml_documentation.ps1 -Negative
-      - name: Temporary candidate-only property precedence verification (uncommitted runner edit)
-        shell: pwsh
-        run: |
-          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
-          if (-not $msbuild) { throw 'MSBuild not found for effective-property evaluation.' }
-          $projects = @(Get-ChildItem -Path src,tests -Recurse -Filter '*.csproj' -File | Sort-Object FullName)
-          if ($projects.Count -ne 10) { throw "Expected exactly 10 project files; found $($projects.Count)." }
-          foreach ($project in $projects) {
-            foreach ($configuration in @('Debug','Release')) {
-              $value = (& $msbuild $project.FullName '-getProperty:LangVersion' "/p:Configuration=$configuration" '/p:Platform=AnyCPU' | Out-String).Trim()
-              if ($LASTEXITCODE -ne 0 -or $value -cne '7.3') {
-                throw "$($project.Name) $configuration evaluated LangVersion='$value', expected 7.3."
-              }
-              Write-Host "LANGVERSION-PASS: $($project.Name) $configuration = $value"
-            }
-          }
-          $domainPath = Join-Path 'src' 'RecordSift.Domain\RecordSift.Domain.csproj'
-          $original = [IO.File]::ReadAllText((Resolve-Path $domainPath).Path)
-          $anchor = '<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>'
-          if (-not $original.Contains($anchor) -or $original.Contains('<LangVersion>')) {
-            throw 'Domain property-override fixture baseline is unexpected.'
-          }
-          $candidate = $original.Replace($anchor, "$anchor`r`n    <LangVersion>7.2</LangVersion>")
-          try {
-            [IO.File]::WriteAllText((Resolve-Path $domainPath).Path, $candidate, [Text.UTF8Encoding]::new($false))
-            foreach ($configuration in @('Debug','Release')) {
-              $value = (& $msbuild $domainPath '-getProperty:LangVersion' "/p:Configuration=$configuration" '/p:Platform=AnyCPU' | Out-String).Trim()
-              if ($LASTEXITCODE -ne 0 -or $value -cne '7.2') {
-                throw "Domain project override $configuration evaluated '$value', expected 7.2."
-              }
-              Write-Host "LANGVERSION-OVERRIDE-PASS: Domain $configuration = $value"
-            }
-          } finally {
-            [IO.File]::WriteAllText((Resolve-Path $domainPath).Path, $original, [Text.UTF8Encoding]::new($false))
-          }
-          Write-Host 'LANGVERSION-ALL-PASS: 20 Debug/Release evaluations and two project-local override evaluations.'
       - name: Upload NUnit XML evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
