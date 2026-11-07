@@ -17,7 +17,8 @@ $assemblies = @(
     'tests\RecordSift.Domain.Tests\bin\Release\RecordSift.Domain.Tests.dll',
     'tests\RecordSift.Application.Tests\bin\Release\RecordSift.Application.Tests.dll',
     'tests\RecordSift.Infrastructure.Csv.Tests\bin\Release\RecordSift.Infrastructure.Csv.Tests.dll',
-    'tests\RecordSift.Infrastructure.Reporting.Tests\bin\Release\RecordSift.Infrastructure.Reporting.Tests.dll'
+    'tests\RecordSift.Infrastructure.Reporting.Tests\bin\Release\RecordSift.Infrastructure.Reporting.Tests.dll',
+    'tests\RecordSift.Infrastructure.Xlsx.Tests\bin\Release\RecordSift.Infrastructure.Xlsx.Tests.dll'
 ) | ForEach-Object { Join-Path $root $_ }
 
 foreach ($file in @($runner) + $assemblies) {
