@@ -67,8 +67,9 @@ The XLSX reader independently checks ZIP entry count (512 maximum), both declare
 
 ## Development workflow
 
-- `main` is reserved for accepted releases.
-- `release/0.1` is the integration branch for the 0.1 release.
-- Each tracked issue uses an independent short-lived branch, reviewed and squash-merged into `release/0.1`.
+- `main` contains reviewed and verified source promotions; only tagged/published artifacts represent the publicly distributed 0.1.0 package.
+- `release/0.2` is the current development integration branch; `release/0.1` preserves the historical 0.1 integration history.
+- Create a short-lived `issue/<number>-<slug>` branch from `release/0.2`, then review and squash merge the issue PR into `release/0.2`.
+- An owner-approved maintenance branch, such as `release/0.1.1`, may start from current `main` for a scoped fix; promote it through a separately reviewed PR to `main` without automatically creating or publishing a NuGet release.
 - Scenarios remain Planned until executable acceptance evidence exists in [traceability](docs/testing/traceability.md).
 - Future framework and package modernization must establish separate compatibility evidence before being declared complete.
