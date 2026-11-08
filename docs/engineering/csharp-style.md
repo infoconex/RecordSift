@@ -1,40 +1,123 @@
-# C# coding conventions and library API standards
+# C# coding standards
 
-**Policy:** Engineering issue [#84](https://github.com/infoconex/RecordSift/issues/84). Follow Microsoft's published C# coding conventions and .NET Framework Design Guidelines, with the repository's root `.editorconfig` as the explicit local style baseline.
+Follow Microsoft's [C# coding conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions), [identifier naming guidelines](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names), and [.NET Framework Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/).
 
-## Current target and compatibility
+The rules below capture RecordSift-specific choices and exceptions. They apply to new or changed code; do not reformat unrelated working code solely for style. The root [`.editorconfig`](../../.editorconfig) represents supported settings, not the entire coding standard.
 
-- **Target:** .NET Framework 4.8, conventional non-SDK Visual Studio projects, `LangVersion` **7.3**. Do not use newer language features (file-scoped namespaces, nullable-reference annotations, records, primary constructors, global usings, newer pattern forms) merely because a recent SDK supports them.
-- Use block-scoped, assembly/responsibility-aligned namespaces (`RecordSift.Domain.Diagnostics`, `RecordSift.Domain.Schema`, `RecordSift.Domain.Results`, `RecordSift.Application.Ports.Csv`, `RecordSift.Application.Importing.Csv`, or `RecordSift.Infrastructure.Csv`), four-space indents, UTF-8, LF, one declaration per relevant file, and consistent braces for new/modified control-flow code.
-- Use `using` directives outside the namespace, sort `System` first, eliminate unused imports and avoid wildcard imports. Do not change legacy files solely to satisfy cosmetic preferences outside the issue scope.
+## Compatibility
 
-## Names, APIs and safety
+- Target .NET Framework 4.8.
+- Use C# 7.3-compatible syntax.
+- Use block-scoped namespaces.
+- Do not adopt newer language features merely because a recent SDK supports them.
+- Preserve traditional project files until a separately approved project-format change.
 
-- Public namespaces must match the owning layer and responsibility; flat `namespace RecordSift` declarations are prohibited by CI. Public types, methods, properties, events and enum members: **PascalCase**. Interfaces: `I` + PascalCase (e.g. `ICsvRecordReader`). Parameters and locals: **camelCase**. Private nonconstant instance fields: `_camelCase`; private static nonconstant fields: `s_camelCase`. All `const` identifiers (public/private/local) are PascalCase **without underscores**. The default diagnostic string values such as `SOURCE_UNREADABLE` are stable external data, not C# names. Prefer meaningful domain names over implementation names.
-- Method names express actions; properties represent state. Prefer explicit guards and `nameof(parameter)` for argument exceptions. Document externally observable behavior and ownership of input readers/streams.
-- Preserve public API compatibility; do not expose vendor types or leak unsafe exception text in diagnostics. Follow standard `IDisposable` ownership rules for resources the implementation owns.
-- Prefer `var` only when the type is readily apparent; otherwise declare the type. Favor explicit culture/encoding and immutable or read-only views of returned data.
-- Avoid hidden state, locale-dependent behavior, broad exception swallowing, and logging raw imported source values.
-- Favor focused, testable functions, dependency injection at third-party boundaries, and small interfaces with precisely specified semantics. Do not refactor working code into unnecessary abstractions.
+## Formatting and language usage
 
-## C# usage examples in public documentation
+- Indent C# with four spaces.
+- Use UTF-8 encoding.
+- Use LF line endings.
+- Place `using` directives outside namespaces.
+- Place `System` directives before other imports.
+- Remove unused `using` directives.
+- Avoid wildcard imports.
+- Use braces for control-flow statements.
+- Prefer one focused type declaration per file.
+- Use `var` when the inferred type is clear.
+- Use an explicit type when inference would obscure meaning.
 
-- Name instantiated objects after their **type**, converted to camelCase, so readers can identify their role immediately: `var csvImporter = new CsvImporter<Customer>(...);`, `var importSchema = new ImportSchema(...);`, `var primitivePropertyMapper = new PrimitivePropertyMapper<Customer>(...);`.
-- For returned values where the API returns a different type, prefer the actual type or a type-qualified descriptive name, e.g. `var typedImportResult = csvImporter.Import(...);`. For file resources, use `stringReader`, `streamReader` or `fileStream` where appropriate. Avoid ambiguous placeholder names such as `importer`, `mapper` or `result` in consumer-facing tutorials.
-- Apply this to **new or revised documentation code samples**. This is a readability convention, not a mandate to cosmetically rename existing production locals or public API members. Keep documentation C# 7.3 compatible and check code against real public API signatures.
-- Do not leave unexplained resource-budget literals at call sites in consumer examples. In RecordSift 0.1.0, CSV `maxCharacters` and XLSX `maxBytes` are mandatory **caller-selected** positive limits without defaults; read named settings from application configuration (and validate positive values), or use clearly documented named constants for intentionally self-contained tests. Never confuse `CsvReadOptions.Default` or `XlsxReadLimits.Default` with defaults for those mandatory source-size arguments.
+## Naming and namespaces
 
-## Domain messages and meaningful constants
+- Use PascalCase for types.
+- Use PascalCase for methods.
+- Use PascalCase for properties.
+- Use PascalCase for events.
+- Use PascalCase for enum members.
+- Prefix interface names with `I` and use PascalCase.
+- Use camelCase for parameters.
+- Use camelCase for local variables.
+- Use `_camelCase` for private instance fields.
+- Use `s_camelCase` for private static nonconstant fields.
+- Use PascalCase without underscores for all `const` identifiers.
+- Align namespaces with the owning layer and responsibility.
+- Do not use the flat `RecordSift` namespace in production code.
+- Prefer meaningful domain names over implementation-oriented names.
+- Preserve externally visible diagnostic string values when renaming C# identifiers.
 
-- Stable diagnostic identifiers are **nonlocalized core constants**. Their invariant English text lives in `src/RecordSift.Domain/Diagnostics/Resources/DomainMessages.resx` and is retrieved through a core-owned resource accessor. Never include source data, secrets, file paths or vendor exception messages.
-- Argument-validation strings are resource-backed through named properties in their **owning layer**: `DomainMessageResources.PositionMappingDuplicate` for Domain schema rules and `CsvMessageResources.ReaderHeaderConflict` for Application CSV rules. Raw `Argument_*` keys are confined to each catalog; `Get(string resourceKey)` remains internal. Consumers rely on exception types and parameter names, not English text. See [ADR 0016](decisions/0016-typed-domain-resource-messages.md) and [ADR 0020](decisions/0020-application-csv-message-ownership.md).
-- Keep options and defaults in the core, e.g. `CsvReadOptions.Default`. Third-party adapters must implement that contract.
-- Do not introduce constants for ordinary zero/one indices or CSV protocol syntax solely to eliminate literals; eliminate unexplained, duplicated, or variable business values.
-- `scripts/validate_core_messages.py` validates both embedded catalogs and flags English prose in Domain/Application C# source. Issue #91 separately enforces third-party-free domain unit tests.
+## API design and implementation
 
-## Enforced naming checks and remaining coverage
+- Name methods for actions.
+- Name properties for state.
+- Validate invalid arguments with explicit guards.
+- Use `nameof(parameter)` for argument-exception parameter names.
+- Preserve existing public API contracts.
+- Keep third-party types out of public and core contracts.
+- Keep vendor exception text out of diagnostics.
+- Document ownership of caller-provided readers and streams.
+- Follow standard `IDisposable` ownership conventions.
+- Use explicit culture where parsing or formatting depends on culture.
+- Use explicit encoding where text interpretation depends on encoding.
+- Prefer immutable or read-only views for returned data.
+- Avoid hidden global state.
+- Avoid swallowing exceptions broadly.
+- Do not log untrusted source values or secrets.
+- Prefer focused, testable functions.
+- Inject dependencies at third-party boundaries.
+- Keep interfaces small and their contracts precise.
+- Do not introduce abstractions without a clear benefit.
 
-The root `.editorconfig` specifies the Microsoft naming conventions (PascalCase constants, interfaces beginning with `I`, PascalCase types/members, camelCase locals and parameters, `_camelCase` private instance fields, `s_camelCase` private static fields). The Windows CI build runs the **Microsoft Roslyn IDE1006** naming analyzer through `dotnet format style` and fails on naming diagnostics. This works with the historical non-SDK net48 solution and does not retarget or add runtime dependencies.
+See the [architecture guidance](architecture.md) for dependency-direction and adapter requirements.
+
+## C# examples in public documentation
+
+- Name instantiated objects after their type in camelCase (for example, `csvImporter`).
+- Name returned values for their actual type or role (for example, `typedImportResult`).
+- Use descriptive resource names such as `stringReader` or `fileStream`.
+- Avoid ambiguous names such as `importer`, `mapper`, or `result` in new examples.
+- Keep examples compatible with C# 7.3.
+- Verify examples against actual public API signatures.
+- Use named, positive values for required CSV `maxCharacters` and XLSX `maxBytes` limits.
+- Do not imply that mandatory input-size arguments have defaults.
+- Do not rename existing production identifiers solely to match documentation examples.
+
+## Messages and constants
+
+- Keep stable diagnostic codes invariant and nonlocalized.
+- Store Domain diagnostic messages in `DomainMessages.resx`.
+- Store Application-owned CSV argument messages in `CsvMessages.resx`.
+- Access messages through typed, owning-layer resource properties.
+- Keep raw `Argument_*` resource keys within their owning catalog.
+- Keep raw resource-key lookup methods internal.
+- Keep source content, secrets, paths, and vendor exceptions out of diagnostics.
+- Keep options and defaults in the core contracts.
+- Require adapters to honor core defaults.
+- Do not create constants for ordinary zero/one indices or CSV syntax alone.
+- Replace unexplained or duplicated business literals with meaningful names.
+
+See [ADR 0016](decisions/0016-typed-domain-resource-messages.md) and [ADR 0020](decisions/0020-application-csv-message-ownership.md) for resource ownership.
+
+## XML documentation
+
+- Document externally visible APIs with meaningful XML comments.
+- Document observable behavior, input constraints, defaults, and failure conditions.
+- Document ownership and disposal responsibilities for readers and streams.
+- Explain security boundaries and important invariants where relevant.
+- Use XML tags such as `<summary>`, `<param>`, and `<exception>` when useful.
+- Do not write comments that merely restate member names.
+- Explain non-obvious implementation decisions in internal comments.
+- Keep architecture history in ADRs and behavior requirements in specifications.
+- Do not commit generated XML documentation output.
+
+## Verification
+
+- Treat compiler warning `CS1591` as an error in Debug and Release production builds.
+- Enforce selected naming rules with Roslyn `IDE1006` in Windows CI.
+- Supplement Roslyn with the focused uppercase-underscore constant-name check.
+- Preserve `FR_###_SC##` and `NFR_###_SC##` test-method identifiers.
+- Keep broader formatting, `var`, and qualification preferences as editor and review guidance.
+- Do not claim that the naming gate enforces every Microsoft coding convention.
+
+To reproduce the current naming checks after restoring packages:
 
 ```powershell
 nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
@@ -42,23 +125,6 @@ dotnet format style RecordSift.sln --no-restore --verify-no-changes --diagnostic
 python scripts/validate_constant_names.py
 ```
 
-Microsoft's Roslyn naming analyzer does not consistently reject uppercase `UPPER_SNAKE_CASE` constant declarations, so the standard-library Python const-declaration guard **supplements** IDE1006. It validates positive and negative examples on every documentation CI run and inspects C# production and test sources, without loading any parser vendor package. An actual analyzer Red test is preserved in [issue #93](https://github.com/infoconex/RecordSift/issues/93). Separate test method identifiers intentionally include immutable `FR_###_SC##` / `NFR_###_SC##` traceability labels; the broad member-naming rule targets production code, while constant/parameter/interface rules apply to all source and tests.
+Windows CI also verifies generated XML documentation and tests that an undocumented public member triggers `CS1591`.
 
-This is **mandatory naming enforcement**, not proof that every Microsoft formatting and design recommendation has been automated. Existing code-style settings for braces, `var`, and qualification remain review guidance; a wider formatting/analyzer baseline should be introduced as independent work, not mixed into a non-behavioral naming migration. See [ADR 0012](decisions/0012-microsoft-csharp-naming-ci.md).
-
-## Public API XML documentation and build enforcement
-
-Engineering [#152](https://github.com/infoconex/RecordSift/issues/152) requires meaningful XML comments for **externally visible** types, constructors, members, enum values and relevant generic parameters across all five production assemblies. Document consumer-visible invariants, defaults, valid ranges, read-only snapshots, row/source coordinates, caller-owned streams/readers, structured diagnostics versus thrown programmer errors, and security boundaries. Do not claim atomic or partial results without checking the implementation and tests. Use `<summary>`, `<param>`, `<typeparam>`, `<returns>`, `<exception>`, `<remarks>`, `<see>`, or `<paramref>` where they add precision. A useful comment explains behavior and consequences, not merely the member name. For interfaces and implementations, use concise independent documentation so conventional non-SDK compiler XML output remains useful in IntelliSense.
-
-Conventional C# 7.3/.NET Framework 4.8 project files generate `bin\\Debug\\RecordSift.*.xml` and `bin\\Release\\RecordSift.*.xml`, adjacent to their assemblies. **CS1591 is elevated to an error**, without broad warning suppression, in both build configurations. Windows CI validates each Release XML output and runs a negative MSBuild probe that removes one required member comment and requires a CS1591 failure. Do not commit generated XML files or remove documentation checks. Internal implementation comments should explain non-obvious decisions, threat boundaries and tradeoffs; keep architecture history in ADRs and requirements in versioned specifications.
-
-## Microsoft reference guides
-
-- [C# coding conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
-- [C# identifier naming](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/identifier-names)
-- [Framework Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/)
-- [Interface design](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/interface)
-- [EditorConfig in Visual Studio](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options)
-- [Architectural principles and dependency inversion](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/architectural-principles)
-
-Repository-specific choices above take precedence where the official guidance offers multiple alternatives or illustrates modern C# features not available to C# 7.3.
+See [ADR 0012](decisions/0012-microsoft-csharp-naming-ci.md) for naming-rule enforcement and its known limits. See [issue #152](https://github.com/infoconex/RecordSift/issues/152) for public XML documentation requirements.
