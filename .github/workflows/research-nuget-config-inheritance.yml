@@ -3,13 +3,13 @@ on:
   push:
     branches:
       - research/nuget-config-inheritance-20261109
-  workflow_dispatch:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
-  contents: write # research-only evidence commit to the same isolated branch
+  contents: read
 
 jobs:
   nuget-config-research:
@@ -20,13 +20,13 @@ jobs:
       - name: Checkout research branch
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          persist-credentials: true
+          persist-credentials: false
           ref: ${{ github.head_ref || github.ref_name }}
       - name: Run isolated NuGet.Config inheritance and restore verification
         shell: pwsh
         run: |
           & ./research/nuget-config/scripts/verify-inheritance.ps1 -OutputDirectory 'TestResults/nuget-config-inheritance' -CheckRestore
-      - name: Upload full evidence even after a failed check
+      - name: Upload execution evidence even after a failed check
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -34,29 +34,3 @@ jobs:
           path: TestResults/nuget-config-inheritance/
           if-no-files-found: warn
           retention-days: 30
-      - name: Commit reviewable summary to isolated research branch
-        if: always() && github.event_name == 'push'
-        shell: pwsh
-        run: |
-          $from = 'TestResults/nuget-config-inheritance'
-          $to = 'research/nuget-config/evidence'
-          if (-not (Test-Path "$from/results.json")) {
-            Write-Host 'No results.json generated; no evidence commit.'
-            exit 0
-          }
-          New-Item -ItemType Directory -Path $to -Force | Out-Null
-          Copy-Item "$from/results.json" "$to/results.json" -Force
-          Copy-Item "$from/inheritance-output.txt" "$to/inheritance-output.txt" -Force
-          if (Test-Path "$from/record-sift-effective-sources.txt") {
-            Copy-Item "$from/record-sift-effective-sources.txt" "$to/record-sift-effective-sources.txt" -Force
-          }
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- research/nuget-config/evidence/
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 1) {
-            git commit -m "research: retain observed NuGet config verification evidence [skip ci]"
-            if ($LASTEXITCODE -ne 0) { throw 'Evidence commit failed.' }
-            git push origin HEAD:research/nuget-config-inheritance-20261109
-            if ($LASTEXITCODE -ne 0) { throw 'Evidence push failed.' }
-          }
