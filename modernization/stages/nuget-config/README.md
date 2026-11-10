@@ -49,4 +49,15 @@ A successful restore does not prove full deterministic builds, package provenanc
 
 ## Outcome
 
-**Pending exact-stage CI execution and review.** Link the successful run and observed version/output when obtained. No merge, release or blog publication is implied by the presence of this stage.
+**Verified in stage CI, pending independent PR review and merge authorization.** [Successful Windows workflow run #42740667647](https://github.com/infoconex/RecordSift/actions/runs/42740667647) at stage SHA `9fce71305ad46389995a189f0b1b073b6b23a821`; [full logs and JSON artifact #13729555944](https://github.com/infoconex/RecordSift/actions/runs/42740667647/artifacts/13729555944).
+
+| Check | Observed result |
+| --- | --- |
+| Child uses checked-in config under inherited nuget.org-disable setting | `nuget.org [Enabled]` — **PASS** |
+| Negative control removes only disabled-source clear | `nuget.org [Disabled]` — **PASS** |
+| Reinstated checked-in config | `nuget.org [Enabled]` — **PASS** |
+| Ordinary restore without `-ConfigFile`, fresh package directory | Exit 0, effective sources match — **PASS** |
+
+Recorded tool versions: .NET SDK `10.0.403`, NuGet CLI `7.9.0.83`, PowerShell `7.6.9`; Windows GitHub Actions `windows-2022`.
+
+The experimental results demonstrate the intended setting under the tested runner. They do not assert private-feed policy compliance or package audit network contact. **No merge, release, or article publication is implied.**
