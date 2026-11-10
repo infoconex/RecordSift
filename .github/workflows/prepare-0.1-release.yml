@@ -65,7 +65,7 @@ jobs:
       - name: Restore exact pinned packages
         shell: pwsh
         run: |
-          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile nuget.config
           if ($LASTEXITCODE -ne 0) { throw 'NuGet restore failed.' }
       - name: Build five .NET Framework 4.8 assemblies in Release
         shell: pwsh

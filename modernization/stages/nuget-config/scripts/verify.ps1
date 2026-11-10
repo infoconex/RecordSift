@@ -1,4 +1,4 @@
-# RecordSift NuGet.Config case-study stage verification.
+# RecordSift nuget.config case-study stage verification.
 # Validates the checked-in configuration with a positive/negative inheritance
 # control and optionally restores without an explicit -ConfigFile.
 # Usage: pwsh -NoProfile -File modernization/stages/nuget-config/scripts/verify.ps1 -CheckRestore
@@ -17,7 +17,13 @@ if (-not [IO.Path]::IsPathRooted($OutputDirectory)) {
 }
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 
-$configPath = Join-Path $repositoryRoot 'NuGet.Config'
+# Verify exact Git-path casing; Windows file lookups alone are case-insensitive.
+$trackedNuGetConfigs = @(& git -C $repositoryRoot ls-files | Where-Object { $_ -ieq 'nuget.config' })
+if ($LASTEXITCODE -ne 0 -or $trackedNuGetConfigs.Count -ne 1 -or $trackedNuGetConfigs[0] -cne 'nuget.config') {
+    throw 'Expected exactly one tracked root configuration named nuget.config (lowercase).'
+}
+
+$configPath = Join-Path $repositoryRoot 'nuget.config'
 $configText = Get-Content -LiteralPath $configPath -Raw
 [xml]$configXml = $configText
 $sourceUrl = 'https://api.nuget.org/v3/index.json'
@@ -29,12 +35,12 @@ foreach ($xpath in @(
     "/configuration/auditSources/add[@key='nuget.org-audit' and @value='$sourceUrl']"
 )) {
     if (-not $configXml.SelectSingleNode($xpath)) {
-        throw "Expected NuGet.Config element missing: $xpath"
+        throw "Expected nuget.config element missing: $xpath"
     }
 }
 $temporaryRoot = Join-Path ([IO.Path]::GetTempPath()) ('RecordSiftNuGetStage-' + [guid]::NewGuid().ToString('N'))
 $childDirectory = Join-Path $temporaryRoot 'Application'
-$childFile = Join-Path $childDirectory 'NuGet.Config'
+$childFile = Join-Path $childDirectory 'nuget.config'
 $results = [System.Collections.Generic.List[object]]::new()
 $report = $null
 $failure = $null
@@ -80,7 +86,7 @@ try {
     <add key="nuget.org" value="true" />
   </disabledPackageSources>
 </configuration>
-'@ | Set-Content -LiteralPath (Join-Path $temporaryRoot 'NuGet.Config') -Encoding utf8
+'@ | Set-Content -LiteralPath (Join-Path $temporaryRoot 'nuget.config') -Encoding utf8
 
     $negativeConfig = [regex]::Replace(
         $configText,

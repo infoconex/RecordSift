@@ -15,7 +15,7 @@ The **original issue #57 smoke tests are historical**, and the former `tests/Rec
 From the repository root on Windows (Visual Studio Developer PowerShell or equivalent):
 
 ```powershell
-nuget restore .\RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+nuget restore .\RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile nuget.config
 msbuild .\RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU'
 .\scripts\run_tests.ps1 -Verification Acceptance
 ```

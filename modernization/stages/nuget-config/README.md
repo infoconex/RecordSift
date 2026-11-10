@@ -1,4 +1,4 @@
-# Modernization use case — NuGet.Config source policy
+# Modernization use case — nuget.config source policy
 
 **Tracking:** [RecordSift #267](https://github.com/infoconex/RecordSift/issues/267).  
 **Research:** [EXP-044 — NuGet source inheritance](https://github.com/infoconex/dotnet-modernization/blob/research/nuget-config-article-evidence-20261109/projects/recordsift/evaluations/2026-11-pre-sdk/experiments/EXP-044-nuget-config-source-inheritance.md).  
@@ -11,7 +11,7 @@
 
 **Hypothesis:** RecordSift's existing `<packageSources><clear /></packageSources>` removes inherited package feeds but does not remove an inherited `disabledPackageSources` entry that disables `nuget.org`. The source-controlled policy should explicitly declare which sources are enabled for this independent modernization example.
 
-**One behavioral change:** Insert an empty `disabledPackageSources` collection with `<clear />` between existing `packageSources` and `auditSources` in root `NuGet.Config`.
+**One behavioral change:** Insert an empty `disabledPackageSources` collection with `<clear />` between existing `packageSources` and `auditSources` in root `nuget.config`.
 
 **Unchanged:** .NET Framework 4.8, project format, `packages.config`, NuGet package IDs and versions, `packageSources`, `auditSources`, public API and application code.
 
@@ -21,9 +21,9 @@
 
 Before, the repository explicitly listed nuget.org, yet an inherited `disabledPackageSources` entry could disable it.
 
-After, the source-controlled `NuGet.Config` independently clears `packageSources` and `disabledPackageSources`, while preserving a separately explicit `auditSources`.
+After, the source-controlled `nuget.config` independently clears `packageSources` and `disabledPackageSources`, while preserving a separately explicit `auditSources`.
 
-For a directly reviewable diff, compare the [immutable baseline](https://github.com/infoconex/RecordSift/blob/3627a62260437db0bde83c5c7d3be56caee8af95/NuGet.Config) with [stage NuGet.Config](https://github.com/infoconex/RecordSift/blob/modernization/nuget-config/NuGet.Config). The stage remains a candidate until its review and explicit merge approval.
+For a directly reviewable diff, compare the [immutable baseline](https://github.com/infoconex/RecordSift/blob/3627a62260437db0bde83c5c7d3be56caee8af95/NuGet.Config) with [stage nuget.config](https://github.com/infoconex/RecordSift/blob/modernization/nuget-config/nuget.config). The stage remains a candidate until its review and explicit merge approval.
 
 ## Local and CI parity
 

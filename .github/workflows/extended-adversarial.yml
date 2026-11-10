@@ -48,7 +48,7 @@ jobs:
       - name: Restore pinned dependencies
         shell: pwsh
         run: |
-          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile nuget.config
           if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
       - name: Build net48 tests
         shell: pwsh

@@ -120,7 +120,7 @@ See [ADR 0016](decisions/0016-typed-domain-resource-messages.md) and [ADR 0020](
 To reproduce the current naming checks after restoring packages:
 
 ```powershell
-nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile nuget.config
 dotnet format style RecordSift.sln --no-restore --verify-no-changes --diagnostics IDE1006 --severity error --verbosity normal
 python scripts/validate_constant_names.py
 ```

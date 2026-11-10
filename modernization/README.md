@@ -6,6 +6,6 @@ This directory holds focused modernization use cases that can be reviewed indepe
 
 ## Stages
 
-- [NuGet.Config — explicitly control inherited disabled package sources](stages/nuget-config/README.md): a narrowly scoped, reversible configuration change supported by EXP-044
+- [nuget.config — explicitly control inherited disabled package sources](stages/nuget-config/README.md): a narrowly scoped, reversible configuration change supported by EXP-044
 
 Merge each approved stage into the case-study branch only after review. Do not promote these changes into `main` or a release without separate owner authorization.

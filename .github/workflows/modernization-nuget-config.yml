@@ -1,4 +1,4 @@
-name: Modernization case study - NuGet.Config source policy
+name: Modernization case study - nuget.config source policy
 on:
   push:
     branches:
