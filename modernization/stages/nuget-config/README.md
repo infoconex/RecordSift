@@ -47,9 +47,20 @@ Run artifacts are written under `TestResults/modernization-nuget-config` with `r
 
 A successful restore does not prove full deterministic builds, package provenance, active security audit contact, or policy enforcement outside the tested environment. Full product compatibility remains established by the existing app baseline, not this narrow stage check.
 
+## Restore negative and positive controls
+
+The stage script also tests an actual NuGet restore, rather than relying only on source listings. It uses a disposable `packages.config` containing RecordSift's existing NUnit 3.14.0 dependency, separate empty destination directories, and the NuGet CLI `-DirectDownload -NoHttpCache` options.
+
+| Control | Observed restore exit | Package installed | Result |
+| --- | ---: | --- | --- |
+| Parent disables nuget.org, child omits disabled-source clear | `1` | No | **PASS: restore rejected** |
+| Same source, child includes disabled-source clear | `0` | Yes | **PASS: restore succeeds** |
+
+These controls ran successfully in [GitHub Actions #42744343004](https://github.com/infoconex/RecordSift/actions/runs/42744343004), using [artifact #13730207481](https://github.com/infoconex/RecordSift/actions/runs/42744343004/artifacts/13730207481). The disposable fixture used no `-ConfigFile`, no override `-Source`, and a fresh package destination. The full output is preserved in `negative-restore-control.log` and `positive-restore-control.log`. These tests provide direct evidence for the tested NuGet CLI and environment; they do not establish behavior across every tooling version or corporate policy.
+
 ## Outcome
 
-**Verified in stage CI, pending independent PR review and merge authorization.** [Successful Windows workflow run #42740667647](https://github.com/infoconex/RecordSift/actions/runs/42740667647) at stage SHA `9fce71305ad46389995a189f0b1b073b6b23a821`; [full logs and JSON artifact #13729555944](https://github.com/infoconex/RecordSift/actions/runs/42740667647/artifacts/13729555944).
+**Verified in stage CI, including positive and negative restore controls; pending independent PR review and merge authorization.** [Successful Windows workflow run #42740667647](https://github.com/infoconex/RecordSift/actions/runs/42740667647) at stage SHA `9fce71305ad46389995a189f0b1b073b6b23a821`; [full logs and JSON artifact #13729555944](https://github.com/infoconex/RecordSift/actions/runs/42740667647/artifacts/13729555944).
 
 | Check | Observed result |
 | --- | --- |
@@ -57,6 +68,8 @@ A successful restore does not prove full deterministic builds, package provenanc
 | Negative control removes only disabled-source clear | `nuget.org [Disabled]` — **PASS** |
 | Reinstated checked-in config | `nuget.org [Enabled]` — **PASS** |
 | Ordinary restore without `-ConfigFile`, fresh package directory | Exit 0, effective sources match — **PASS** |
+
+The additional restore controls passed at [research-stage commit `27daf116f23415ea117257ed5789ee9ab9963517`](https://github.com/infoconex/RecordSift/commit/27daf116f23415ea117257ed5789ee9ab9963517).
 
 Recorded tool versions: .NET SDK `10.0.403`, NuGet CLI `7.9.0.83`, PowerShell `7.6.9`; Windows GitHub Actions `windows-2022`.
 
