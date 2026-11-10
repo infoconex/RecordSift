@@ -21,10 +21,6 @@ $configPath = Join-Path $repositoryRoot 'NuGet.Config'
 $configText = Get-Content -LiteralPath $configPath -Raw
 [xml]$configXml = $configText
 $sourceUrl = 'https://api.nuget.org/v3/index.json'
-if (-not $configXml.configuration.packageSources.clear) {
-    # Empty XML clear elements can appear as empty strings in PowerShell's XML adapter.
-    # Validate via XPath instead of truthiness.
-}
 foreach ($xpath in @(
     '/configuration/packageSources/clear',
     '/configuration/disabledPackageSources/clear',
@@ -89,8 +85,7 @@ try {
     $negativeConfig = [regex]::Replace(
         $configText,
         '(?s)\s*<disabledPackageSources>\s*<clear\s*/>\s*</disabledPackageSources>',
-        '',
-        1
+        ''
     )
     if ($negativeConfig -eq $configText) {
         throw 'Negative control could not remove disabledPackageSources from disposable configuration.'
