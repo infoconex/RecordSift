@@ -1,0 +1,33 @@
+name: Research NuGet.Config inheritance and ordinary restore
+on:
+  push:
+    branches:
+      - research/nuget-config-inheritance-20261109
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nuget-config-research:
+    name: NuGet source precedence, disabled sources, and ordinary restore
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout research branch
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Run isolated NuGet.Config inheritance and restore verification
+        shell: pwsh
+        run: |
+          & ./research/nuget-config/scripts/verify-inheritance.ps1 -OutputDirectory 'TestResults/nuget-config-inheritance' -CheckRestore
+          if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw "NuGet config research returned $LASTEXITCODE" }
+      - name: Upload evidence even after a failed check
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-config-inheritance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/nuget-config-inheritance/
+          if-no-files-found: warn
+          retention-days: 30
