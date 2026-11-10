@@ -104,6 +104,57 @@ try {
     Invoke-SourceProbe 'Negative: removing disabledPackageSources clear inherits disabled setting' $negativeConfig 'Disabled'
     Invoke-SourceProbe 'Restored: checked-in configuration enables nuget.org again' $configText 'Enabled'
 
+    # Restore negative/positive controls: a single existing RecordSift dependency
+    # in disposable packages.config, with separate empty installation directories.
+    # -DirectDownload and -NoHttpCache reduce cache interference.
+    $testPackageId = 'NUnit'
+    $testPackageVersion = '3.14.0'
+    $testManifest = Join-Path $childDirectory 'packages.config'
+    @'
+<?xml version="1.0" encoding="utf-8"?>
+<packages>
+  <package id="NUnit" version="3.14.0" targetFramework="net48" />
+</packages>
+'@ | Set-Content -LiteralPath $testManifest -Encoding utf8
+    $restoreControls = [System.Collections.Generic.List[object]]::new()
+
+    foreach ($scenario in @(
+        @{ label = 'Negative: inherited disabled nuget.org'; xml = $negativeConfig; expectSuccess = $false; destination = 'negative-restore-packages' },
+        @{ label = 'Positive: disabled source cleared'; xml = $configText; expectSuccess = $true; destination = 'positive-restore-packages' }
+    )) {
+        Set-Content -LiteralPath $childFile -Value $scenario.xml -Encoding utf8
+        $destination = Join-Path $temporaryRoot $scenario.destination
+        Push-Location -LiteralPath $childDirectory
+        try {
+            $commandOutput = @(& nuget restore .\packages.config -NonInteractive -PackagesDirectory $destination -DirectDownload -NoHttpCache -Verbosity detailed 2>&1 | ForEach-Object { "$_" })
+            $commandExit = $LASTEXITCODE
+        }
+        finally {
+            Pop-Location
+        }
+        $installed = Test-Path -LiteralPath (Join-Path $destination "$testPackageId.$testPackageVersion")
+        $success = $commandExit -eq 0 -and $installed
+        $passed = $success -eq $scenario.expectSuccess
+        $suffix = if ($scenario.expectSuccess) { 'positive' } else { 'negative' }
+        $commandOutput | Set-Content -LiteralPath (Join-Path $OutputDirectory "$suffix-restore-control.log") -Encoding utf8
+        Write-Host "=== $($scenario.label) ==="
+        Write-Host "NuGet restore exit=$commandExit; installed=$installed; test PASS=$passed"
+        $restoreControls.Add([pscustomobject]@{
+            scenario = $scenario.label
+            expected_success = $scenario.expectSuccess
+            actual_success = $success
+            restore_exit_code = $commandExit
+            package_installed = $installed
+            no_configfile_argument = $true
+            direct_download = $true
+            no_http_cache = $true
+            passed = $passed
+            log = "$suffix-restore-control.log"
+        })
+    }
+    # Ensure cleanup and downstream source checks see the original stage file.
+    Set-Content -LiteralPath $childFile -Value $configText -Encoding utf8
+
     $restore = $null
     if ($CheckRestore) {
         Push-Location -LiteralPath $repositoryRoot
@@ -141,9 +192,10 @@ try {
         nuget_cli = $nugetVersion
         powershell = "$($PSVersionTable.PSVersion)"
         scenarios = @($results)
+        restore_controls = @($restoreControls)
         normal_restore = $restore
     }
-    if (@($results | Where-Object { -not $_.passed }).Count -ne 0 -or ($CheckRestore -and -not $restore.passed)) {
+    if (@($results | Where-Object { -not $_.passed }).Count -ne 0 -or @($restoreControls | Where-Object { -not $_.passed }).Count -ne 0 -or ($CheckRestore -and -not $restore.passed)) {
         throw 'NuGet configuration stage verification failed; see the report and logs.'
     }
 }
