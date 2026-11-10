@@ -1,0 +1,60 @@
+{
+  "timestamp_utc": "2026-11-10T01:41:28.1736894Z",
+  "repository": "infoconex/RecordSift",
+  "commit": "d99246efa7109fe9f60adebea310d9a72ce4e19e",
+  "sdk_version": "10.0.403",
+  "nuget_cli": "NuGet Version: 7.9.0.83",
+  "powershell_version": "7.6.9",
+  "scenarios": [
+    {
+      "scenario": "A: clear both collections",
+      "pass": true,
+      "expected_nuget_status": "Enabled",
+      "observed_nuget_status": "Enabled",
+      "expected_test_feed_present": false,
+      "observed_test_feed_present": false,
+      "exit_code": 0,
+      "output": "Registered Sources:\r\n  1.  nuget.org [Enabled]\r\n      https://api.nuget.org/v3/index.json"
+    },
+    {
+      "scenario": "B: omit packageSources clear",
+      "pass": true,
+      "expected_nuget_status": "Enabled",
+      "observed_nuget_status": "Enabled",
+      "expected_test_feed_present": true,
+      "observed_test_feed_present": true,
+      "exit_code": 0,
+      "output": "Registered Sources:\r\n  1.  nuget.org [Enabled]\r\n      https://api.nuget.org/v3/index.json\r\n  2.  test-feed [Enabled]\r\n      C:\\NuGetTestFeed\r\n  3.  Microsoft Visual Studio Offline Packages [Enabled]\r\n      C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\"
+    },
+    {
+      "scenario": "C: omit entire disabledPackageSources section",
+      "pass": true,
+      "expected_nuget_status": "Disabled",
+      "observed_nuget_status": "Disabled",
+      "expected_test_feed_present": false,
+      "observed_test_feed_present": false,
+      "exit_code": 0,
+      "output": "Registered Sources:\r\n  1.  nuget.org [Disabled]\r\n      https://api.nuget.org/v3/index.json"
+    },
+    {
+      "scenario": "D: restore both clears",
+      "pass": true,
+      "expected_nuget_status": "Enabled",
+      "observed_nuget_status": "Enabled",
+      "expected_test_feed_present": false,
+      "observed_test_feed_present": false,
+      "exit_code": 0,
+      "output": "Registered Sources:\r\n  1.  nuget.org [Enabled]\r\n      https://api.nuget.org/v3/index.json"
+    }
+  ],
+  "normal_restore": {
+    "pass": true,
+    "source_list_exit_code": 0,
+    "restore_exit_code": 0,
+    "expected_source": "nuget.org [Enabled]",
+    "selected_config_argument": false,
+    "fresh_packages_directory": true,
+    "full_log": "record-sift-restore.log"
+  },
+  "unexpected_error": null
+}

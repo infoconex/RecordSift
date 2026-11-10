@@ -1,0 +1,38 @@
+Repository HEAD: d99246efa7109fe9f60adebea310d9a72ce4e19e
+OS: Microsoft Windows 10.0.20348
+PowerShell: 7.6.9
+dotnet SDK: 10.0.403
+NuGet CLI: NuGet Version: 7.9.0.83
+NuGet location: C:\ProgramData\Chocolatey\bin\nuget.exe
+Source checks: dotnet nuget list source (NO --configfile)
+=== A: clear both collections ===
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+RESULT: PASS; nuget.org=Enabled; test-feed-present=False; exit=0
+=== B: omit packageSources clear ===
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+  2.  test-feed [Enabled]
+      C:\NuGetTestFeed
+  3.  Microsoft Visual Studio Offline Packages [Enabled]
+      C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+RESULT: PASS; nuget.org=Enabled; test-feed-present=True; exit=0
+=== C: omit entire disabledPackageSources section ===
+Registered Sources:
+  1.  nuget.org [Disabled]
+      https://api.nuget.org/v3/index.json
+RESULT: PASS; nuget.org=Disabled; test-feed-present=False; exit=0
+=== D: restore both clears ===
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+RESULT: PASS; nuget.org=Enabled; test-feed-present=False; exit=0
+=== E: normal RecordSift restore WITHOUT -ConfigFile ===
+Effective source listing:
+Registered Sources:
+  1.  nuget.org [Enabled]
+      https://api.nuget.org/v3/index.json
+NuGet restore exit code: 0
+Restore full log saved: record-sift-restore.log
