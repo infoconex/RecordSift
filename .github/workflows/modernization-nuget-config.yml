@@ -1,0 +1,35 @@
+name: Modernization case study - nuget.config source policy
+on:
+  push:
+    branches:
+      - modernization/nuget-config
+  pull_request:
+    branches:
+      - modernization/case-study
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-nuget-configuration:
+    name: Verify NuGet source policy and normal restore
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact stage source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Run stage-specific local/CI verification script
+        shell: pwsh
+        run: |
+          & ./modernization/stages/nuget-config/scripts/verify.ps1 -CheckRestore
+      - name: Retain verification results and restore log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: modernization-nuget-config-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/modernization-nuget-config/
+          if-no-files-found: warn
+          retention-days: 30

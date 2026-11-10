@@ -35,7 +35,7 @@ jobs:
       - name: Restore packages.config dependencies
         shell: pwsh
         run: |
-          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile nuget.config
           if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
       - name: Build separate Domain, Application and Infrastructure projects with MSBuild
         shell: pwsh
@@ -396,7 +396,7 @@ jobs:
             }
           }
           New-Item -ItemType Directory -Force -Path TestResults | Out-Null
-          $lines = @(& nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config -Verbosity normal 2>&1)
+          $lines = @(& nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile nuget.config -Verbosity normal 2>&1)
           $exit = $LASTEXITCODE
           $lines | ForEach-Object { Write-Host "$_" }
           $lines | Set-Content TestResults/nuget-audit.log
