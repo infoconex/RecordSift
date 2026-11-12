@@ -445,6 +445,12 @@ jobs:
           if (-not $msbuild) { throw 'MSBuild not found.' }
           & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
           if ($LASTEXITCODE -ne 0) { throw "Coverage build failed: $LASTEXITCODE" }
+      - name: Test RecordSift coverage report generation and source safety
+        shell: pwsh
+        run: |
+          python --version
+          python -m unittest discover -s scripts -p 'test_render_coverage.py' -v
+          if ($LASTEXITCODE -ne 0) { throw "Coverage reporter tests failed: $LASTEXITCODE" }
       - name: Collect and validate coverage for all five production assemblies
         shell: pwsh
         run: |
