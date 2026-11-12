@@ -12,6 +12,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $root = Split-Path -Parent $PSScriptRoot
 $coverageDirectory = Join-Path $root 'TestResults/coverage'
 $reportDirectory = Join-Path $coverageDirectory 'report'
@@ -46,6 +47,19 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Coverage collection or NUnit execution failed: $LASTEXITCODE" }
     if (-not (Test-Path $coverageFile)) { throw "Coverage report was not created: $coverageFile" }
 
+    [xml]$tests = Get-Content (Join-Path $root 'TestResults/nunit-selected.xml') -Raw
+    $testCount = [int]$tests.'test-run'.total
+    $failedTests = [int]$tests.'test-run'.failed
+    $skippedTests = [int]$tests.'test-run'.skipped
+    $testAssemblies = @($tests.SelectNodes('//test-suite[@type="Assembly"]')).Count
+    if ($testCount -lt 1 -or $failedTests -ne 0 -or $testAssemblies -ne 5) {
+        throw "Invalid coverage NUnit run: total=$testCount failed=$failedTests assemblies=$testAssemblies."
+    }
+    if ($selectorArgs.Count -eq 0 -and ($testCount -lt 419 -or $skippedTests -ne 1)) {
+        throw "Full-suite coverage regression: total=$testCount skipped=$skippedTests; expected at least 419 and one intentional skip."
+    }
+    Write-Host "Coverage NUnit evidence: total=$testCount failed=$failedTests skipped=$skippedTests assemblies=$testAssemblies."
+
     # An empty or incomplete collector run must not appear successful.
     [xml]$coverage = Get-Content $coverageFile -Raw
     $expected = @(
@@ -76,8 +90,26 @@ try {
     foreach ($package in $packages) {
         $classes = @($package.SelectNodes('./classes/class'))
         if ($classes.Count -eq 0) { throw "Coverage package '$($package.name)' has no source classes." }
-        $source = @($classes | Where-Object { $_.GetAttribute('filename') -match '(^|[/\\])src[/\\].*\.cs$' })
+        $source = @($classes | Where-Object { $_.GetAttribute('filename') -match '(^|[/\\])src[/\\].*\.cs        Write-Host ("Coverage {0}: line={1:p2}, branch={2:p2}, classes={3}" -f $package.name, [double]$package.'line-rate', [double]$package.'branch-rate', $classes.Count)
+    }
+
+    & dotnet tool run reportgenerator -- "-reports:$coverageFile" "-targetdir:$reportDirectory" '-reporttypes:Html;Cobertura;MarkdownSummaryGithub'
+    if ($LASTEXITCODE -ne 0) { throw "ReportGenerator failed: $LASTEXITCODE" }
+    if (-not (Test-Path (Join-Path $reportDirectory 'index.html'))) { throw 'HTML coverage report is missing.' }
+    Write-Host "Overall: line=$($coverage.coverage.'line-rate'), branch=$($coverage.coverage.'branch-rate'); report: $reportDirectory"
+} finally {
+    Pop-Location
+}
+ })
         if ($source.Count -eq 0) { throw "Coverage package '$($package.name)' has no RecordSift source file paths." }
+        $existingFiles = @($source | Where-Object {
+            $file = $_.GetAttribute('filename').Replace('/', [IO.Path]::DirectorySeparatorChar)
+            $resolved = if ([IO.Path]::IsPathRooted($file)) { $file } else { Join-Path $root $file }
+            Test-Path -LiteralPath $resolved -PathType Leaf
+        })
+        if ($existingFiles.Count -eq 0) {
+            throw "Coverage package '$($package.name)' has no matching source files on disk; check PDB and source mapping."
+        }
         Write-Host ("Coverage {0}: line={1:p2}, branch={2:p2}, classes={3}" -f $package.name, [double]$package.'line-rate', [double]$package.'branch-rate', $classes.Count)
     }
 
