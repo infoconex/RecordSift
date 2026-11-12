@@ -115,6 +115,10 @@ With Release test assemblies already built on Windows and NuGet packages restore
 
 Selectors combine with logical AND; `-Where` accepts NUnit's native expression language for complex cases. A selected run with zero tests fails. The Windows GitHub Actions `workflow_dispatch` input `test_filter` provides optional manual targeted execution. **Pull requests and pushes ignore filters, always run all five full suites, and retain the minimum-test-count gate.** NUnit XML evidence is uploaded in either mode; targeted XML is labeled `nunit-targeted.xml`.
 
+## Code coverage
+
+The Windows build measures production line and branch coverage using Microsoft's pinned `dotnet-coverage` tool, the existing five-assembly NUnit runner and a separate CI job. Reports are retained as HTML/Cobertura artifacts and GitHub Actions summaries; see [code coverage](code-coverage.md) for local reproduction, measured baseline, scope, exclusions and limitations. Coverage is diagnostic and complements requirements and scenario evidence. Do not set a percentage threshold or treat coverage as proof of assertion quality without separate review.
+
 ## Pre-merge quality gate
 
 - A PR must reference one primary issue and exact requirement/scenario IDs.
