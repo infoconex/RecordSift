@@ -68,8 +68,8 @@ The XLSX reader independently checks ZIP entry count (512 maximum), both declare
 ## Development workflow
 
 - `main` contains reviewed and verified source promotions; only tagged/published artifacts represent the publicly distributed 0.1.0 package.
-- `release/0.2` is the current development integration branch; `release/0.1` preserves the historical 0.1 integration history.
-- Create a short-lived `issue/<number>-<slug>` branch from `release/0.2`, then review and squash merge the issue PR into `release/0.2`.
-- An owner-approved maintenance branch, such as `release/0.1.1`, may start from current `main` for a scoped fix; promote it through a separately reviewed PR to `main` without automatically creating or publishing a NuGet release.
+- As of November 11, 2026, the active branches are `main` and the isolated `modernization/case-study` branch. The historical `release/0.1` and `release/0.2` branches were retired; their previous work remains in Git history and release artifacts.
+- Start each authorized change in a short-lived `issue/<number>-<slug>` branch from current `main`. Open a PR targeting `main`, verify required CI and reviews, and squash merge only with the required owner approval. Delete the issue branch after the merge when safe.
+- `modernization/case-study` is not the default integration target for ordinary fixes. Create a new release or maintenance branch only when its scope and base are separately approved; no branch creation, source merge, tag, release, or NuGet publication is implied by this guidance.
 - Scenarios remain Planned until executable acceptance evidence exists in [traceability](docs/testing/traceability.md).
 - Future framework and package modernization must establish separate compatibility evidence before being declared complete.
