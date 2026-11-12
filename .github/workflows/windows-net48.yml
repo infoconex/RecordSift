@@ -456,14 +456,7 @@ jobs:
         run: |
           & .\scripts\run_coverage.ps1
           if ($LASTEXITCODE -ne 0) { throw "Coverage runner failed: $LASTEXITCODE" }
-      - name: Publish coverage summary
-        if: success()
-        shell: pwsh
-        run: |
-          $summary = 'TestResults/coverage/report/SummaryGithub.md'
-          if (-not (Test-Path $summary)) { throw 'Coverage summary was not generated.' }
-          Get-Content $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
-      - name: Upload coverage evidence
+      - name: Upload complete coverage evidence (offline ZIP)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -473,3 +466,37 @@ jobs:
             TestResults/nunit-selected.xml
           if-no-files-found: warn
           retention-days: 14
+      - name: Prepare complete browser-viewable HTML report
+        if: success()
+        shell: pwsh
+        run: |
+          $source = 'TestResults/coverage/report/view.html'
+          if (-not (Test-Path $source)) { throw 'Self-contained HTML report not generated.' }
+          Copy-Item $source 'TestResults/coverage/report/RecordSift-Coverage.html'
+      - name: Upload HTML report for direct browser viewing
+        id: html_report
+        if: success()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7 (non-zipped artifacts)
+        with:
+          path: TestResults/coverage/report/RecordSift-Coverage.html
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish interactive coverage summary
+        if: success()
+        shell: pwsh
+        run: |
+          $summary = 'TestResults/coverage/report/SummaryGithub.md'
+          if (-not (Test-Path $summary)) { throw 'Coverage summary was not generated.' }
+          Get-Content $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          $htmlUrl = '${{ steps.html_report.outputs.artifact-url }}'
+          if ([string]::IsNullOrWhiteSpace($htmlUrl)) { throw 'Browser HTML artifact URL is missing.' }
+          $artifactList = "https://github.com/$($env:GITHUB_REPOSITORY)/actions/runs/$($env:GITHUB_RUN_ID)#artifacts"
+          @"
+
+          ### Open the complete report
+
+          **[View the full interactive HTML coverage report in your browser]($htmlUrl)**
+
+          [Download the complete offline coverage ZIP]($artifactList) to browse separate source pages or inspect raw Cobertura XML. GitHub retains these artifacts for 14 days.
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
