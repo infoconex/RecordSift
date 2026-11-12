@@ -80,13 +80,14 @@ class CoverageReportTests(unittest.TestCase):
     def test_summary_links_to_repository_source_when_running_in_github(self):
         with patch.dict("os.environ", {
             "GITHUB_REPOSITORY": "infoconex/RecordSift",
-            "GITHUB_SHA": "0" * 40
+            "GITHUB_SHA": "0" * 40,
+            "COVERAGE_SOURCE_SHA": "1" * 40
         }):
             render(self.coverage, self.output, self.root)
         summary = (self.output / "SummaryGithub.md").read_text(encoding="utf-8")
         self.assertIn(
             "https://github.com/infoconex/RecordSift/blob/"
-            + "0" * 40 + "/src/Demo/Foo.cs#L2",
+            + "1" * 40 + "/src/Demo/Foo.cs#L2",
             summary,
         )
 
