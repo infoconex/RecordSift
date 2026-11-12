@@ -35,8 +35,9 @@ Generated files (all ignored through the existing `TestResults/` rule):
 - `TestResults/nunit-selected.xml`: NUnit execution evidence.
 - `TestResults/coverage/coverage.cobertura.xml`: original collector result, suitable for CI integrations.
 - `TestResults/coverage/report/index.html`: offline browsable assembly, class and method coverage with search.
+- `TestResults/coverage/report/view.html`: single-file, self-contained coverage report suitable for direct GitHub viewing.
 - `TestResults/coverage/report/files/*.html`: highlighted source views with direct links to methods and branch-condition labels.
-- `TestResults/coverage/report/SummaryGithub.md`: GitHub Actions summary with line, branch and method metrics and unexecuted methods.
+- `TestResults/coverage/report/SummaryGithub.md`: GitHub Actions summary with line, branch and method metrics, a compact source-linked table of unexecuted methods, and a direct HTML artifact link appended by the workflow.
 
 The reporter's tests are in [`scripts/test_render_coverage.py`](../../scripts/test_render_coverage.py), executed before coverage collection in Windows CI. To test locally without rebuilding NUnit assemblies, run `python -m unittest discover -s scripts -p 'test_render_coverage.py' -v`. To regenerate the report from an existing collector output, run:
 
@@ -44,7 +45,7 @@ The reporter's tests are in [`scripts/test_render_coverage.py`](../../scripts/te
 python scripts/render_coverage.py --coverage TestResults/coverage/coverage.cobertura.xml --output TestResults/coverage/report --source-root .
 ```
 
-The output is static HTML with only local relative links: download the CI artifact ZIP, extract it, then open `coverage/report/index.html`. GitHub Actions displays Markdown directly but does not automatically host the report as a website.
+The reporter produces two HTML experiences: **`coverage/report/view.html`** is a complete standalone file embedding all 46 source views, CSS and JavaScript, while **`coverage/report/index.html`** links to individual files under `coverage/report/files/`. The workflow uploads a second copy of the standalone view as a **non-zipped HTML artifact** using pinned `actions/upload-artifact` v7 (`archive: false`). GitHub Actions provides its `artifact-url` to the job summary, so the full report can open directly in the browser without GitHub Pages. The multi-file ZIP remains available for offline inspection, including the raw Cobertura XML. Artifacts expire after 14 days.
 
 The `windows-net48.yml` workflow runs a separate coverage job on Windows, displays the report summary in GitHub Actions and uploads the full report and NUnit XML as a downloadable artifact. Collector or test failures, absent production assemblies, missing source mapping, and invalid coverage output fail that job. **Coverage percentage alone does not fail CI**.
 
@@ -89,6 +90,10 @@ This evaluation was conducted on the unmerged [PR #272](https://github.com/infoc
 - **IDE import is documented, not yet executed.** Microsoft documents importing `.coverage` in the Visual Studio Code Coverage Results window and confirms code coverage is available in Visual Studio 2026 Community/Professional. This project evaluation did **not** verify an actual IDE import or whether the local user's installed Visual Studio is 2026. Source-level local IDE experience remains an optional manual follow-up.
 - **HTML reporting remains a separate concern.** Microsoft's `dotnet-coverage` produces coverage formats and conversion but does not offer a standalone HTML report equivalent to ReportGenerator. ReportGenerator's free edition still provides source-highlighted HTML line/branch coverage; its method-summary presentation is sponsor-only. We have **not** established a Microsoft-only replacement for equivalent standalone HTML.
 - **Implemented follow-up:** We retained direct Cobertura collection and added a dependency-free RecordSift HTML/Markdown reporter, including per-method details. This avoids paid method-display licensing and does not change the coverage collection, build, API or NuGet outputs. No percentage threshold has been imposed.
+
+## Comparison with the original ReportGenerator free edition
+
+The original ReportGenerator artifact was retained as evidence in [Windows run #43262630230](https://github.com/infoconex/RecordSift/actions/runs/43262630230). Its HTML offered multi-level class navigation, line/branch summaries, syntax-oriented source views, and a mature layout, but labeled method coverage as sponsor-only. Our owned reporter preserves measured assembly/class line and branch metrics, source highlighting, source-line branch-condition labels, and the machine-readable Cobertura input; it adds free method-level execution details, compact lists of unexecuted methods, GitHub source permalinks, and a direct browser-viewable HTML artifact. It does **not** reproduce every ReportGenerator capability, such as historical trends, plugins, detailed chart options, or the original presentation format. These omissions are deliberate for a smaller maintained reporting surface. Raw measurement totals are preserved; no percentages are reinterpreted as quality gates.
 
 ## Tool references
 
