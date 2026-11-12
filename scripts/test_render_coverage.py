@@ -47,6 +47,8 @@ class CoverageReportTests(unittest.TestCase):
         self.assertIn("**Methods executed** | **50.00%** | 1 / 2", summary)
         self.assertIn("| Demo | Foo | Miss (0 parameters) |", summary)
         self.assertIn("Foo.cs:2", summary)
+        self.assertIn("## Class coverage", summary)
+        self.assertIn("<details><summary>Demo — 1 class</summary>", summary)
         index = (self.output / "index.html").read_text(encoding="utf-8")
         self.assertIn("files/file-001.html", index)
         self.assertIn("—", index)  # No method branch data; do not advertise 100%.
