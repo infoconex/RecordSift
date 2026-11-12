@@ -28,7 +28,7 @@ msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release "/p:Platform=Any C
 .\scripts\run_coverage.ps1
 ```
 
-The script restores pinned .NET tools, runs [`scripts/run_tests.ps1`](../../scripts/run_tests.ps1) under coverage collection, verifies full NUnit execution and the five production coverage packages, then generates reports. It accepts the same NUnit selectors (`-Level`, `-Verification`, `-Requirement`, `-Scenario`, and `-Where`) for targeted local investigation. Targeted coverage is **not** comparable with a full-suite baseline; use no selectors for CI-equivalent measurement.
+The script restores pinned .NET tools, runs [`scripts/run_tests.ps1`](../../scripts/run_tests.ps1) under coverage collection, verifies full NUnit execution and the five production coverage packages, then generates reports. Coverage collection always runs the **full five-assembly suite** so measurements are comparable. For targeted test execution without coverage, use `scripts/run_tests.ps1` with its existing `-Level`, `-Verification`, `-Requirement`, `-Scenario`, and `-Where` selectors. Targeted test execution does not replace the full coverage run.
 
 Generated files (all ignored through the existing `TestResults/` rule):
 
