@@ -137,7 +137,7 @@ def render(coverage_file, output_directory, source_root):
             class_methods = []
             for method in cls.findall("./methods/method"):
                 lines = method.findall("./lines/line")
-                item = dict(name=method.get("name", ""), signature=method.get("signature", ""),
+                item = dict(assembly=package.get("name", ""), name=method.get("name", ""), signature=method.get("signature", ""),
                             class_name=cls.get("name", ""), line=float(method.get("line-rate", "0")),
                             branch=(float(method.get("branch-rate", "0")) if any(
                                 line.get("branch", "").lower() == "true" for line in lines) else None),
@@ -263,32 +263,91 @@ def render(coverage_file, output_directory, source_root):
         "d.hidden=!hit;if(q&&hit)d.open=true;if(!q)d.open=false})});</script>"
     )
     (out / "index.html").write_text(html_document("RecordSift code coverage", "".join(body)), encoding="utf-8")
+    embedded_sources = []
     for file in files.values():
         lines = file["source"].read_text(encoding="utf-8-sig").splitlines()
-        page = ["<p><a href='../index.html'>← Coverage overview</a></p>",
-                f"<h1>{escape(file['relative'])}</h1>",
-                "<h2>Methods</h2><table><tr><th>Method</th><th>Executed</th>"
-                "<th class='num'>Lines</th><th class='num'>Branches</th></tr>"]
-        for m in file["methods"]:
-            label = escape(m["class_name"] + "." + m["name"] + m["signature"])
-            status = "<span class='good'>Yes</span>" if m["executed"] else "<span class='bad'>No</span>"
-            page.append(f"<tr><td><a href='#L{m['first']}'>{label}</a></td><td>{status}</td>"
-                        f"<td class='num'>{percentage(m['line'])}</td>"
-                        f"<td class='num'>{percentage(m['branch'])}</td></tr>")
-        page.append("</table><h2>Source coverage</h2><p class='muted'>Green: hit; red: unexecuted; "
-                    "unshaded: not instrumented. Branch labels show the collector's condition coverage.</p>"
-                    "<table class='source'>")
+        page = [
+            "<div class='topbar'><a class='brand' href='../index.html'>"
+            "<span class='brand-mark'>RS</span>RecordSift</a>"
+            "<span class='top-meta'>Source coverage</span></div>",
+            "<header class='hero source-header'><div class='eyebrow'>Source file</div>"
+            f"<h1>{escape(file['relative'])}</h1>"
+            "<p>Coverage at a glance. Select a method to navigate to its first measured line.</p>"
+            "</header><div class='panel'>",
+            f"<div class='section-heading'><h2>Methods in this file</h2>"
+            f"<span class='muted'>{len(file['methods'])} instrumented methods</span></div>",
+            "<table><thead><tr><th>Method</th><th>Executed</th>"
+            "<th class='num'>Lines</th><th class='num'>Branches</th></tr></thead><tbody>",
+        ]
+        for method in file["methods"]:
+            label = escape(compact_signature(method))
+            status = "<span class='chip good'>Yes</span>" if method["executed"] else "<span class='chip bad'>No</span>"
+            page.append(
+                f"<tr><td><a class='method-main' href='#L{method['first']}'>{label}</a>"
+                "<details class='signature'><summary>Full signature</summary><code>" +
+                escape(method["class_name"] + "." + method["name"] + method["signature"]) +
+                "</code></details></td>"
+                f"<td>{status}</td><td class='num'>{percentage(method['line'])}</td>"
+                f"<td class='num'>{percentage(method['branch'])}</td></tr>"
+            )
+        page.append(
+            "</tbody></table></div><div class='section-heading'><h2>Source lines</h2>"
+            "<span class='muted'>Line hits and branch decisions</span></div>"
+            "<p class='muted small'>Green: covered · red: not executed · amber edge: partially covered branch"
+            " · unshaded: no instrumentation. Branch percentages refer to decisions on that line.</p>"
+            "<div class='source-wrap'><table class='source'><tbody>"
+        )
         for number, source_line in enumerate(lines, 1):
             info = file["lines"].get(number)
             status = "" if info is None else "hit" if info["hits"] else "miss"
             css = "" if not status else "covered" if status == "hit" else "uncovered"
             branch = "" if info is None or not info["branch"] else " · " + info["branch"]
-            page.append(f"<tr id='L{number}' class='{css}'><td class='ln'><a href='#L{number}'>{number}</a></td>"
-                        f"<td class='hits'>{escape(status + branch)}</td>"
-                        f"<td class='code'><code>{escape(source_line)}</code></td></tr>")
-        page.append("</table>")
+            if branch:
+                match = re.search(r"(\d+(?:\.\d+)?)%", branch)
+                if match and float(match.group(1)) < 100:
+                    css += " partial"
+            page.append(
+                f"<tr id='L{number}' class='{css}'><td class='ln'><a href='#L{number}'>{number}</a></td>"
+                f"<td class='hits'>{escape(status + branch)}</td>"
+                f"<td class='code'><code>{escape(source_line)}</code></td></tr>"
+            )
+        page.append("</tbody></table></div>")
+        source_markup = "".join(page)
         (out / "files" / f"{file['id']}.html").write_text(
-            html_document(file["relative"] + " | coverage", "".join(page)), encoding="utf-8")
+            html_document(file["relative"] + " | coverage", source_markup), encoding="utf-8"
+        )
+        embedded_markup = source_markup.replace("href='../index.html'", "href='#top'")
+        embedded_markup = re.sub(
+            r"(href='#|id=')L(\d+)'",
+            lambda match: match.group(1) + file["id"] + "-L" + match.group(2) + "'",
+            embedded_markup,
+        )
+        embedded_sources.append(
+            f"<section class='source-file' id='source-{file['id']}'>" +
+            embedded_markup + "</section>"
+        )
+    # GitHub Actions v7 supports displaying a non-zipped, single HTML file in-browser.
+    # All CSS, JS and source pages are embedded; do not rely on relative file links.
+    standalone = "".join(body)
+    standalone = re.sub(
+        r"files/(file-\d+)\.html#L(\d+)",
+        lambda match: "#" + match.group(1) + "-L" + match.group(2),
+        standalone,
+    )
+    standalone = re.sub(
+        r"files/(file-\d+)\.html",
+        lambda match: "#source-" + match.group(1),
+        standalone,
+    )
+    standalone += (
+        "<div class='section-heading' id='source-files'><h2>Source explorer</h2>"
+        f"<span class='muted'>{len(files)} files · bundled for browser viewing</span></div>"
+        + "".join(embedded_sources)
+    )
+    (out / "view.html").write_text(
+        html_document("RecordSift coverage | Interactive report", standalone),
+        encoding="utf-8",
+    )
     summary = ["# RecordSift code coverage", "", "| Metric | Coverage | Covered / valid |",
                "| --- | ---: | ---: |"]
     for name, covered, valid in totals:
