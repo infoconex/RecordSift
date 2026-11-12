@@ -378,6 +378,29 @@ def render(coverage_file, output_directory, source_root):
         )
     summary += [
         "",
+        "## Class coverage",
+        "",
+        "Expand an assembly to inspect its class-level metrics, as in the previous report.",
+        "",
+    ]
+    for package in packages:
+        short_assembly = package["name"].replace("RecordSift.", "")
+        summary += [
+            f"<details><summary>{short_assembly} — {len(package['classes'])} classes</summary>",
+            "",
+            "| Class | Lines | Branches | Methods executed |",
+            "| :--- | ---: | ---: | ---: |",
+        ]
+        for cls in package["classes"]:
+            cls_methods = cls["methods"]
+            summary.append(
+                f"| {cls['name'].replace('|', chr(92) + '|')} "
+                f"| {percentage(cls['line'])} | {percentage(cls['branch'])} "
+                f"| {sum(m['executed'] for m in cls_methods)} / {len(cls_methods)} |"
+            )
+        summary += ["", "</details>", ""]
+    summary += [
+        "",
         f"## Methods to review ({len(missed)} not executed)",
         "",
         "The names below are **method signatures, not call stacks**. "
