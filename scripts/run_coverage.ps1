@@ -1,15 +1,7 @@
 # Runs the existing five-assembly NUnit test script under pinned Microsoft code coverage tooling.
 # Prerequisites: restored NuGet packages, built Release test assemblies, .NET SDK 8+, PowerShell 7.
 [CmdletBinding()]
-param(
-    [ValidateSet('All', 'Unit', 'Component', 'Integration')]
-    [string]$Level = 'All',
-    [ValidateSet('', 'Acceptance', 'Contract', 'Regression', 'Characterization')]
-    [string]$Verification = '',
-    [string]$Requirement = '',
-    [string]$Scenario = '',
-    [string]$Where = ''
-)
+param()
 
 $ErrorActionPreference = 'Stop'
 $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
@@ -32,17 +24,9 @@ try {
     & dotnet tool run dotnet-coverage -- --version
     if ($LASTEXITCODE -ne 0) { throw "dotnet-coverage version check failed: $LASTEXITCODE" }
 
-    # Quoting a command string follows Microsoft's documented dotnet-coverage collect syntax.
-    # run_tests.ps1 remains authoritative for selection, missing assemblies and NUnit failures.
-    $selectorArgs = @()
-    if ($Level -ne 'All') { $selectorArgs += @('-Level', $Level) }
-    if ($Verification) { $selectorArgs += @('-Verification', $Verification) }
-    if ($Requirement) { $selectorArgs += @('-Requirement', $Requirement) }
-    if ($Scenario) { $selectorArgs += @('-Scenario', $Scenario) }
-    if ($Where) { $selectorArgs += @('-Where', ('"' + $Where.Replace('"', '\"') + '"')) }
-
+    # Keep the full test suite authoritative: targeted tests remain available through run_tests.ps1.
+    # A single command string follows Microsoft's documented dotnet-coverage collect syntax.
     $testCommand = 'pwsh -NoProfile -File "' + $testScript + '"'
-    if ($selectorArgs.Count -gt 0) { $testCommand += ' ' + ($selectorArgs -join ' ') }
     & dotnet tool run dotnet-coverage -- collect $testCommand --settings $settings --output $coverageFile --output-format cobertura
     if ($LASTEXITCODE -ne 0) { throw "Coverage collection or NUnit execution failed: $LASTEXITCODE" }
     if (-not (Test-Path $coverageFile)) { throw "Coverage report was not created: $coverageFile" }
@@ -55,7 +39,7 @@ try {
     if ($testCount -lt 1 -or $failedTests -ne 0 -or $testAssemblies -ne 5) {
         throw "Invalid coverage NUnit run: total=$testCount failed=$failedTests assemblies=$testAssemblies."
     }
-    if ($selectorArgs.Count -eq 0 -and ($testCount -lt 419 -or $skippedTests -ne 1)) {
+    if ($testCount -lt 419 -or $skippedTests -ne 1) {
         throw "Full-suite coverage regression: total=$testCount skipped=$skippedTests; expected at least 419 and one intentional skip."
     }
     Write-Host "Coverage NUnit evidence: total=$testCount failed=$failedTests skipped=$skippedTests assemblies=$testAssemblies."
