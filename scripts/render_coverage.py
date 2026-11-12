@@ -161,46 +161,107 @@ def render(coverage_file, output_directory, source_root):
               ("Methods executed", executed, len(methods))]
     out = output_directory.resolve()
     (out / "files").mkdir(parents=True, exist_ok=True)
-    body = ["<h1>RecordSift code coverage</h1>",
-            "<p class='muted'>Full NUnit suite · Microsoft dotnet-coverage · Cobertura results</p>",
-            "<div class='cards'>"]
-    for name, covered, valid in totals:
-        body.append(f"<div class='card'><small>{escape(name)}</small><strong>{percentage(covered / valid)}</strong>"
-                    f"<small>{covered:,} / {valid:,}</small></div>")
-    body.append("</div><p class='muted'>Method execution means at least one instrumented line was hit, "
-                "not that all statements or decisions were covered.</p>")
-    body.append("<h2>Assemblies</h2><table><tr><th>Assembly</th><th class='num'>Lines</th>"
-                "<th class='num'>Branches</th><th class='num'>Methods run</th></tr>")
+    missed = [method for method in methods if not method["executed"]]
+    body = [
+        "<div id='top' class='topbar'><div class='brand'><span class='brand-mark'>RS</span>RecordSift"
+        "</div><span class='top-meta'>Engineering quality / Coverage</span></div>",
+        "<header class='hero'><div class='eyebrow'>Automated testing · .NET Framework 4.8</div>"
+        "<h1>Coverage overview</h1><p>All five production assemblies, measured against the full NUnit suite."
+        " Explore uncovered paths by assembly, class, method, and source line.</p></header>",
+        "<div class='cards'>"
+    ]
+    for label, covered, valid in totals:
+        rate = covered / valid
+        body.append(
+            f"<div class='card'><small>{escape(label)}</small><strong>{percentage(rate)}</strong>"
+            f"<small>{covered:,} of {valid:,} measured</small>"
+            f"<div class='card-meter'><div class='card-fill' style='width:{rate * 100:.2f}%'></div></div></div>"
+        )
+    body.append("</div><p class='note'>Coverage indicates which code executed, not whether assertions "
+                "fully verify behavior. No minimum percentage is enforced.</p>")
+    body.append(
+        "<div class='section-heading'><h2>Assembly coverage</h2>"
+        f"<span class='muted'>{len(packages)} production assemblies</span></div>"
+        "<div class='panel'><table><thead><tr><th>Assembly</th><th class='num'>Lines</th>"
+        "<th class='num'>Branches</th><th class='num'>Methods executed</th>"
+        "</tr></thead><tbody>"
+    )
     for index, package in enumerate(packages):
-        pm = [m for cls in package["classes"] for m in cls["methods"]]
-        body.append(f"<tr><td><a href='#assembly-{index}'>{escape(package['name'])}</a></td>"
-                    f"<td class='num'>{percentage(package['line'])}</td>"
-                    f"<td class='num'>{percentage(package['branch'])}</td>"
-                    f"<td class='num'>{sum(m['executed'] for m in pm)} / {len(pm)}</td></tr>")
-    body.append("</table><h2>Classes and methods</h2><input id='filter' placeholder='Search classes and methods' "
-                "aria-label='Filter classes and methods'>")
+        package_methods = [m for cls in package["classes"] for m in cls["methods"]]
+        body.append(
+            f"<tr><td><a href='#assembly-{index}'>{escape(package['name'])}</a></td>"
+            f"<td class='num'>{percentage(package['line'])}</td>"
+            f"<td class='num'>{percentage(package['branch'])}</td>"
+            f"<td class='num'>{sum(m['executed'] for m in package_methods)} / {len(package_methods)}</td></tr>"
+        )
+    body.append("</tbody></table></div>")
+    body.append(
+        "<div class='section-heading' id='unexecuted'><h2>Methods not executed</h2>"
+        f"<span class='chip bad'>{len(missed)} to review</span></div>"
+        "<div class='panel'><p class='panel-intro'>These methods had no instrumented lines executed. "
+        "They are not stack traces. Open the source or expand a signature to investigate.</p>"
+    )
+    if missed:
+        body.append("<table><thead><tr><th>Assembly / type</th><th>Method</th>"
+                    "<th>Source</th></tr></thead><tbody>")
+        for method in missed:
+            short_assembly = method["assembly"].replace("RecordSift.", "")
+            body.append(
+                "<tr><td><span class='method-main'>" + escape(short_assembly) +
+                "</span><span class='method-type'>" + escape(method["class_name"].rsplit(".", 1)[-1]) +
+                "</span></td><td><span class='method-main'>" + escape(compact_signature(method)) +
+                "</span><details class='signature'><summary>Full signature</summary><code>" +
+                escape(method["name"] + method["signature"]) + "</code></details></td>"
+                f"<td><a class='subtle-link' href='files/{method['file']['id']}.html#L{method['first']}'>"
+                f"{escape(method['file']['relative'].rsplit('/', 1)[-1])}:{method['first']}</a></td></tr>"
+            )
+        body.append("</tbody></table>")
+    else:
+        body.append("<p><span class='chip good'>All measured methods were executed.</span></p>")
+    body.append("</div>")
+    body.append(
+        "<div class='section-heading'><h2>Explore classes and methods</h2>"
+        "<span class='muted'>Expand a class to inspect methods</span></div>"
+        "<input class='search' id='filter' placeholder='Search by class, namespace, or method' "
+        "aria-label='Filter classes and methods'>"
+    )
     for index, package in enumerate(packages):
-        body.append(f"<section id='assembly-{index}'><h3>{escape(package['name'])}</h3>")
+        body.append(
+            f"<section id='assembly-{index}'><div class='section-heading'><h2>{escape(package['name'])}</h2>"
+            f"<span class='muted'>{len(package['classes'])} classes</span></div>"
+        )
         for cls in package["classes"]:
-            body.append(f"<details class='class'><summary>{escape(cls['name'])} · "
-                        f"{percentage(cls['line'])} lines · {percentage(cls['branch'])} branches "
-                        f"· {len(cls['methods'])} methods</summary>"
-                        f"<p><a href='files/{cls['file']['id']}.html'>View highlighted source</a></p>"
-                        "<table><tr><th>Method</th><th>Executed</th><th class='num'>Lines</th>"
-                        "<th class='num'>Branches</th></tr>")
-            for m in cls["methods"]:
-                status = "<span class='good'>Yes</span>" if m["executed"] else "<span class='bad'>No</span>"
-                body.append(f"<tr><td><a href='files/{m['file']['id']}.html#L{m['first']}'>"
-                            f"{escape(m['name'] + m['signature'])}</a></td><td>{status}</td>"
-                            f"<td class='num'>{percentage(m['line'])}</td>"
-                            f"<td class='num'>{percentage(m['branch'])}</td></tr>")
-            body.append("</table></details>")
+            cls_name = escape(cls["name"])
+            body.append(
+                "<details class='class'><summary><span>" + cls_name + "</span>"
+                "<span class='summary-metrics'>" + percentage(cls["line"]) + " lines · " +
+                percentage(cls["branch"]) + " branches · " +
+                str(len(cls["methods"])) + " methods</span></summary><div class='class-content'>"
+                f"<a class='subtle-link' href='files/{cls['file']['id']}.html'>View highlighted source</a>"
+                "<table><thead><tr><th>Method</th><th>Executed</th>"
+                "<th class='num'>Lines</th><th class='num'>Branches</th></tr></thead><tbody>"
+            )
+            for method in cls["methods"]:
+                status = "<span class='chip good'>Yes</span>" if method["executed"] else "<span class='chip bad'>No</span>"
+                body.append(
+                    f"<tr><td><a class='method-main' href='files/{method['file']['id']}.html#L{method['first']}'>"
+                    f"{escape(compact_signature(method))}</a>"
+                    "<details class='signature'><summary>Full signature</summary><code>" +
+                    escape(method["name"] + method["signature"]) +
+                    "</code></details></td>"
+                    f"<td>{status}</td><td class='num'>{percentage(method['line'])}</td>"
+                    f"<td class='num'>{percentage(method['branch'])}</td></tr>"
+                )
+            body.append("</tbody></table></div></details>")
         body.append("</section>")
-    body.append("<p class='muted'>Coverage is diagnostic, not a percentage quality gate.</p>"
-                "<script>document.getElementById('filter').addEventListener('input',e=>{"
-                "const q=e.target.value.toLowerCase().trim();"
-                "document.querySelectorAll('details.class').forEach(d=>{const found=d.textContent.toLowerCase().includes(q);"
-                "d.hidden=!found;d.open=Boolean(q)&&found})});</script>")
+    body.append(
+        "<p class='note'>Method execution requires at least one covered line; full line or branch coverage "
+        "is a different metric. The report is generated entirely from the checked-out source and Cobertura XML.</p>"
+        "<script>const input=document.getElementById('filter');"
+        "input.addEventListener('input',()=>{const q=input.value.toLowerCase().trim();"
+        "document.querySelectorAll('details.class').forEach(d=>{const hit=d.textContent.toLowerCase().includes(q);"
+        "d.hidden=!hit;if(q&&hit)d.open=true;if(!q)d.open=false})});</script>"
+    )
     (out / "index.html").write_text(html_document("RecordSift code coverage", "".join(body)), encoding="utf-8")
     for file in files.values():
         lines = file["source"].read_text(encoding="utf-8-sig").splitlines()
