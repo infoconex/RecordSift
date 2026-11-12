@@ -8,24 +8,26 @@ import xml.etree.ElementTree as ET
 
 STYLE = """
 <style>
-:root{color-scheme:light dark;--line:#d0d7de;--good:#1a7f37;--bad:#cf222e;--muted:#57606a;--link:#0969da}
-@media(prefers-color-scheme:dark){:root{--line:#30363d;--good:#3fb950;--bad:#f85149;--muted:#8b949e;--link:#6cb6ff}}
-*{box-sizing:border-box}body{font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;max-width:1360px;padding:24px;margin:auto}
-a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}h1,h2{line-height:1.25}
-.muted{color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin:22px 0}
-.card,details{border:1px solid var(--line);border-radius:9px;padding:12px;margin:10px 0}.card strong{display:block;font-size:27px}
-.card small{color:var(--muted)}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:12px;color:var(--muted)}.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-summary{cursor:pointer;font-weight:600}.good{color:var(--good)}.bad{color:var(--bad)}
-input{width:100%;max-width:460px;border:1px solid var(--line);border-radius:7px;padding:10px;background:transparent;color:inherit}
-.source{font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;table-layout:fixed}
-.source td{padding:0 8px;border:0}.source .ln{width:55px;text-align:right;border-right:1px solid var(--line)}
-.source .hits{width:140px;color:var(--muted);white-space:nowrap}.source .code{white-space:pre;overflow-x:auto}
-.source .covered{background:rgba(46,160,67,.12)}.source .uncovered{background:rgba(248,81,73,.14)}
-.source tr:target{outline:2px solid var(--link)}.source code{white-space:pre}
-@media(max-width:600px){body{padding:12px}th,td{padding:5px}.source .hits{width:90px;font-size:10px}}
+:root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--text:#162338;--muted:#607087;--line:#dfe6ef;--link:#245cce;--accent:#2563eb;--good:#15803d;--bad:#b42318;--soft-good:#e9f8ee;--soft-bad:#fef0ee;--shadow:0 12px 36px rgba(28,44,74,.055)}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#111823;--panel:#1a2635;--text:#edf2f9;--muted:#a7b6c9;--line:#35445a;--link:#8db5ff;--accent:#80a9ff;--good:#6ad78d;--bad:#ffa094;--soft-good:#213b30;--soft-bad:#472b31;--shadow:0 12px 36px rgba(0,0,0,.12)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:var(--bg);max-width:1480px;padding:28px 36px 65px;margin:auto}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}.brand{font-weight:750;letter-spacing:-.02em;font-size:17px}.brand-mark{display:inline-grid;place-items:center;width:32px;height:32px;color:white;background:#255ed1;border-radius:8px;margin-right:9px;font-size:12px}.top-meta,.eyebrow{font-size:11px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.hero{margin:0 0 28px}.hero h1{font-size:clamp(28px,4vw,39px);line-height:1.16;letter-spacing:-.035em;margin:7px 0}.hero p{color:var(--muted);margin:0;max-width:760px}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:30px 0 12px}.section-heading h2{font-size:20px;letter-spacing:-.02em;margin:0}.section-heading .muted{font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:19px 22px;box-shadow:var(--shadow)}.card small{display:block;color:var(--muted);font-weight:650}.card strong{display:block;font-size:clamp(24px,3.3vw,34px);letter-spacing:-.04em;line-height:1.4;font-variant-numeric:tabular-nums}.card-meter{height:6px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:13px}.card-fill{height:100%;background:var(--accent);border-radius:9px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:17px 20px;margin:13px 0}.panel-intro{color:var(--muted);margin:3px 0 13px}.small{font-size:12px}.muted{color:var(--muted)}.note{border-left:3px solid var(--accent);padding:8px 13px;background:var(--panel);color:var(--muted);border-radius:0 7px 7px 0;margin:12px 0 22px}
+table{width:100%;border-collapse:collapse;margin:7px 0}th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:0}th{font-size:11px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.04em}tr:hover td{background:rgba(80,120,175,.045)}td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+code,.mono{font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}td code{overflow-wrap:anywhere;word-break:break-word}.method-main{display:block;font-weight:650}.method-type{display:block;color:var(--muted);font-size:12px}.chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700}.chip.bad{color:var(--bad);background:var(--soft-bad);border-color:transparent}.chip.good{color:var(--good);background:var(--soft-good);border-color:transparent}
+details.class{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin:10px 0;padding:0 14px;overflow:hidden}details.class>summary{cursor:pointer;list-style-position:inside;display:flex;align-items:center;gap:12px;padding:14px 2px;font-weight:700;flex-wrap:wrap}details.class>summary::before{content:"▸";color:var(--muted);font-size:13px}details.class[open]>summary::before{content:"▾"}details.class>summary::-webkit-details-marker{display:none}details.class>summary::marker{content:""}.summary-metrics{margin-left:auto;color:var(--muted);font-weight:450;font-size:12px}.class-content{padding:4px 3px 15px}
+details.signature{margin-top:6px;font-weight:400;font-size:12px}details.signature>summary{cursor:pointer;color:var(--link);font-size:11px}details.signature code{display:block;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:6px;overflow-wrap:anywhere;white-space:normal}
+.search{width:100%;max-width:510px;padding:11px 13px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:9px;margin:8px 0 14px}.search:focus{outline:2px solid var(--accent);outline-offset:1px}
+.subtle-link{font-size:12px;font-weight:700}.source-header{display:flex;flex-direction:column;gap:8px;word-break:break-word}.source-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.source{font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;table-layout:fixed;min-width:600px;margin:0}.source td{padding:0 10px;border:0}.source .ln{width:66px;text-align:right;border-right:1px solid var(--line);color:var(--muted)}.source .hits{width:133px;white-space:nowrap;color:var(--muted);font-size:11px}.source .code{white-space:pre;overflow-x:auto}.source tr.covered{background:var(--soft-good)}.source tr.uncovered{background:var(--soft-bad)}.source tr.partial{box-shadow:inset 3px 0 0 #d97706}.source tr:target{outline:2px solid var(--accent);outline-offset:-2px}
+.source code{white-space:pre}.source-file{margin-top:40px;border-top:1px solid var(--line);padding-top:20px;content-visibility:auto;contain-intrinsic-size:auto 500px}.source-file:target{scroll-margin-top:18px}.source-file h2{font-size:19px;overflow-wrap:anywhere}
+@media(max-width:800px){body{padding:16px 12px 45px}.cards{grid-template-columns:1fr}.topbar{margin-bottom:20px}.panel{padding:12px}th,td{padding:7px}.summary-metrics{margin-left:0}table{font-size:12px}.source .hits{width:110px}}
 </style>
 """
+
 
 
 def percentage(value):
@@ -36,6 +38,57 @@ def html_document(title, body):
     return ("<!doctype html><html lang='en'><head><meta charset='utf-8'>"
             "<meta name='viewport' content='width=device-width,initial-scale=1'>"
             f"<title>{escape(title)}</title>{STYLE}</head><body>{body}</body></html>")
+
+
+
+def display_member(method):
+    name = method["name"]
+    if name.startswith("get_"):
+        return name[4:] + " · getter"
+    if name.startswith("set_"):
+        return name[4:] + " · setter"
+    return name
+
+
+def parameter_count(signature):
+    """Count top-level parameters, not commas inside C# generic type arguments."""
+    if "(" not in signature or ")" not in signature:
+        return 0
+    params = signature.split("(", 1)[1].rsplit(")", 1)[0].strip()
+    if not params:
+        return 0
+    depth = 0
+    count = 1
+    for char in params:
+        if char in "<[(":
+            depth += 1
+        elif char in ">])":
+            depth -= 1
+        elif char == "," and depth == 0:
+            count += 1
+    return count
+
+
+def compact_signature(method):
+    name = display_member(method)
+    if method["name"].startswith(("get_", "set_")):
+        return name
+    count = parameter_count(method["signature"])
+    return f"{name} ({count} {'parameter' if count == 1 else 'parameters'})"
+
+
+def relative_source_link(method):
+    """GitHub source link; never point to an unhosted HTML file as though it were public."""
+    import os
+    from urllib.parse import quote
+    repository = os.environ.get("GITHUB_REPOSITORY", "")
+    revision = os.environ.get("GITHUB_SHA", "")
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        return ""
+    if not re.fullmatch(r"[a-fA-F0-9]{40}", revision):
+        return ""
+    path = quote(method["file"]["relative"], safe="/")
+    return f"https://github.com/{repository}/blob/{revision}/{path}#L{method['first']}"
 
 
 def source_path(reported, root):
