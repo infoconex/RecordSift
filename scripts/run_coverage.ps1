@@ -87,9 +87,11 @@ try {
         Write-Host ("Coverage {0}: line={1:p2}, branch={2:p2}, classes={3}" -f $package.name, [double]$package.'line-rate', [double]$package.'branch-rate', $classes.Count)
     }
 
-    & dotnet tool run reportgenerator -- "-reports:$coverageFile" "-targetdir:$reportDirectory" '-reporttypes:Html;Cobertura;MarkdownSummaryGithub'
-    if ($LASTEXITCODE -ne 0) { throw "ReportGenerator failed: $LASTEXITCODE" }
+    # Only the Python standard library is used by the RecordSift-owned reporter.
+    & python (Join-Path $root 'scripts/render_coverage.py') --coverage $coverageFile --output $reportDirectory --source-root $root
+    if ($LASTEXITCODE -ne 0) { throw "Coverage reporting failed: $LASTEXITCODE" }
     if (-not (Test-Path (Join-Path $reportDirectory 'index.html'))) { throw 'HTML coverage report is missing.' }
+    if (-not (Test-Path (Join-Path $reportDirectory 'SummaryGithub.md'))) { throw 'GitHub coverage summary is missing.' }
     Write-Host "Overall: line=$($coverage.coverage.'line-rate'), branch=$($coverage.coverage.'branch-rate'); report: $reportDirectory"
 } finally {
     Pop-Location
