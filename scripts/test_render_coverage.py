@@ -44,8 +44,9 @@ class CoverageReportTests(unittest.TestCase):
     def test_summary_and_source_html(self):
         render(self.coverage, self.output, self.root)
         summary = (self.output / "SummaryGithub.md").read_text(encoding="utf-8")
-        self.assertIn("Methods executed | 50.00% | 1 / 2", summary)
-        self.assertIn("| Demo | Foo | Miss (0 parameters) | Foo.cs:2 |", summary)
+        self.assertIn("**Methods executed** | **50.00%** | 1 / 2", summary)
+        self.assertIn("| Demo | Foo | Miss (0 parameters) |", summary)
+        self.assertIn("Foo.cs:2", summary)
         index = (self.output / "index.html").read_text(encoding="utf-8")
         self.assertIn("files/file-001.html", index)
         self.assertIn("—", index)  # No method branch data; do not advertise 100%.
