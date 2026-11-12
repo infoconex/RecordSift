@@ -228,7 +228,7 @@ def render(coverage_file, output_directory, source_root):
     for index, package in enumerate(packages):
         body.append(
             f"<section id='assembly-{index}'><div class='section-heading'><h2>{escape(package['name'])}</h2>"
-            f"<span class='muted'>{len(package['classes'])} classes</span></div>"
+            f"<span class='muted'>{len(package['classes'])} {'class' if len(package['classes']) == 1 else 'classes'}</span></div>"
         )
         for cls in package["classes"]:
             cls_name = escape(cls["name"])
@@ -275,7 +275,7 @@ def render(coverage_file, output_directory, source_root):
             "<p>Coverage at a glance. Select a method to navigate to its first measured line.</p>"
             "</header><div class='panel'>",
             f"<div class='section-heading'><h2>Methods in this file</h2>"
-            f"<span class='muted'>{len(file['methods'])} instrumented methods</span></div>",
+            f"<span class='muted'>{len(file['methods'])} instrumented {'method' if len(file['methods']) == 1 else 'methods'}</span></div>",
             "<table><thead><tr><th>Method</th><th>Executed</th>"
             "<th class='num'>Lines</th><th class='num'>Branches</th></tr></thead><tbody>",
         ]
@@ -386,7 +386,7 @@ def render(coverage_file, output_directory, source_root):
     for package in packages:
         short_assembly = package["name"].replace("RecordSift.", "")
         summary += [
-            f"<details><summary>{short_assembly} — {len(package['classes'])} classes</summary>",
+            f"<details><summary>{short_assembly} — {len(package['classes'])} {'class' if len(package['classes']) == 1 else 'classes'}</summary>",
             "",
             "| Class | Lines | Branches | Methods executed |",
             "| :--- | ---: | ---: | ---: |",
