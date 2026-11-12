@@ -82,7 +82,7 @@ def relative_source_link(method):
     import os
     from urllib.parse import quote
     repository = os.environ.get("GITHUB_REPOSITORY", "")
-    revision = os.environ.get("GITHUB_SHA", "")
+    revision = os.environ.get("COVERAGE_SOURCE_SHA") or os.environ.get("GITHUB_SHA", "")
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         return ""
     if not re.fullmatch(r"[a-fA-F0-9]{40}", revision):
