@@ -412,3 +412,58 @@ jobs:
           path: TestResults/nuget-audit.log
           if-no-files-found: warn
           retention-days: 14
+
+  coverage:
+    name: Measure .NET Framework line and branch coverage
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - name: Capture coverage toolchain
+        shell: pwsh
+        run: |
+          dotnet --info
+          nuget help | Select-Object -First 8
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found.' }
+          & $msbuild -version
+          Write-Host "PowerShell=$($PSVersionTable.PSVersion) OS=$([Environment]::OSVersion.Version)"
+      - name: Restore packages.config dependencies
+        shell: pwsh
+        run: |
+          nuget restore RecordSift.sln -NonInteractive -PackagesDirectory packages -ConfigFile NuGet.Config
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed: $LASTEXITCODE" }
+      - name: Build Release assemblies for coverage
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found.' }
+          & $msbuild RecordSift.sln /m /t:Rebuild /p:Configuration=Release '/p:Platform=Any CPU' /verbosity:minimal
+          if ($LASTEXITCODE -ne 0) { throw "Coverage build failed: $LASTEXITCODE" }
+      - name: Collect and validate coverage for all five production assemblies
+        shell: pwsh
+        run: |
+          & .\scripts\run_coverage.ps1
+          if ($LASTEXITCODE -ne 0) { throw "Coverage runner failed: $LASTEXITCODE" }
+      - name: Publish coverage summary
+        if: success()
+        shell: pwsh
+        run: |
+          $summary = 'TestResults/coverage/report/SummaryGithub.md'
+          if (-not (Test-Path $summary)) { throw 'Coverage summary was not generated.' }
+          Get-Content $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+      - name: Upload coverage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: net48-code-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            TestResults/coverage/
+            TestResults/nunit-selected.xml
+          if-no-files-found: warn
+          retention-days: 14
