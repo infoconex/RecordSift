@@ -74,17 +74,7 @@ try {
     foreach ($package in $packages) {
         $classes = @($package.SelectNodes('./classes/class'))
         if ($classes.Count -eq 0) { throw "Coverage package '$($package.name)' has no source classes." }
-        $source = @($classes | Where-Object { $_.GetAttribute('filename') -match '(^|[/\\])src[/\\].*\.cs        Write-Host ("Coverage {0}: line={1:p2}, branch={2:p2}, classes={3}" -f $package.name, [double]$package.'line-rate', [double]$package.'branch-rate', $classes.Count)
-    }
-
-    & dotnet tool run reportgenerator -- "-reports:$coverageFile" "-targetdir:$reportDirectory" '-reporttypes:Html;Cobertura;MarkdownSummaryGithub'
-    if ($LASTEXITCODE -ne 0) { throw "ReportGenerator failed: $LASTEXITCODE" }
-    if (-not (Test-Path (Join-Path $reportDirectory 'index.html'))) { throw 'HTML coverage report is missing.' }
-    Write-Host "Overall: line=$($coverage.coverage.'line-rate'), branch=$($coverage.coverage.'branch-rate'); report: $reportDirectory"
-} finally {
-    Pop-Location
-}
- })
+        $source = @($classes | Where-Object { $_.GetAttribute('filename') -match '(^|[/\\])src[/\\].*\.cs$' })
         if ($source.Count -eq 0) { throw "Coverage package '$($package.name)' has no RecordSift source file paths." }
         $existingFiles = @($source | Where-Object {
             $file = $_.GetAttribute('filename').Replace('/', [IO.Path]::DirectorySeparatorChar)
