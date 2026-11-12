@@ -348,24 +348,75 @@ def render(coverage_file, output_directory, source_root):
         html_document("RecordSift coverage | Interactive report", standalone),
         encoding="utf-8",
     )
-    summary = ["# RecordSift code coverage", "", "| Metric | Coverage | Covered / valid |",
-               "| --- | ---: | ---: |"]
-    for name, covered, valid in totals:
-        summary.append(f"| {name} | {percentage(covered / valid)} | {covered} / {valid} |")
-    summary += ["", "## Coverage by assembly", "",
-                "| Assembly | Lines | Branches | Methods run |",
-                "| --- | ---: | ---: | ---: |"]
+    summary = [
+        "# RecordSift · Code coverage",
+        "",
+        "Coverage measured against the **full five-assembly NUnit suite**. "
+        "Coverage is diagnostic; no minimum coverage threshold is enforced.",
+        "",
+        "| Metric | Coverage | Covered / measured |",
+        "| :--- | ---: | ---: |",
+    ]
+    for label, covered, valid in totals:
+        summary.append(f"| **{label}** | **{percentage(covered / valid)}** | {covered:,} / {valid:,} |")
+    summary += [
+        "",
+        "> **How to read this:** A method is executed when at least one measured line is hit. "
+        "This is not the same as full line or branch coverage.",
+        "",
+        "## Coverage by assembly",
+        "",
+        "| Assembly | Lines | Branches | Methods executed |",
+        "| :--- | ---: | ---: | ---: |",
+    ]
     for package in packages:
-        pm = [m for cls in package["classes"] for m in cls["methods"]]
-        summary.append(f"| {package['name']} | {percentage(package['line'])} | "
-                       f"{percentage(package['branch'])} | {sum(m['executed'] for m in pm)} / {len(pm)} |")
-    missed = [m for m in methods if not m["executed"]]
-    summary += ["", f"## Unexecuted methods ({len(missed)})", ""]
-    summary += ["- " + (m["class_name"] + "." + m["name"] + m["signature"]).replace("|", "\\|")
-                for m in missed] or ["None."]
-    summary += ["", "**Detailed source report:** Download and extract the coverage workflow artifact, "
-                "then open the coverage/report/index.html file.", "",
-                "Coverage is diagnostic; no minimum coverage threshold is enforced."]
+        package_methods = [m for cls in package["classes"] for m in cls["methods"]]
+        short_name = package["name"].replace("RecordSift.", "")
+        summary.append(
+            f"| {short_name} | {percentage(package['line'])} | {percentage(package['branch'])} "
+            f"| {sum(m['executed'] for m in package_methods)} / {len(package_methods)} |"
+        )
+    summary += [
+        "",
+        f"## Methods to review ({len(missed)} not executed)",
+        "",
+        "The names below are **method signatures, not call stacks**. "
+        "Full parameter types are in the interactive HTML report.",
+        "",
+    ]
+    if missed:
+        summary += [
+            "| Assembly | Class | Method | Source |",
+            "| :--- | :--- | :--- | :--- |",
+        ]
+        for method in missed:
+            short_assembly = method["assembly"].replace("RecordSift.", "")
+            short_class = method["class_name"].rsplit(".", 1)[-1]
+            member = compact_signature(method)
+            source_file = method["file"]["relative"].rsplit("/", 1)[-1]
+            reference = f"{source_file}:{method['first']}"
+            source_url = relative_source_link(method)
+            if source_url:
+                reference = f"[{reference}]({source_url})"
+            summary.append(
+                f"| {short_assembly} | {short_class.replace('|', chr(92) + '|')} "
+                f"| " + member.replace("|", "\\|") + f" | {reference} |"
+            )
+    else:
+        summary.append("All measured methods were executed.")
+    summary += [
+        "",
+        "### Detailed report",
+        "",
+        "The full report contains assembly, class and method navigation, searchable types, "
+        "readable signatures and highlighted source lines. The workflow adds a direct "
+        "browser link to the single-file HTML artifact below.",
+        "",
+        "For offline navigation, download the ZIP artifact, extract it, then open "
+        + chr(96) + "coverage/report/index.html" + chr(96) + ".",
+        "",
+        "_Coverage is measured data, not proof that assertions validate behavior._",
+    ]
     (out / "SummaryGithub.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
     print(f"Report generated: {len(files)} source files, {len(methods)} methods, {executed} executed")
     print(f"Open {out / 'index.html'}")
