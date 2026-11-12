@@ -42,13 +42,13 @@ class CoverageReportTests(unittest.TestCase):
 
     def test_summary_and_source_html(self):
         render(self.coverage, self.output, self.root)
-        summary = (self.output / "SummaryGithub.md").read_text()
+        summary = (self.output / "SummaryGithub.md").read_text(encoding="utf-8")
         self.assertIn("Methods executed | 50.00% | 1 / 2", summary)
         self.assertIn("Demo.Foo.Miss()", summary)
-        index = (self.output / "index.html").read_text()
+        index = (self.output / "index.html").read_text(encoding="utf-8")
         self.assertIn("files/file-001.html", index)
         self.assertIn("—", index)  # No method branch data; do not advertise 100%.
-        source = (self.output / "files" / "file-001.html").read_text()
+        source = (self.output / "files" / "file-001.html").read_text(encoding="utf-8")
         self.assertIn("&lt;script&gt;alert", source)
         self.assertNotIn('<script>alert("x")</script>', source)
         self.assertIn("50% (1/2)", source)
@@ -63,7 +63,7 @@ class CoverageReportTests(unittest.TestCase):
             source_path(r"C:\repo\tests\test.cs", self.root)
 
     def test_fails_if_branch_data_is_missing(self):
-        contents = self.coverage.read_text().replace('branches-valid="2"', 'branches-valid="0"')
+        contents = self.coverage.read_text(encoding="utf-8").replace('branches-valid="2"', 'branches-valid="0"')
         self.coverage.write_text(contents)
         with self.assertRaisesRegex(ValueError, "line/branch totals"):
             render(self.coverage, self.output, self.root)
