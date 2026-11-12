@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- dotnet-coverage settings; coverage includes exactly the five RecordSift production assemblies. -->
+<Configuration>
+  <CodeCoverage>
+    <CollectFromChildProcesses>True</CollectFromChildProcesses>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*RecordSift\.(Domain|Application|Infrastructure\.(Csv|Xlsx|Reporting))\.dll$</ModulePath>
+      </Include>
+    </ModulePaths>
+    <EnableDynamicManagedInstrumentation>True</EnableDynamicManagedInstrumentation>
+  </CodeCoverage>
+</Configuration>
