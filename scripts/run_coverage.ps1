@@ -8,8 +8,6 @@ $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
 $root = Split-Path -Parent $PSScriptRoot
 $coverageDirectory = Join-Path $root 'TestResults/coverage'
 $reportDirectory = Join-Path $coverageDirectory 'report'
-$nativeFile = Join-Path $coverageDirectory 'coverage.coverage'
-$xmlFile = Join-Path $coverageDirectory 'coverage.microsoft.xml'
 $coverageFile = Join-Path $coverageDirectory 'coverage.cobertura.xml'
 $settings = Join-Path $root 'config/coverage.xml'
 $testScript = Join-Path $root 'scripts/run_tests.ps1'
@@ -17,7 +15,7 @@ $testScript = Join-Path $root 'scripts/run_tests.ps1'
 Push-Location $root
 try {
     New-Item -ItemType Directory -Force -Path $coverageDirectory | Out-Null
-    Remove-Item @($nativeFile, $xmlFile, $coverageFile) -ErrorAction SilentlyContinue
+    Remove-Item $coverageFile -ErrorAction SilentlyContinue
 
     & dotnet --version
     if ($LASTEXITCODE -ne 0) { throw 'The .NET SDK is required to run pinned local tools.' }
@@ -29,21 +27,9 @@ try {
     # Keep the full test suite authoritative: targeted tests remain available through run_tests.ps1.
     # A single command string follows Microsoft's documented dotnet-coverage collect syntax.
     $testCommand = 'pwsh -NoProfile -File "' + $testScript + '"'
-    # Collect natively once. Convert that same session into both machine-readable formats.
-    # Retain ReportGenerator until the owner reviews Microsoft's native reporting evidence.
-    & dotnet tool run dotnet-coverage -- collect $testCommand --settings $settings --output $nativeFile --output-format coverage
-    if ($LASTEXITCODE -ne 0) { throw "Native coverage collection or NUnit execution failed: $LASTEXITCODE" }
-    if (-not (Test-Path $nativeFile)) { throw "Native coverage file was not created: $nativeFile" }
-
-    & dotnet tool run dotnet-coverage -- merge $nativeFile --output $xmlFile --output-format xml
-    if ($LASTEXITCODE -ne 0) { throw "Microsoft XML conversion failed: $LASTEXITCODE" }
-    & dotnet tool run dotnet-coverage -- merge $nativeFile --output $coverageFile --output-format cobertura
-    if ($LASTEXITCODE -ne 0) { throw "Cobertura conversion failed: $LASTEXITCODE" }
-    if (-not (Test-Path $xmlFile) -or -not (Test-Path $coverageFile)) {
-        throw 'Converted coverage reports were not created.'
-    }
-    Write-Host "Native Microsoft coverage: $nativeFile"
-    Write-Host "Microsoft XML coverage: $xmlFile"
+    & dotnet tool run dotnet-coverage -- collect $testCommand --settings $settings --output $coverageFile --output-format cobertura
+    if ($LASTEXITCODE -ne 0) { throw "Coverage collection or NUnit execution failed: $LASTEXITCODE" }
+    if (-not (Test-Path $coverageFile)) { throw "Coverage report was not created: $coverageFile" }
 
     [xml]$tests = Get-Content (Join-Path $root 'TestResults/nunit-selected.xml') -Raw
     $testCount = [int]$tests.'test-run'.total
