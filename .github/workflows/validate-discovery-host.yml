@@ -1,0 +1,164 @@
+# Research-only discovery inventory for baseline items 20-31.
+# No restore, build, tests, package downloads, or application source mutations.
+name: Inventory Windows tools for technical discovery
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validate-discovery-host.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Read-only Windows host and tool inventory
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - name: Checkout frozen application source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: 1809d06c0fade59e4769d16e0f8eaf10fa426004
+          persist-credentials: false
+
+      - name: Collect observed host and tool versions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sourceSha = '1809d06c0fade59e4769d16e0f8eaf10fa426004'
+          $actualSha = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $actualSha -ne $sourceSha) {
+            throw "Frozen source mismatch: expected $sourceSha, observed $actualSha"
+          }
+
+          # These commands only inspect the ephemeral Windows runner.
+          $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+          $gitVersion = (& git --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'git --version failed.' }
+          $pwshExecutable = (Get-Process -Id $PID).Path
+
+          $dotnet = Get-Command dotnet -ErrorAction Stop
+          $sdkRaw = @(& $dotnet.Source --list-sdks 2>&1 | ForEach-Object { [string]$_ })
+          if ($LASTEXITCODE -ne 0) { throw 'dotnet --list-sdks failed.' }
+          $sdkInventory = @(
+            foreach ($line in $sdkRaw) {
+              if ($line -notmatch '^(?<version>\S+)\s+\[(?<path>.+)\]$') {
+                throw "Unrecognized SDK inventory line: $line"
+              }
+              [ordered]@{ Version = $Matches.version; ReportedLocation = $Matches.path }
+            }
+          )
+
+          $runtimeRaw = @(& $dotnet.Source --list-runtimes 2>&1 | ForEach-Object { [string]$_ })
+          if ($LASTEXITCODE -ne 0) { throw 'dotnet --list-runtimes failed.' }
+          $runtimeInventory = @(
+            foreach ($line in $runtimeRaw) {
+              if ($line -notmatch '^(?<name>\S+)\s+(?<version>\S+)\s+\[(?<path>.+)\]$') {
+                throw "Unrecognized runtime inventory line: $line"
+              }
+              [ordered]@{ Name = $Matches.name; Version = $Matches.version; ReportedLocation = $Matches.path }
+            }
+          )
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path -LiteralPath $vswhere -PathType Leaf)) { throw 'Visual Studio vswhere not found.' }
+          $msbuildPaths = @(& $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe')
+          if ($LASTEXITCODE -ne 0 -or -not $msbuildPaths) { throw 'MSBuild not found by vswhere.' }
+          $msbuildPath = [string]($msbuildPaths | Select-Object -First 1)
+          $msbuildVersion = (& $msbuildPath -version -nologo | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or -not $msbuildVersion) { throw 'MSBuild version query failed.' }
+          $visualStudio = & $vswhere -latest -requires Microsoft.Component.MSBuild -property displayName
+          if ($LASTEXITCODE -ne 0) { throw 'Visual Studio edition query failed.' }
+
+          $nugetCommand = Get-Command nuget.exe -ErrorAction SilentlyContinue
+          $nuget = [ordered]@{ PresentOnPath = [bool]$nugetCommand; Path = $null; Version = $null }
+          if ($nugetCommand) {
+            $nuget.Path = $nugetCommand.Source
+            $nugetHelp = @(& $nugetCommand.Source help 2>&1 | ForEach-Object { [string]$_ })
+            if ($LASTEXITCODE -ne 0) { throw 'nuget help failed.' }
+            $nugetMatch = @($nugetHelp | Select-String 'NuGet Version:\s*(\S+)' | Select-Object -First 1)
+            if ($nugetMatch.Count -ne 1) { throw 'Could not identify the NuGet CLI version from nuget help.' }
+            $nuget.Version = $nugetMatch[0].Matches[0].Groups[1].Value
+          }
+
+          # Verify real .NET Framework v4.8 targeting reference files; do not
+          # infer targeting-pack inventory merely from successful CI builds.
+          $targetPackRoot = Join-Path ${env:ProgramFiles(x86)} 'Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8'
+          $referenceAssembly = Join-Path $targetPackRoot 'mscorlib.dll'
+          $frameworkList = Join-Path $targetPackRoot 'RedistList\FrameworkList.xml'
+          $targetPack = [ordered]@{
+            Framework = 'v4.8'
+            ReferenceDirectory = $targetPackRoot
+            ReferenceDirectoryPresent = Test-Path -LiteralPath $targetPackRoot -PathType Container
+            MscorlibPath = $referenceAssembly
+            MscorlibPresent = Test-Path -LiteralPath $referenceAssembly -PathType Leaf
+            FrameworkListPath = $frameworkList
+            FrameworkListPresent = Test-Path -LiteralPath $frameworkList -PathType Leaf
+          }
+          $netFrameworkFull = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction SilentlyContinue
+
+          $report = [ordered]@{
+            SourceCommit = $sourceSha
+            ResearchWorkflowRun = $env:GITHUB_RUN_ID
+            ResearchWorkflowSha = $env:GITHUB_SHA
+            ObservedAtUtc = (Get-Date).ToUniversalTime().ToString('o')
+            RunnerLabel = 'windows-2022'
+            RunnerImageOS = $env:ImageOS
+            RunnerImageVersion = $env:ImageVersion
+            OperatingSystem = [ordered]@{
+              Name = [string]$os.Caption
+              Version = [string]$os.Version
+              Build = [string]$os.BuildNumber
+              Architecture = [string]$os.OSArchitecture
+            }
+            PowerShell = [ordered]@{
+              Edition = [string]$PSVersionTable.PSEdition
+              Version = $PSVersionTable.PSVersion.ToString()
+              ExecutablePath = $pwshExecutable
+            }
+            Git = [ordered]@{ VersionOutput = $gitVersion }
+            DotNet = [ordered]@{
+              ExecutablePath = $dotnet.Source
+              SDKs = $sdkInventory
+              Runtimes = $runtimeInventory
+            }
+            MSBuild = [ordered]@{
+              Version = $msbuildVersion
+              ExecutablePath = $msbuildPath
+              VisualStudio = [string]($visualStudio | Select-Object -First 1)
+            }
+            NuGetCLI = $nuget
+            NetFramework = [ordered]@{
+              FullReleaseRegistryDWORD = if ($netFrameworkFull) { $netFrameworkFull.Release } else { $null }
+              FullVersionRegistryString = if ($netFrameworkFull) { [string]$netFrameworkFull.Version } else { $null }
+              TargetingPack = $targetPack
+            }
+            Scope = 'Read-only host/tool inventory; no restore, build, test, or deployment; not the operator local machine'
+          }
+
+          Write-Host "Frozen source SHA: $sourceSha"
+          Write-Host "Runner image: $($report.RunnerImageOS) $($report.RunnerImageVersion)"
+          Write-Host "OS: $($report.OperatingSystem.Name) | $($report.OperatingSystem.Version) | build $($report.OperatingSystem.Build) | $($report.OperatingSystem.Architecture)"
+          Write-Host "PowerShell: $($report.PowerShell.Edition) $($report.PowerShell.Version) | $pwshExecutable"
+          Write-Host "Git: $gitVersion"
+          Write-Host "dotnet executable: $($dotnet.Source)"
+          Write-Host "SDK inventory: $(ConvertTo-Json -InputObject $sdkInventory -Compress -Depth 4)"
+          Write-Host "Runtime inventory: $(ConvertTo-Json -InputObject $runtimeInventory -Compress -Depth 4)"
+          Write-Host "MSBuild: $msbuildVersion | $msbuildPath | $visualStudio"
+          Write-Host "NuGet CLI: $(ConvertTo-Json -InputObject $nuget -Compress -Depth 4)"
+          Write-Host ".NET Framework Full registry: Release=$($report.NetFramework.FullReleaseRegistryDWORD) Version=$($report.NetFramework.FullVersionRegistryString)"
+          Write-Host "v4.8 targeting pack: $(ConvertTo-Json -InputObject $targetPack -Compress -Depth 4)"
+          $outputPath = Join-Path $env:RUNNER_TEMP 'recordsift-host-items20-31.json'
+          $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $outputPath -Encoding utf8
+          Write-Host "Read-only inventory retained: $outputPath"
+
+      - name: Retain host inventory evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recordsift-host-items20-31-${{ github.run_id }}
+          path: ${{ runner.temp }}/recordsift-host-items20-31.json
+          if-no-files-found: warn
