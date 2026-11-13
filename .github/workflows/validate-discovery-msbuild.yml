@@ -1,0 +1,109 @@
+# Research-only workflow for modernization baseline item 44.
+# Evaluates immutable RecordSift source without invoking restore or build targets.
+name: Evaluate MSBuild properties for technical discovery
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/validate-discovery-msbuild.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    name: Read-only Windows MSBuild property evaluation
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - name: Checkout frozen application source
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: 1809d06c0fade59e4769d16e0f8eaf10fa426004
+          persist-credentials: false
+
+      - name: Evaluate all ten projects under Debug and Release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sourceSha = '1809d06c0fade59e4769d16e0f8eaf10fa426004'
+          $actualSha = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $actualSha -ne $sourceSha) {
+            throw "Frozen source mismatch: expected $sourceSha, observed $actualSha"
+          }
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found on Windows runner.' }
+          $msbuildVersion = (& $msbuild -version -nologo | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to obtain MSBuild version.' }
+          Write-Host "MSBuild $msbuildVersion at $msbuild"
+
+          # -getProperty without -target and without -getTargetResult performs
+          # project evaluation only. No solution build, restore or tests are run.
+          $properties = @(
+            'TargetFrameworkVersion', 'TargetFramework', 'LangVersion',
+            'OutputType', 'PlatformTarget', 'Optimize', 'TreatWarningsAsErrors',
+            'Deterministic', 'WarningLevel', 'DefineConstants', 'DebugType',
+            'DebugSymbols', 'OutputPath', 'DocumentationFile',
+            'GenerateDocumentationFile', 'Nullable', 'ContinuousIntegrationBuild',
+            'AssemblyName'
+          )
+          $projectFiles = @(Get-ChildItem -Path @('src', 'tests') -Recurse -File -Filter '*.csproj' | Sort-Object FullName)
+          if ($projectFiles.Count -ne 10) {
+            throw "Expected the frozen set of 10 projects; found $($projectFiles.Count)."
+          }
+
+          $results = [System.Collections.Generic.List[object]]::new()
+          foreach ($project in $projectFiles) {
+            $relativePath = $project.FullName.Substring((Get-Location).Path.Length + 1).Replace('\', '/')
+            foreach ($configuration in @('Debug', 'Release')) {
+              $response = & $msbuild $project.FullName "-property:Configuration=$configuration" '-property:Platform=AnyCPU' "-getProperty:$($properties -join ',')" -nologo 2>&1
+              if ($LASTEXITCODE -ne 0) {
+                throw "Property evaluation failed for $relativePath ($configuration): $($response -join [Environment]::NewLine)"
+              }
+              try {
+                $evaluated = ($response -join [Environment]::NewLine) | ConvertFrom-Json -ErrorAction Stop
+              }
+              catch {
+                throw "Invalid MSBuild JSON for $relativePath ($configuration): $($response -join [Environment]::NewLine)"
+              }
+              if (-not $evaluated.Properties) {
+                throw "MSBuild returned no evaluated properties for $relativePath ($configuration)."
+              }
+              $values = [ordered]@{}
+              foreach ($name in $properties) { $values[$name] = [string]$evaluated.Properties.$name }
+              $results.Add([ordered]@{
+                Project = $relativePath
+                Configuration = $configuration
+                Platform = 'AnyCPU'
+                Properties = $values
+              })
+              Write-Host "$relativePath | $configuration | Framework=$($values.TargetFrameworkVersion) | CSharp=$($values.LangVersion) | Optimize=$($values.Optimize) | OutputType=$($values.OutputType)"
+            }
+          }
+
+          $report = [ordered]@{
+            SourceCommit = $sourceSha
+            RunnerImage = $env:ImageOS
+            RunnerImageVersion = $env:ImageVersion
+            MSBuildVersion = $msbuildVersion
+            MSBuildPath = $msbuild
+            Method = 'MSBuild -getProperty (evaluation only; no targets executed)'
+            ProjectCount = $projectFiles.Count
+            ConfigurationCount = 2
+            Results = $results.ToArray()
+          }
+          $outputPath = Join-Path $env:RUNNER_TEMP 'recordsift-msbuild-item44.json'
+          $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $outputPath -Encoding utf8
+          Write-Host "Item 44 evidence saved: $outputPath ($($results.Count) project/configuration evaluations)."
+
+      - name: Retain read-only discovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recordsift-msbuild-item44-${{ github.run_id }}
+          path: ${{ runner.temp }}/recordsift-msbuild-item44.json
+          if-no-files-found: warn
